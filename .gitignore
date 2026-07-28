@@ -4,6 +4,11 @@ extension/target/
 extension/lib/
 *.class
 
+# Local design exports / scratch (not part of the extension)
+/design/
+tmp*/
+tmp-*/
+
 # IDE
 .idea/
 *.iml

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE view SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<view name='Default' xmlns='http://www.lotus.com/dxl' version='14.5' showinmenu='true' publicaccess='false' designerversion='8.5.3' unreadmarks='standard' onopengoto='lastopened' onrefresh='displayindicator' headers='simple' showmargin='true' extendlastcolumn='true' unreadcolor='maroon' rowlinecount='1' headerlinecount='1' rowspacing='1.25' bgcolor='white' altrowcolor='#f0f3f7' headerbgcolor='#d6e2f0' marginbgcolor='white' totalscolor='blue' allowcustomizations='true'>
+<code event='selection'><formula>SELECT @All</formula></code>
+<column width='10' resizable='true' sort='ascending' title='Subject'><columnheader><font size='9pt' style='bold'/></columnheader><font size='9pt'/><code event='value'><formula>Subject</formula></code></column>
+<item name='$$ScriptName' summary='false' sign='true'><text>Default</text></item>
+</view>

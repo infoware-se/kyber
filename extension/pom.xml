@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>se.infoware.domino</groupId>
-    <artifactId>iws-design</artifactId>
-    <version>0.11.0</version>
+    <artifactId>keep-design</artifactId>
+    <version>0.17.0</version>
     <packaging>jar</packaging>
-    <name>Infoware Domino REST API design</name>
+    <name>KEEP Domino REST API design</name>
 
     <properties>
         <domino.version>14.5.0</domino.version>
@@ -54,14 +54,14 @@
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
                 <includes>
-                    <include>iws-design.properties</include>
+                    <include>keep-design.properties</include>
                 </includes>
             </resource>
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>false</filtering>
                 <excludes>
-                    <exclude>iws-design.properties</exclude>
+                    <exclude>keep-design.properties</exclude>
                 </excludes>
             </resource>
         </resources>

@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE sharedfield SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<sharedfield name='Default' xmlns='http://www.lotus.com/dxl' version='14.5' publicaccess='false' designerversion='8.5.3'>
+<field type='text' kind='editable' name='Default'/>
+</sharedfield>

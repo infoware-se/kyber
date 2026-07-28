@@ -23,6 +23,9 @@ public class GetScriptLibraryNames extends AsyncDominoJNXJson {
         .getScriptLibraries()
         .forEach(
             el -> {
+              if (WebServices.isConsumer(el.getDocument())) {
+                return;
+              }
               String title = el.getTitle();
               if (title != null && !title.isBlank()) {
                 names.add(title);

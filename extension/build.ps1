@@ -1,4 +1,4 @@
-# Builds iws-design-*.jar (Infoware — NOT an HCL product).
+﻿# Builds keep-design-*.jar (KEEP extension — NOT an HCL product).
 # Requires: JDK 21, Maven 3.9+, HCL keep-core + keep-extension + keep-jnx-ext JARs.
 #
 # Usage (this PC):
@@ -241,21 +241,21 @@ Or set DRAPI_HOME:
 
 Push-Location $ExtensionRoot
 try {
-    Write-Host "`nBuilding Infoware iws-design.jar..."
+    Write-Host "`nBuilding KEEP keep-design.jar..."
     & $mvn package -q
     if ($LASTEXITCODE -ne 0) { throw "mvn package failed (exit $LASTEXITCODE)" }
 
-    $jar = Get-ChildItem -Path "target" -Filter "iws-design-*.jar" -File |
+    $jar = Get-ChildItem -Path "target" -Filter "keep-design-*.jar" -File |
         Where-Object { $_.Name -notmatch "sources|javadoc" } |
         Sort-Object LastWriteTime -Descending |
         Select-Object -First 1
 
     if (-not $jar) {
-        throw "Build finished but no iws-design-*.jar in target/"
+        throw "Build finished but no keep-design-*.jar in target/"
     }
 
     Write-Host ""
-    Write-Host "SUCCESS - Infoware extension JAR (install THIS on Domino REST):" -ForegroundColor Green
+    Write-Host "SUCCESS - KEEP extension JAR (install THIS on Domino REST):" -ForegroundColor Green
     Write-Host "  $($jar.FullName)" -ForegroundColor Green
     Write-Host ""
     Write-Host "Next steps:"
@@ -266,7 +266,19 @@ try {
 
     $installRoot = if ($KeepJarDir) { $KeepJarDir } else { "C:\Domino\restapi" }
     if ($InstallToDrapi -and (Test-Path (Join-Path $installRoot "libs"))) {
-        $dest = Join-Path (Join-Path $installRoot "libs") $jar.Name
+        $libs = Join-Path $installRoot "libs"
+        Get-ChildItem -Path $libs -Filter "iws-design-*.jar" -File -ErrorAction SilentlyContinue |
+            ForEach-Object {
+                Write-Host "Removing old JAR: $($_.FullName)" -ForegroundColor Yellow
+                Remove-Item $_.FullName -Force
+            }
+        Get-ChildItem -Path $libs -Filter "keep-design-*.jar" -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -ne $jar.Name } |
+            ForEach-Object {
+                Write-Host "Removing previous keep-design JAR: $($_.FullName)" -ForegroundColor Yellow
+                Remove-Item $_.FullName -Force
+            }
+        $dest = Join-Path $libs $jar.Name
         Copy-Item $jar.FullName $dest -Force
         Write-Host "Copied to: $dest" -ForegroundColor Yellow
         Write-Host "Restart Domino REST API to load the extension." -ForegroundColor Yellow

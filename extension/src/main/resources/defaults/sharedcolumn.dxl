@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE sharedcolumn SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<sharedcolumn name='Default' xmlns='http://www.lotus.com/dxl' version='14.5' publicaccess='false' designerversion='8.5.3'>
+<column itemname='Subject' width='20' resizable='true'><columnheader title='Subject'><font size='9pt'/></columnheader></column>
+</sharedcolumn>

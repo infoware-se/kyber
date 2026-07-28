@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE agent SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<agent name='Default' xmlns='http://www.lotus.com/dxl' version='14.5'>
+<trigger type='actionsmenu'/><documentset type='selected'/>
+<code event='action'><formula>SELECT @All</formula></code>
+</agent>

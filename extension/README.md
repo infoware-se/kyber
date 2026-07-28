@@ -1,43 +1,77 @@
-# iws-design (Java KEEP extension)
+﻿# keep-design (Java KEEP extension)
 
-**Custom KEEP extension — Infoware, not HCL.**
+**Custom KEEP extension â€” KEEP, not HCL.**
 
-Manage database **design elements** via Domino REST API. Target database is selected with query param **`nsfPath`**. Create/update uses raw **typed DXL** (`text/xml`), similar to Setup `PUT /api/setup-v1/dxl` but scoped per element type (rejects wrong root elements). Forms and views are included so you do not need Setup’s simplified JSON create for those.
+Manage database **design elements** via Domino REST API. Target database is selected with query param **`nsfPath`**. Create/update uses raw **typed DXL** (`text/xml`), similar to Setup `PUT /api/setup-v1/dxl` but scoped per element type (rejects wrong root elements). Forms and views are included so you do not need Setupâ€™s simplified JSON create for those.
 
 ## Supported types
 
 | Type | List | Create/replace | Get | Delete | DXL root |
 |------|------|----------------|-----|--------|----------|
-| Page | `GET /pagenames` | `PUT /pages` | `GET /pages/{name}` | `DELETE /pages/{name}` | `<page name="…">` |
-| Outline | `GET /outlinenames` | `PUT /outlines` | `GET /outlines/{name}` | `DELETE /outlines/{name}` | `<outline name="…">` |
-| Frameset | `GET /framesetnames` | `PUT /framesets` | `GET /framesets/{name}` | `DELETE /framesets/{name}` | `<frameset name="…">` |
-| Form | `GET /formnames` | `PUT /forms` | `GET /forms/{name}` | `DELETE /forms/{name}` | `<form name="…">` |
-| View | `GET /viewnames` | `PUT /views` | `GET /views/{name}` | `DELETE /views/{name}` | `<view name="…">` |
-| Folder | `GET /foldernames` | `PUT /folders` | `GET /folders/{name}` | `DELETE /folders/{name}` | `<folder name="…">` |
-| Subform | `GET /subformnames` | `PUT /subforms` | `GET /subforms/{name}` | `DELETE /subforms/{name}` | `<subform name="…">` |
-| Shared field | `GET /sharedfieldnames` | `PUT /sharedfields` | `GET /sharedfields/{name}` | `DELETE /sharedfields/{name}` | `<sharedfield name="…">` |
-| Shared column | `GET /sharedcolumnnames` | `PUT /sharedcolumns` | `GET /sharedcolumns/{name}` | `DELETE /sharedcolumns/{name}` | `<sharedcolumn name="…">` |
-| Image | `GET /imagenames` | `PUT /images` | `GET /images/{name}` | `DELETE /images/{name}` | `<imageresource name="…">` |
-| File | `GET /fileresourcenames` | `PUT /fileresources` | `GET /fileresources/{name}` | `DELETE /fileresources/{name}` | `<fileresource name="…">` |
-| Style sheet | `GET /stylesheetnames` | `PUT /stylesheets` | `GET /stylesheets/{name}` | `DELETE /stylesheets/{name}` | `<stylesheetresource name="…">` |
+| Page | `GET /pagenames` | `PUT /pages` | `GET /pages/{name}` | `DELETE /pages/{name}` | `<page name="â€¦">` |
+| Outline | `GET /outlinenames` | `PUT /outlines` | `GET /outlines/{name}` | `DELETE /outlines/{name}` | `<outline name="â€¦">` |
+| Frameset | `GET /framesetnames` | `PUT /framesets` | `GET /framesets/{name}` | `DELETE /framesets/{name}` | `<frameset name="â€¦">` |
+| Form | `GET /formnames` | `PUT /forms` | `GET /forms/{name}` | `DELETE /forms/{name}` | `<form name="â€¦">` |
+| View | `GET /viewnames` | `PUT /views` | `GET /views/{name}` | `DELETE /views/{name}` | `<view name="â€¦">` |
+| Folder | `GET /foldernames` | `PUT /folders` | `GET /folders/{name}` | `DELETE /folders/{name}` | `<folder name="â€¦">` |
+| Subform | `GET /subformnames` | `PUT /subforms` | `GET /subforms/{name}` | `DELETE /subforms/{name}` | `<subform name="â€¦">` |
+| Shared field | `GET /sharedfieldnames` | `PUT /sharedfields` | `GET /sharedfields/{name}` | `DELETE /sharedfields/{name}` | `<sharedfield name="â€¦">` |
+| Shared column | `GET /sharedcolumnnames` | `PUT /sharedcolumns` | `GET /sharedcolumns/{name}` | `DELETE /sharedcolumns/{name}` | `<sharedcolumn name="â€¦">` |
+| Image | `GET /imagenames` | `PUT /images` | `GET /images/{name}` | `DELETE /images/{name}` | `<imageresource name="â€¦">` |
+| File | `GET /fileresourcenames` | `PUT /fileresources` | `GET /fileresources/{name}` | `DELETE /fileresources/{name}` | `<fileresource name="â€¦">` |
+| Style sheet | `GET /stylesheetnames` | `PUT /stylesheets` | `GET /stylesheets/{name}` | `DELETE /stylesheets/{name}` | `<stylesheetresource name="â€¦">` |
 | Theme | `GET /themenames` | `PUT /themes` | `GET /themes/{name}` | `DELETE /themes/{name}` | `<theme>` / note-form |
-| About Document | — | `PUT /about` | `GET /about` | `DELETE /about` | `<helpaboutdocument>` |
-| Using Document | — | `PUT /using` | `GET /using` | `DELETE /using` | `<helpusingdocument>` |
-| Agent | `GET /agentnames` | `PUT /agents` | `GET /agents/{name}` | `DELETE /agents/{name}` | `<agent name="…">` |
-| Script library | `GET /scriptlibrarynames` | `PUT /scriptlibraries` | `GET /scriptlibraries/{name}` | `DELETE /scriptlibraries/{name}` | `<scriptlibrary name="…">` |
-| Shared Actions | — | `PUT /sharedactions` | `GET /sharedactions` | `DELETE /sharedactions` | `<sharedactions>` |
-| Database Script | — | `PUT /databasescript` | `GET /databasescript` | `DELETE /databasescript` | `<databasescript>` |
-| Application Properties | — | `PUT /applicationproperties` | `GET /applicationproperties` | — (no delete) | `<note class="icon">` / `<database>` |
+| About Document | â€” | `PUT /about` | `GET /about` | `DELETE /about` | `<helpaboutdocument>` |
+| Using Document | â€” | `PUT /using` | `GET /using` | `DELETE /using` | `<helpusingdocument>` |
+| Agent | `GET /agentnames` | `PUT /agents` | `GET /agents/{name}` | `DELETE /agents/{name}` | `<agent name="â€¦">` |
+| Script library | `GET /scriptlibrarynames` | `PUT /scriptlibraries` | `GET /scriptlibraries/{name}` | `DELETE /scriptlibraries/{name}` | `<scriptlibrary name="â€¦">` |
+| Shared Actions | â€” | `PUT /sharedactions` | `GET /sharedactions` | `DELETE /sharedactions` | `<sharedactions>` |
+| Database Script | â€” | `PUT /databasescript` | `GET /databasescript` | `DELETE /databasescript` | `<databasescript>` |
+| Application Properties | â€” | `PUT /applicationproperties` | `GET /applicationproperties` | â€” (no delete) | `<note class="icon">` / `<database>` |
 | XPage | `GET /xpagenames` | `PUT /xpages` | `GET /xpages/{name}` | `DELETE /xpages/{name}` | `<note>` / `<fileresource>` |
+| Custom Control | `GET /customcontrolnames` | `PUT /customcontrols` | `GET /customcontrols/{name}` | `DELETE /customcontrols/{name}` | `<note>` / `<fileresource>` |
 | Wiring Properties | `GET /wiringpropertiesnames` | `PUT /wiringproperties` | `GET /wiringproperties/{name}` | `DELETE /wiringproperties/{name}` | `<note>` / `<fileresource>` |
 | Composite Application | `GET /compositeapplicationnames` | `PUT /compositeapplications` | `GET /compositeapplications/{name}` | `DELETE /compositeapplications/{name}` | `<note>` / `<fileresource>` |
 | Composite Component | `GET /compositecomponentnames` | `PUT /compositecomponents` | `GET /compositecomponents/{name}` | `DELETE /compositecomponents/{name}` | `<note>` / `<fileresource>` |
 
 All paths are under `/api/design-v1` and require `?nsfPath=`.
 
+## Bulk design DXL (git sync)
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/designdxl?nsfPath=` | Export all supported elements as `{ nsfPath, elements: [{ type, name?, dxl }] }` |
+| PUT | `/designdxl?nsfPath=` | Import that array; **create NSF if missing**; same import/sign as per-type `Create*` |
+
+Element `type` values match repo layout (`form`, `about`, `image`, â€¦). Bridge scripts in repo root [`tools/`](../tools/):
+
+```powershell
+.\tools\export-to-repo.ps1 -RestUrl https://host:8880 -NsfPath test/app.nsf -OutDir .\design
+.\tools\import-from-repo.ps1 -RestUrl https://host:8880 -NsfPath test/restored.nsf -InDir .\design
+```
+
+Repo tree (folders = DXL `<!DOCTYPE â€¦>` name):
+
+```
+design/
+  manifest.json          # type (API), doctype, path, name?
+  form/Main.dxl
+  view/($All).dxl
+  imageresource/logo.gif.dxl
+  helpaboutdocument/about.dxl
+  note/applicationproperties.dxl
+  ...
+```
+
+`import-from-repo.ps1` reads `manifest.json` (API `type` + path); folder names follow DOCTYPE.
+
+After PUT, the API compiles LotusScript (script libraries first) and returns a `lotusscript` summary. Notes â€œError processing use list moduleâ€ after a restore usually means code was not compiled; re-import with 0.12+ or run Designer **Recompile All LotusScript**. Some complex libraries (e.g. DDM) can still report syntax errors after DXL round-trip â€” open those in Designer if needed.
+
+**Bulk-only types** (no list/get/put/delete endpoints; only in `/designdxl`): `navigator`, `dataconnection`, `jar`, `xspproperties`, `xpagesresource` (incl. `WEB-INF/`, i18n `*.properties`, `.settings/`, `icons/`), and catch-all `designnote` for any other remaining design note (UNID-deduped after typed exporters).
+
 ## Coverage (Domino Designer)
 
-Mapped to the Designer outline. “In” = typed DXL CRUD in this extension (v0.11).
+Mapped to the Designer outline. â€œInâ€ = typed DXL CRUD; â€œBulkâ€ = `/designdxl` only (v0.16).
 
 ### Included
 
@@ -64,26 +98,31 @@ Mapped to the Designer outline. “In” = typed DXL CRUD in this extension (v0.
 | Resources | Using Document | `/using` (singleton) |
 | Application Configuration | Application Properties | `/applicationproperties` (GET/PUT; no DELETE) |
 | XPages | XPages | `/xpages` |
+| Custom Controls | Custom Controls | `/customcontrols` (`.xsp` notes without XPage `K` flag; not Composite Components) |
+| Application Configuration | Xsp Properties | **Bulk only** â€” type `xspproperties` (`WEB-INF/xsp.properties`) |
+| (XPages project) | Other `WEB-INF/` notes | **Bulk only** â€” type `xpagesresource` |
+| Shared Elements | Navigators | **Bulk only** â€” type `navigator` |
+| Code | Web Service Providers | `/webserviceproviders` (bulk type `webservice`) |
+| Code | Web Service Consumers | `/webserviceconsumers` (bulk type `webserviceconsumer`; not listed under `/scriptlibraries`) |
+| Data | Data Connections | **Bulk only** â€” type `dataconnection` |
+| Code | Jars (design Java resources) | **Bulk only** â€” type `jar` |
 | Composite Applications | Wiring Properties | `/wiringproperties` |
 | Composite Applications | Applications | `/compositeapplications` |
 | Composite Applications | Components | `/compositecomponents` |
 
-Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the collection path.
+Singletons have no list/`{name}` path â€” only `GET` / `PUT` / `DELETE` on the collection path.
 
 ### Not included
 
 | Designer section | Element | Reason |
 |------------------|---------|--------|
-| Shared Elements | Navigators | Removed — Domino 14.5 has no first-class `<navigator>` DXL; create was unreliable |
-| Custom Controls | Custom Controls | No first-class JNX type (different `$Flags` than XPage) |
-| Code | Web Service Providers | No first-class JNX type (DXL has `webservice` only) |
-| Code | Web Service Consumers | No first-class JNX type |
-| Code | Java (separate node) | Same notes as Java **script libraries** → use `/scriptlibraries` |
-| Code | Jars | No standalone JNX type (jars embed on Java agents/libs) |
-| Resources | Applets | No first-class JNX type |
-| Resources | Icon | Same note as Application Properties (`/applicationproperties`). Always present with the NSF — **GET/PUT only, never DELETE** |
-| Data | Data Connections | No first-class JNX type |
-| Application Configuration | Xsp Properties | No first-class typed DXL CRUD in this extension |
+### Not included (CRUD or bulk)
+
+| Designer section | Element | Reason |
+|------------------|---------|--------|
+| Resources | Applets | No first-class design-note type (often embedded in form/page DXL) |
+| Resources | Icon | Same note as Application Properties (`/applicationproperties`). Always present with the NSF â€” **GET/PUT only, never DELETE** |
+| Code | Java (separate node) | Same notes as Java **script libraries** â†’ use `/scriptlibraries` |
 
 | ACL | Operations |
 |-----|------------|
@@ -266,7 +305,7 @@ Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the c
 | GET | `/api/design-v1/applicationproperties?nsfPath=` |
 | PUT | `/api/design-v1/applicationproperties?nsfPath=` (`text/xml` icon note or `<database>` DXL) |
 
-No DELETE — Domino always creates the icon/Application Properties note with the NSF; it must remain.
+No DELETE â€” Domino always creates the icon/Application Properties note with the NSF; it must remain.
 
 ### XPages
 
@@ -277,7 +316,16 @@ No DELETE — Domino always creates the icon/Application Properties note with th
 | GET | `/api/design-v1/xpages/{name}?nsfPath=` |
 | DELETE | `/api/design-v1/xpages/{name}?nsfPath=` |
 
-Custom Controls are not supported.
+### Custom Controls
+
+XPages Custom Controls (Designer â€œCustom Controlsâ€) â€” `.xsp` design notes with `$Flags` like `gC~4;` (no `K`). Not the same as Composite Components (`/compositecomponents`).
+
+| Method | Path |
+|--------|------|
+| GET | `/api/design-v1/customcontrolnames?nsfPath=` |
+| PUT | `/api/design-v1/customcontrols?nsfPath=` (`text/xml`; Designer-exported DXL) |
+| GET | `/api/design-v1/customcontrols/{name}?nsfPath=` |
+| DELETE | `/api/design-v1/customcontrols/{name}?nsfPath=` |
 
 ### Wiring Properties
 
@@ -314,7 +362,7 @@ $env:DRAPI_HOME = "C:\Domino\restapi"
 .\build.ps1 -InstallToDrapi
 ```
 
-**Output:** `target/iws-design-*.jar` → `$env:DRAPI_HOME\libs\`.
+**Output:** `target/keep-design-*.jar` â†’ `$env:DRAPI_HOME\libs\`.
 
 Restart: `tell restapi quit`, then `load restapi` on the Domino console (`load` cannot be done via management after quit).
 
@@ -368,19 +416,19 @@ Invoke-RestMethod -Method PUT -Uri "$base/api/design-v1/views?nsfPath=$nsf" `
 
 ```text
 extension/
-  src/main/java/se/infoware/domino/keep/
+  src/main/java/se/KEEP/domino/keep/
     dbrequests/design/       per-type CRUD + shared DesignDxl / DxlDesignPatch
     handlers/design/         AbstractImportDxlHandler + Create{Page,Outline,Frameset,Form,View,Folder}
   src/main/resources/
-    config/config.json       # OpenAPI tag iws-design (not design — avoids HCL Setup clash)
+    config/config.json       # OpenAPI tag keep-design (not design â€” avoids HCL Setup clash)
     openapi/openapi.design.json
 ```
 
 ## Adding another design type
 
-1. OpenAPI paths + `operationId`s (`getXNames`, `getX`, `createX`, `deleteX`) under tag **`iws-design`**
+1. OpenAPI paths + `operationId`s (`getXNames`, `getX`, `createX`, `deleteX`) under tag **`keep-design`**
 2. `dbrequests/design` handlers (JNX `getX` / `getXs` / `delete`, DXL import via `DesignDxl.requireRootName(dxl, "root")`)
 3. `handlers/design/CreateX extends AbstractImportDxlHandler` for `text/xml` PUT
 4. Document the type in this README table
 
-Do **not** use OpenAPI tag `design` — that maps HCL Setup’s Design verticle package.
+Do **not** use OpenAPI tag `design` â€” that maps HCL Setupâ€™s Design verticle package.

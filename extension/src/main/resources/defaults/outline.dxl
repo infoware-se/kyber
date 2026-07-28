@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE outline SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<outline name='Default' alias='Default' xmlns='http://www.lotus.com/dxl' version='14.5' publicaccess='false' designerversion='8.5.3'>
+<outlineentry label='Home' alias='Home' type='namedelementlink' targetframe='Content'><namedelementlink type='page' name='Home'/></outlineentry>
+</outline>

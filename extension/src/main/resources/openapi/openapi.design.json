@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Infoware Domino REST API design",
-    "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element (page, outline, frameset, form, view, folder, subform, sharedfield, sharedcolumn, imageresource, fileresource, stylesheetresource, theme, helpaboutdocument, helpusingdocument, agent, scriptlibrary, sharedactions, databasescript, applicationproperties, xpage, wiringproperties, compositeapplication, compositecomponent).",
-    "version": "0.11.0"
+    "title": "KEEP Domino REST API design",
+    "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL (PUT creates NSF if missing).",
+    "version": "0.17.0"
   },
   "servers": [
     {
@@ -12,11 +12,203 @@
   ],
   "tags": [
     {
-      "name": "iws-design",
-      "description": "Infoware database design element management (pages, outlines, framesets, forms, views, folders, subforms, fields, columns, images, files, stylesheets, themes, about, using, agents, scriptlibraries, sharedactions, databasescript, applicationproperties, xpages, wiringproperties, compositeapplications, compositecomponents)"
+      "name": "keep-design",
+      "description": "KEEP database design element management (pages, outlines, framesets, forms, views, folders, subforms, fields, columns, images, files, stylesheets, themes, about, using, agents, scriptlibraries, webservices, webserviceconsumers, sharedactions, databasescript, applicationproperties, xpages, customcontrols, wiringproperties, compositeapplications, compositecomponents, bulk designdxl)"
     }
   ],
   "paths": {
+    "/defaults": {
+      "summary": "Starter design DXL from keepdesign.nsf or embedded JAR defaults",
+      "description": "Resolves starter DXL per type: prefer element named Default in keep.design.defaultNsf (keepdesign.nsf), else classpath /defaults/{type}.dxl.",
+      "get": {
+        "tags": ["keep-design"],
+        "operationId": "getDefaults",
+        "summary": "List starter design DXL",
+        "description": "Returns { defaultNsf, elements: [{ type, name, dxl, source }] } where source is nsf or embedded.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "defaultNsf": { "type": "string" },
+                    "elements": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": { "type": "string" },
+                          "name": { "type": "string" },
+                          "dxl": { "type": "string" },
+                          "source": { "type": "string", "enum": ["nsf", "embedded"] }
+                        },
+                        "required": ["type", "dxl", "source"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      }
+    },
+    "/defaults/{type}": {
+      "summary": "Starter DXL for one design type",
+      "parameters": [
+        {
+          "name": "type",
+          "description": "Design type key (view, form, page, …) or plural (views, forms)",
+          "schema": { "type": "string" },
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "tags": ["keep-design"],
+        "operationId": "getDefault",
+        "summary": "Get starter design DXL for a type",
+        "description": "Returns { defaultNsf, type, name, dxl, source }. Prefers keepdesign.nsf Default element; else embedded JAR DXL.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "defaultNsf": { "type": "string" },
+                    "type": { "type": "string" },
+                    "name": { "type": "string" },
+                    "dxl": { "type": "string" },
+                    "source": { "type": "string", "enum": ["nsf", "embedded"] }
+                  },
+                  "required": ["type", "dxl", "source"]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      }
+    },
+    "/designdxl": {
+      "summary": "Bulk export or import all supported design elements as CRUD-identical DXL",
+      "description": "GET exports every supported design element. PUT imports an elements array (same DXL as per-type CRUD). Missing NSF is created. PUT remaps connection via KeepConfig.nsf internally.",
+      "parameters": [
+        {
+          "name": "nsfPath",
+          "description": "Target Domino database filepath (created on PUT if missing)",
+          "schema": { "type": "string" },
+          "in": "query",
+          "required": true
+        }
+      ],
+      "get": {
+        "tags": ["keep-design"],
+        "operationId": "getDesignDxl",
+        "summary": "Bulk export design DXL",
+        "description": "Returns { nsfPath, elements: [{ type, name?, dxl }] } for all supported design types.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "nsfPath": { "type": "string" },
+                    "elements": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": { "type": "string" },
+                          "name": { "type": "string" },
+                          "dxl": { "type": "string" }
+                        },
+                        "required": ["type", "dxl"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      },
+      "put": {
+        "tags": ["keep-design"],
+        "operationId": "importDesignDxl",
+        "summary": "Bulk import design DXL",
+        "description": "Import elements with REPLACE_ELSE_CREATE, sign after each import, then compile LotusScript (fixes Notes 'use list module' errors). Creates the NSF when missing.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["elements"],
+                "properties": {
+                  "elements": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["type", "dxl"],
+                      "properties": {
+                        "type": { "type": "string" },
+                        "name": { "type": "string" },
+                        "dxl": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "created": { "type": "boolean" },
+                    "nsfPath": { "type": "string" },
+                    "imported": { "type": "integer" },
+                    "results": { "type": "array", "items": { "type": "object" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      }
+    },
     "/pagenames": {
       "parameters": [
         {
@@ -30,7 +222,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getPageNames",
         "summary": "List page names in the database",
         "description": "Returns the titles of design pages in the database.",
@@ -80,7 +272,7 @@
         }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createPage",
         "summary": "Create or replace a page from DXL",
         "description": "Upload DXL with a root <page name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the page after import.",
@@ -155,7 +347,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getPage",
         "summary": "Retrieve a page as DXL",
         "description": "Export the page design note as DXL.",
@@ -191,7 +383,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deletePage",
         "summary": "Delete a page",
         "description": "Delete the page from the database.",
@@ -237,7 +429,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getOutlineNames",
         "summary": "List outline names in the database",
         "description": "Returns the titles of design outlines in the database.",
@@ -287,7 +479,7 @@
         }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createOutline",
         "summary": "Create or replace an outline from DXL",
         "description": "Upload DXL with a root <outline name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the outline after import.",
@@ -362,7 +554,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getOutline",
         "summary": "Retrieve an outline as DXL",
         "description": "Export the outline design note as DXL.",
@@ -398,7 +590,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteOutline",
         "summary": "Delete an outline",
         "description": "Delete the outline from the database.",
@@ -444,7 +636,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getFramesetNames",
         "summary": "List frameset names in the database",
         "description": "Returns the titles of design framesets in the database.",
@@ -494,7 +686,7 @@
         }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createFrameset",
         "summary": "Create or replace a frameset from DXL",
         "description": "Upload DXL with a root <frameset name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the frameset after import.",
@@ -569,7 +761,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getFrameset",
         "summary": "Retrieve a frameset as DXL",
         "description": "Export the frameset design note as DXL.",
@@ -605,7 +797,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteFrameset",
         "summary": "Delete a frameset",
         "description": "Delete the frameset from the database.",
@@ -649,7 +841,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getFormNames",
         "summary": "List form names in the database",
         "description": "Returns the titles of design forms in the database.",
@@ -691,7 +883,7 @@
         }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createForm",
         "summary": "Create or replace a form from DXL",
         "description": "Upload DXL with a root <form name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the form after import.",
@@ -754,7 +946,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getForm",
         "summary": "Retrieve a form as DXL",
         "description": "Export the form design note as DXL.",
@@ -781,7 +973,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteForm",
         "summary": "Delete a form",
         "description": "Delete the form from the database.",
@@ -819,7 +1011,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getViewNames",
         "summary": "List view names in the database",
         "description": "Returns the titles of design views in the database.",
@@ -861,7 +1053,7 @@
         }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createView",
         "summary": "Create or replace a view from DXL",
         "description": "Upload DXL with a root <view name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the view after import.",
@@ -875,7 +1067,7 @@
               "schema": { "type": "string" },
               "examples": {
                 "minimalView": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE view SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<view name='HelloView' xmlns='http://www.lotus.com/dxl' version='14.5' showinmenu='true' publicaccess='false' designerversion='8.5.3' unreadmarks='none' onopengoto='lastopened' onrefresh='displayindicator'>\n<code event='selection'><formula>SELECT Form = \"HelloForm\"</formula></code>\n<column itemname='Subject' width='20' resizable='true'><columnheader title='Subject'><font size='9pt'/></columnheader></column>\n</view>"
+                  "value": "<?xml version='1.0'?>\n<!DOCTYPE view SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<view name='HelloView' xmlns='http://www.lotus.com/dxl' version='14.5' showinmenu='true' publicaccess='false' designerversion='8.5.3' unreadmarks='standard' onopengoto='lastopened' onrefresh='displayindicator' headers='simple' bgcolor='white' altrowcolor='#f0f3f7' headerbgcolor='#d6e2f0' marginbgcolor='white' unreadcolor='maroon' rowspacing='1.25' extendlastcolumn='true' showmargin='true'>\n<code event='selection'><formula>SELECT Form = \"HelloForm\"</formula></code>\n<column itemname='Subject' width='20' resizable='true'><columnheader title='Subject'><font size='9pt'/></columnheader></column>\n</view>"
                 }
               }
             }
@@ -924,7 +1116,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getView",
         "summary": "Retrieve a view as DXL",
         "description": "Export the view design note as DXL.",
@@ -951,7 +1143,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteView",
         "summary": "Delete a view",
         "description": "Delete the view from the database.",
@@ -989,7 +1181,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getFolderNames",
         "summary": "List folder names in the database",
         "description": "Returns the titles of design folders in the database.",
@@ -1031,7 +1223,7 @@
         }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createFolder",
         "summary": "Create or replace a folder from DXL",
         "description": "Upload DXL with a root <folder name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the folder after import.",
@@ -1094,7 +1286,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getFolder",
         "summary": "Retrieve a folder as DXL",
         "description": "Export the folder design note as DXL.",
@@ -1121,7 +1313,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteFolder",
         "summary": "Delete a folder",
         "description": "Delete the folder from the database.",
@@ -1159,7 +1351,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getSubformNames",
         "summary": "List subforms names in the database",
         "description": "Returns the titles of design subforms in the database.",
@@ -1201,7 +1393,7 @@
         }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createSubform",
         "summary": "Create or replace a subform from DXL",
         "description": "Upload DXL with root <subform>. Uses REPLACE_ELSE_CREATE and signs after import.",
@@ -1262,7 +1454,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getSubform",
         "summary": "Retrieve a subform as DXL",
         "description": "Export the subform design note as DXL.",
@@ -1289,7 +1481,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteSubform",
         "summary": "Delete a subform",
         "description": "Delete the subform from the database.",
@@ -1327,7 +1519,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getSharedFieldNames",
         "summary": "List sharedfields names in the database",
         "description": "Returns the titles of design sharedfields in the database.",
@@ -1369,7 +1561,7 @@
         }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createSharedField",
         "summary": "Create or replace a sharedfield from DXL",
         "description": "Upload DXL with root <sharedfield>. Uses REPLACE_ELSE_CREATE and signs after import.",
@@ -1430,7 +1622,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getSharedField",
         "summary": "Retrieve a sharedfield as DXL",
         "description": "Export the sharedfield design note as DXL.",
@@ -1457,7 +1649,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteSharedField",
         "summary": "Delete a sharedfield",
         "description": "Delete the sharedfield from the database.",
@@ -1495,7 +1687,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getSharedColumnNames",
         "summary": "List sharedcolumns names in the database",
         "description": "Returns the titles of design sharedcolumns in the database.",
@@ -1537,7 +1729,7 @@
         }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createSharedColumn",
         "summary": "Create or replace a sharedcolumn from DXL",
         "description": "Upload DXL with root <sharedcolumn>. Uses REPLACE_ELSE_CREATE and signs after import.",
@@ -1598,7 +1790,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getSharedColumn",
         "summary": "Retrieve a sharedcolumn as DXL",
         "description": "Export the sharedcolumn design note as DXL.",
@@ -1625,7 +1817,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteSharedColumn",
         "summary": "Delete a sharedcolumn",
         "description": "Delete the sharedcolumn from the database.",
@@ -1663,7 +1855,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getImageNames",
         "summary": "List images names in the database",
         "description": "Returns the titles of design images in the database.",
@@ -1705,7 +1897,7 @@
         }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createImage",
         "summary": "Create or replace a Image from DXL",
         "description": "Upload DXL with root <imageresource>. Uses REPLACE_ELSE_CREATE and signs after import.",
@@ -1766,7 +1958,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getImage",
         "summary": "Retrieve a Image as DXL",
         "description": "Export the Image design note as DXL.",
@@ -1793,7 +1985,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteImage",
         "summary": "Delete a Image",
         "description": "Delete the Image from the database.",
@@ -1831,7 +2023,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getFileResourceNames",
         "summary": "List fileresources names in the database",
         "description": "Returns the titles of design fileresources in the database.",
@@ -1873,7 +2065,7 @@
         }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createFileResource",
         "summary": "Create or replace a FileResource from DXL",
         "description": "Upload DXL with root <fileresource>. Uses REPLACE_ELSE_CREATE and signs after import.",
@@ -1934,7 +2126,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getFileResource",
         "summary": "Retrieve a FileResource as DXL",
         "description": "Export the FileResource design note as DXL.",
@@ -1961,7 +2153,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteFileResource",
         "summary": "Delete a FileResource",
         "description": "Delete the FileResource from the database.",
@@ -1999,7 +2191,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getStyleSheetNames",
         "summary": "List stylesheets names in the database",
         "description": "Returns the titles of design stylesheets in the database.",
@@ -2041,7 +2233,7 @@
         }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createStyleSheet",
         "summary": "Create or replace a StyleSheet from DXL",
         "description": "Upload DXL with root <stylesheetresource>. Uses REPLACE_ELSE_CREATE and signs after import.",
@@ -2102,7 +2294,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getStyleSheet",
         "summary": "Retrieve a StyleSheet as DXL",
         "description": "Export the StyleSheet design note as DXL.",
@@ -2129,7 +2321,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteStyleSheet",
         "summary": "Delete a StyleSheet",
         "description": "Delete the StyleSheet from the database.",
@@ -2167,7 +2359,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getThemeNames",
         "summary": "List themes names in the database",
         "description": "Returns the titles of design themes in the database.",
@@ -2209,7 +2401,7 @@
         }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createTheme",
         "summary": "Create or replace a Theme from DXL",
         "description": "Upload DXL with root <theme>. Uses REPLACE_ELSE_CREATE and signs after import.",
@@ -2270,7 +2462,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getTheme",
         "summary": "Retrieve a Theme as DXL",
         "description": "Export the Theme design note as DXL.",
@@ -2297,7 +2489,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteTheme",
         "summary": "Delete a Theme",
         "description": "Delete the Theme from the database.",
@@ -2337,7 +2529,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getAbout",
         "summary": "Retrieve the About as DXL",
         "description": "Export the About design note as DXL.",
@@ -2364,7 +2556,7 @@
         }
       },
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createAbout",
         "summary": "Create or replace the About from DXL",
         "description": "Upload DXL with root <helpaboutdocument>. Uses REPLACE_ELSE_CREATE and signs after import.",
@@ -2404,7 +2596,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteAbout",
         "summary": "Delete the About",
         "description": "Delete the About from the database.",
@@ -2444,7 +2636,7 @@
         }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getUsing",
         "summary": "Retrieve the Using as DXL",
         "description": "Export the Using design note as DXL.",
@@ -2471,7 +2663,7 @@
         }
       },
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createUsing",
         "summary": "Create or replace the Using from DXL",
         "description": "Upload DXL with root <helpusingdocument>. Uses REPLACE_ELSE_CREATE and signs after import.",
@@ -2511,7 +2703,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteUsing",
         "summary": "Delete the Using",
         "description": "Delete the Using from the database.",
@@ -2543,7 +2735,7 @@
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getAgentNames",
         "summary": "List agents names in the database",
         "description": "Returns the titles of design agents in the database.",
@@ -2576,7 +2768,7 @@
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createAgent",
         "summary": "Create or replace a Agent from DXL",
         "description": "Upload DXL with root <agent>. Uses REPLACE_ELSE_CREATE and signs after import.",
@@ -2623,7 +2815,7 @@
         { "name": "name", "description": "Name of the Agent", "schema": { "type": "string" }, "in": "path", "required": true }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getAgent",
         "summary": "Retrieve a Agent as DXL",
         "description": "Export the Agent design note as DXL.",
@@ -2650,7 +2842,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteAgent",
         "summary": "Delete a Agent",
         "description": "Delete the Agent from the database.",
@@ -2682,7 +2874,7 @@
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getScriptLibraryNames",
         "summary": "List scriptlibraries names in the database",
         "description": "Returns the titles of design scriptlibraries in the database.",
@@ -2715,7 +2907,7 @@
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createScriptLibrary",
         "summary": "Create or replace a ScriptLibrary from DXL",
         "description": "Upload DXL with root <scriptlibrary>. Uses REPLACE_ELSE_CREATE and signs after import.",
@@ -2762,7 +2954,7 @@
         { "name": "name", "description": "Name of the ScriptLibrary", "schema": { "type": "string" }, "in": "path", "required": true }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getScriptLibrary",
         "summary": "Retrieve a ScriptLibrary as DXL",
         "description": "Export the ScriptLibrary design note as DXL.",
@@ -2789,7 +2981,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteScriptLibrary",
         "summary": "Delete a ScriptLibrary",
         "description": "Delete the ScriptLibrary from the database.",
@@ -2823,7 +3015,7 @@
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getSharedActions",
         "summary": "Retrieve the SharedActions as DXL",
         "description": "Export the SharedActions design note as DXL.",
@@ -2850,7 +3042,7 @@
         }
       },
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createSharedActions",
         "summary": "Create or replace the SharedActions from DXL",
         "description": "Upload DXL with root <sharedactions>. Uses REPLACE_ELSE_CREATE and signs after import.",
@@ -2888,7 +3080,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteSharedActions",
         "summary": "Delete the SharedActions",
         "description": "Delete the SharedActions from the database.",
@@ -2922,7 +3114,7 @@
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getDatabaseScript",
         "summary": "Retrieve the DatabaseScript as DXL",
         "description": "Export the DatabaseScript design note as DXL.",
@@ -2949,7 +3141,7 @@
         }
       },
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createDatabaseScript",
         "summary": "Create or replace the DatabaseScript from DXL",
         "description": "Upload DXL with root <databasescript>. Uses REPLACE_ELSE_CREATE and signs after import.",
@@ -2987,7 +3179,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteDatabaseScript",
         "summary": "Delete the DatabaseScript",
         "description": "Delete the DatabaseScript from the database.",
@@ -3021,7 +3213,7 @@
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getApplicationProperties",
         "summary": "Retrieve Application Properties as DXL",
         "description": "Export the Application Properties (icon) design note as DXL.",
@@ -3048,7 +3240,7 @@
         }
       },
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createApplicationProperties",
         "summary": "Create or replace Application Properties from DXL",
         "description": "Upload DXL with root <note> (icon export) or <database> (replaceDbProperties). Signs after import.",
@@ -3091,10 +3283,10 @@
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getXPageNames",
         "summary": "List XPage names in the database",
-        "description": "Returns the titles of XPages in the database. Custom Controls are not included.",
+        "description": "Returns the titles of XPages in the database. Custom Controls are listed separately via /customcontrolnames.",
         "x-keep-version": 1,
         "security": [{ "jwt": [] }],
         "responses": {
@@ -3124,10 +3316,10 @@
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createXPage",
         "summary": "Create or replace an XPage from DXL",
-        "description": "Upload Designer-exported XPage DXL. Uses REPLACE_ELSE_CREATE and signs after import. Custom Controls are not supported.",
+        "description": "Upload Designer-exported XPage DXL. Uses REPLACE_ELSE_CREATE and signs after import. Custom Controls use /customcontrols.",
         "x-keep-version": 1,
         "security": [{ "jwt": [] }],
         "requestBody": {
@@ -3171,7 +3363,7 @@
         { "name": "name", "description": "Name of the XPage", "schema": { "type": "string" }, "in": "path", "required": true }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getXPage",
         "summary": "Retrieve an XPage as DXL",
         "description": "Export the XPage design note as DXL.",
@@ -3198,10 +3390,424 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteXPage",
         "summary": "Delete an XPage",
         "description": "Delete the XPage from the database.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "name": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      }
+    },
+    "/customcontrolnames": {
+      "parameters": [
+        { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
+      ],
+      "get": {
+        "tags": ["keep-design"],
+        "operationId": "getCustomControlNames",
+        "summary": "List Custom Control names",
+        "description": "Returns $TITLE values of XPages Custom Controls (.xsp notes without the XPage K flag). Not the same as Composite Components.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "CustomControls": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      }
+    },
+    "/customcontrols": {
+      "summary": "Create or replace a Custom Control",
+      "description": "Create or replace a Domino XPages Custom Control from raw DXL (typically note export with $Flags=gC~4;)",
+      "parameters": [
+        { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
+      ],
+      "put": {
+        "tags": ["keep-design"],
+        "operationId": "createCustomControl",
+        "summary": "Create or replace a Custom Control from DXL",
+        "description": "Upload Designer-exported Custom Control DXL. Uses REPLACE_ELSE_CREATE and signs after import.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "requestBody": {
+          "required": true,
+          "description": "Custom Control DXL (text/xml)",
+          "content": {
+            "text/xml": {
+              "schema": { "type": "string" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "type": { "type": "string", "example": "customcontrol" },
+                    "name": { "type": "string" },
+                    "log": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      }
+    },
+    "/customcontrols/{name}": {
+      "summary": "Retrieve or delete a Custom Control",
+      "description": "Retrieve or delete a Domino XPages Custom Control",
+      "parameters": [
+        { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true },
+        { "name": "name", "description": "Name of the Custom Control ($TITLE, e.g. actionsBar.xsp)", "schema": { "type": "string" }, "in": "path", "required": true }
+      ],
+      "get": {
+        "tags": ["keep-design"],
+        "operationId": "getCustomControl",
+        "summary": "Retrieve a Custom Control as DXL",
+        "description": "Export the Custom Control design note as DXL.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "responses": {
+          "200": {
+            "description": "Successful retrieval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" },
+                    "dxl": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["keep-design"],
+        "operationId": "deleteCustomControl",
+        "summary": "Delete a Custom Control",
+        "description": "Delete the Custom Control from the database.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "name": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      }
+    },
+    "/webserviceprovidernames": {
+      "parameters": [
+        { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
+      ],
+      "get": {
+        "tags": ["keep-design"],
+        "operationId": "getWebServiceProviderNames",
+        "summary": "List Web Service Provider names",
+        "description": "Returns $TITLE of design notes whose $Flags contain the Web Service Provider flag '{'.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "WebServiceProviders": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      }
+    },
+    "/webserviceproviders": {
+      "summary": "Create or replace a Web Service Provider",
+      "description": "Create or replace a Domino Web Service Provider from raw DXL (note export with $Flags containing '{')",
+      "parameters": [
+        { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
+      ],
+      "put": {
+        "tags": ["keep-design"],
+        "operationId": "createWebServiceProvider",
+        "summary": "Create or replace a Web Service Provider from DXL",
+        "description": "Upload Designer-exported Web Service Provider DXL. Uses REPLACE_ELSE_CREATE and signs after import.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "requestBody": {
+          "required": true,
+          "description": "Web Service Provider DXL (text/xml)",
+          "content": {
+            "text/xml": {
+              "schema": { "type": "string" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "type": { "type": "string", "example": "webservice" },
+                    "name": { "type": "string" },
+                    "log": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      }
+    },
+    "/webserviceproviders/{name}": {
+      "summary": "Retrieve or delete a Web Service Provider",
+      "description": "Retrieve or delete a Domino Web Service Provider",
+      "parameters": [
+        { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true },
+        { "name": "name", "description": "Name of the Web Service Provider ($TITLE)", "schema": { "type": "string" }, "in": "path", "required": true }
+      ],
+      "get": {
+        "tags": ["keep-design"],
+        "operationId": "getWebServiceProvider",
+        "summary": "Retrieve a Web Service Provider as DXL",
+        "description": "Export the Web Service Provider design note as DXL.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "responses": {
+          "200": {
+            "description": "Successful retrieval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" },
+                    "dxl": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["keep-design"],
+        "operationId": "deleteWebServiceProvider",
+        "summary": "Delete a Web Service Provider",
+        "description": "Delete the Web Service Provider from the database.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "name": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      }
+    },
+    "/webserviceconsumernames": {
+      "parameters": [
+        { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
+      ],
+      "get": {
+        "tags": ["keep-design"],
+        "operationId": "getWebServiceConsumerNames",
+        "summary": "List Web Service Consumer names",
+        "description": "Returns $TITLE of script-library notes whose $FlagsExt contains W (WEBSERVICELIB). Listed separately from /scriptlibrarynames.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "WebServiceConsumers": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      }
+    },
+    "/webserviceconsumers": {
+      "summary": "Create or replace a Web Service Consumer",
+      "description": "Create or replace a Domino Web Service Consumer from raw DXL (note/scriptlibrary export with $FlagsExt=W)",
+      "parameters": [
+        { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
+      ],
+      "put": {
+        "tags": ["keep-design"],
+        "operationId": "createWebServiceConsumer",
+        "summary": "Create or replace a Web Service Consumer from DXL",
+        "description": "Upload Designer-exported Web Service Consumer DXL. Uses REPLACE_ELSE_CREATE and signs after import.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "requestBody": {
+          "required": true,
+          "description": "Web Service Consumer DXL (text/xml)",
+          "content": {
+            "text/xml": {
+              "schema": { "type": "string" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "type": { "type": "string", "example": "webserviceconsumer" },
+                    "name": { "type": "string" },
+                    "log": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      }
+    },
+    "/webserviceconsumers/{name}": {
+      "summary": "Retrieve or delete a Web Service Consumer",
+      "description": "Retrieve or delete a Domino Web Service Consumer",
+      "parameters": [
+        { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true },
+        { "name": "name", "description": "Name of the Web Service Consumer ($TITLE)", "schema": { "type": "string" }, "in": "path", "required": true }
+      ],
+      "get": {
+        "tags": ["keep-design"],
+        "operationId": "getWebServiceConsumer",
+        "summary": "Retrieve a Web Service Consumer as DXL",
+        "description": "Export the Web Service Consumer design note as DXL.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "responses": {
+          "200": {
+            "description": "Successful retrieval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" },
+                    "dxl": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["keep-design"],
+        "operationId": "deleteWebServiceConsumer",
+        "summary": "Delete a Web Service Consumer",
+        "description": "Delete the Web Service Consumer from the database.",
         "x-keep-version": 1,
         "security": [{ "jwt": [] }],
         "responses": {
@@ -3230,7 +3836,7 @@
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getWiringPropertiesNames",
         "summary": "List wiringproperties names",
         "description": "Returns titles of WiringProperties design elements.",
@@ -3263,7 +3869,7 @@
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createWiringProperties",
         "summary": "Create or replace a WiringProperties from DXL",
         "description": "REPLACE_ELSE_CREATE and sign after import.",
@@ -3309,7 +3915,7 @@
         { "name": "name", "description": "Name", "schema": { "type": "string" }, "in": "path", "required": true }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getWiringProperties",
         "summary": "Retrieve a WiringProperties as DXL",
         "x-keep-version": 1,
@@ -3335,7 +3941,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteWiringProperties",
         "summary": "Delete a WiringProperties",
         "x-keep-version": 1,
@@ -3366,7 +3972,7 @@
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getCompositeApplicationNames",
         "summary": "List compositeapplications names",
         "description": "Returns titles of CompositeApplication design elements.",
@@ -3399,7 +4005,7 @@
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createCompositeApplication",
         "summary": "Create or replace a CompositeApplication from DXL",
         "description": "REPLACE_ELSE_CREATE and sign after import.",
@@ -3445,7 +4051,7 @@
         { "name": "name", "description": "Name", "schema": { "type": "string" }, "in": "path", "required": true }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getCompositeApplication",
         "summary": "Retrieve a CompositeApplication as DXL",
         "x-keep-version": 1,
@@ -3471,7 +4077,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteCompositeApplication",
         "summary": "Delete a CompositeApplication",
         "x-keep-version": 1,
@@ -3502,7 +4108,7 @@
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getCompositeComponentNames",
         "summary": "List compositecomponents names",
         "description": "Returns titles of CompositeComponent design elements.",
@@ -3535,7 +4141,7 @@
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "put": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "createCompositeComponent",
         "summary": "Create or replace a CompositeComponent from DXL",
         "description": "REPLACE_ELSE_CREATE and sign after import.",
@@ -3581,7 +4187,7 @@
         { "name": "name", "description": "Name", "schema": { "type": "string" }, "in": "path", "required": true }
       ],
       "get": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "getCompositeComponent",
         "summary": "Retrieve a CompositeComponent as DXL",
         "x-keep-version": 1,
@@ -3607,7 +4213,7 @@
         }
       },
       "delete": {
-        "tags": ["iws-design"],
+        "tags": ["keep-design"],
         "operationId": "deleteCompositeComponent",
         "summary": "Delete a CompositeComponent",
         "x-keep-version": 1,

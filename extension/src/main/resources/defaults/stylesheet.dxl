@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE stylesheetresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<stylesheetresource name='Default' xmlns='http://www.lotus.com/dxl' version='14.5'>
+<style>/* keep-design default stylesheet */
+body { font-family: sans-serif; }
+</style>
+</stylesheetresource>

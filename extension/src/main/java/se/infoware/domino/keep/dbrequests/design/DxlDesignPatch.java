@@ -9,6 +9,9 @@ import java.io.IOException;
 
 /**
  * Shared DxlImporter settings for design element import - aligned with HCL UpdateDxl.
+ *
+ * <p>Display defaults (e.g. view bgcolor) live in starter DXL under {@code /defaults} and optional
+ * {@code keepdesign.nsf} — not injected here.
  */
 final class DxlDesignPatch {
 

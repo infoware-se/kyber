@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE frameset SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<frameset name='Default' alias='Default' xmlns='http://www.lotus.com/dxl' version='14.5' publicaccess='false' designerversion='8.5.3' columns='220px 1' spacing='1px'>
+<frame name='Nav' targetframe='Content'><namedelementlink type='page' name='Home'/></frame>
+<frame name='Content'><namedelementlink type='page' name='Home'/></frame>
+</frameset>
