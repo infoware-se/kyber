@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>se.infoware.domino</groupId>
+    <artifactId>iws-design</artifactId>
+    <version>0.11.0</version>
+    <packaging>jar</packaging>
+    <name>Infoware Domino REST API design</name>
+
+    <properties>
+        <domino.version>14.5.0</domino.version>
+        <java.version>21</java.version>
+        <!-- Match keep-core/keep-extension version from DRAPI installation -->
+        <keep.version>1.42.7</keep.version>
+        <domino.jnx.version>1.53.3</domino.jnx.version>
+        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <smallrye.jandex.version>3.2.3</smallrye.jandex.version>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.hcl.domino.keep</groupId>
+            <artifactId>keep-core</artifactId>
+            <version>${keep.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hcl.domino.keep</groupId>
+            <artifactId>keep-extension</artifactId>
+            <version>${keep.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hcl.domino.keep</groupId>
+            <artifactId>keep-jnx-ext</artifactId>
+            <version>${keep.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hcl.domino</groupId>
+            <artifactId>domino-jnx-api-r145</artifactId>
+            <version>${domino.jnx.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>iws-design.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>iws-design.properties</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.smallrye</groupId>
+                <artifactId>jandex-maven-plugin</artifactId>
+                <version>${smallrye.jandex.version}</version>
+                <executions>
+                    <execution>
+                        <id>make-index</id>
+                        <goals>
+                            <goal>jandex</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
