@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE scriptlibrary SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<scriptlibrary name='DefaultSsjs' xmlns='http://www.lotus.com/dxl' version='14.5'
+ designerversion='8.5.3'>
+<item name='$Flags'><text>.5834Q</text></item>
+<item name='$TITLE'><text>DefaultSsjs</text></item>
+<item name='$ServerJavaScriptLibrary' summary='false'><text>/**
+ * Server JavaScript (SSJS) script library starter.
+ */
+function hello() {
+	return "hello";
+}
+</text></item>
+</scriptlibrary>

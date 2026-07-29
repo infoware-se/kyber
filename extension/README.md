@@ -85,7 +85,7 @@ Mapped to the Designer outline. â€œInâ€ = typed DXL CRUD; â€œBulkâ
 | Shared Elements | Outlines | `/outlines` |
 | Code | Agents | `/agents` |
 | Code | Shared Actions | `/sharedactions` (singleton) |
-| Code | Script Libraries | `/scriptlibraries` (LS, JS, SSJS, **Java** libs) |
+| Code | Script Libraries | `/scriptlibraries` — kinds `lotusscript` \| `javascript` \| `ssjs` \| `java` (defaults + empty-body create) |
 | Code | Database Script | `/databasescript` (singleton) |
 | Resources | Images | `/images` |
 | Resources | Files | `/fileresources` |
@@ -270,10 +270,14 @@ Singletons have no list/`{name}` path â€” only `GET` / `PUT` / `DELETE` on 
 
 ### Script libraries
 
+Kinds: `lotusscript` (default), `javascript` (client), `ssjs` (server JS), `java`. Web Service Consumers stay on `/webserviceconsumers`.
+
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/scriptlibrarynames?nsfPath=` |
-| PUT | `/api/design-v1/scriptlibraries?nsfPath=` (`text/xml` scriptlibrary DXL) |
+| PUT | `/api/design-v1/scriptlibraries?nsfPath=` (`text/xml` scriptlibrary DXL of any kind) |
+| PUT | `/api/design-v1/scriptlibraries?nsfPath=&kind=&name=` (empty body → create from starter) |
+| GET | `/api/design-v1/defaults/scriptlibrary?kind=` |
 | GET | `/api/design-v1/scriptlibraries/{name}?nsfPath=` |
 | DELETE | `/api/design-v1/scriptlibraries/{name}?nsfPath=` |
 

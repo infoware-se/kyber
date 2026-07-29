@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE scriptlibrary SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<scriptlibrary name='DefaultClientJs' xmlns='http://www.lotus.com/dxl' version='14.5'
+ designerversion='8.5.3'>
+<code event='library' for='web'><javascript>/**
+ * Client JavaScript script library starter.
+ */
+function hello() {
+	return 'hello';
+}
+</javascript></code>
+</scriptlibrary>

@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
-/** One starter design DXL — GET /defaults/{type} */
+/** One starter design DXL — GET /defaults/{type}?kind= */
 @MinimumAcl(AclLevel.READER)
 public class GetDefault extends AsyncDominoJNXJson {
 
@@ -20,7 +20,8 @@ public class GetDefault extends AsyncDominoJNXJson {
       throw new KeepExceptionWrongDataRequest("type path parameter is required");
     }
     type = URLDecoder.decode(type, StandardCharsets.UTF_8);
-    JsonObject one = DesignDefaults.resolveOne(request.session(), type);
+    String kind = request.incoming.getString("kind");
+    JsonObject one = DesignDefaults.resolveOne(request.session(), type, kind);
     request.emit(one.put("defaultNsf", DesignDefaults.defaultNsfPath()));
   }
 }

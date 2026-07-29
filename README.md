@@ -8,15 +8,15 @@ KEEP extension for Domino REST API: manage database **design elements** via `nsf
 | **API** | `/api/design-v1` |
 | **Swagger** | tags **`design-element`** (typed CRUD), **`design-handler`** (`/defaults*` + bulk GET/PUT `/designdxl`) |
 | **Defaults NSF** | `keepdesign.nsf` (property `keep.design.defaultNsf`) |
-| **Version** | 0.18.8 |
+| **Version** | 0.18.9 |
 
 Full endpoint tables and Designer coverage: **[extension/README.md](extension/README.md)**.
 
 ## What’s in / what’s out
 
-**In (CRUD):** Forms, Views, Folders, Framesets, Pages, Subforms, Shared Fields/Columns, Outlines, Agents, Shared Actions, Script Libraries (incl. Java libs), **Web Service Providers/Consumers**, Database Script, Images, Files, Style Sheets, Themes, About/Using, XPages, **Custom Controls**.
+**In (CRUD):** Forms, Views, Folders, Framesets, Pages, Subforms, Shared Fields/Columns, Outlines, Agents, Shared Actions, Script Libraries (**LotusScript / client JS / SSJS / Java**), **Web Service Providers/Consumers**, Database Script, Images, Files, Style Sheets, Themes, About/Using, XPages, **Custom Controls**.
 
-**Starters:** `GET /defaults` and `GET /defaults/{type}` — if `keepdesign.nsf` has elements of that type, use the first by alphabetical name; else embedded DXL in the JAR (`resources/defaults/`). Create/replace stays raw DXL (no merge). Repo snapshot of the NSF: [`keepdesign/`](keepdesign/).
+**Starters:** `GET /defaults` and `GET /defaults/{type}` — if `keepdesign.nsf` has elements of that type, use the first by alphabetical name; else embedded DXL in the JAR (`resources/defaults/`). Script libraries: `?kind=lotusscript|javascript|ssjs|java` (list returns all four). Create: raw DXL body, or empty body with `?kind=&name=` to create from starter.
 
 **Bulk only:** Navigators, Data Connections, Jars, Xsp Properties, XPages project notes (`WEB-INF/`, i18n `*.properties`, `.settings/`, …), **Wiring Properties**, **Composite Applications**, **Composite Components**, plus catch-all **`designnote`** for any remaining design note not covered by a typed exporter.
 

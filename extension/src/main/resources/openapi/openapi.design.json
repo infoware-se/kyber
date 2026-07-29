@@ -3,7 +3,7 @@
     "info":  {
                  "title":  "Infoware Domino REST API design",
                  "description":  "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (only bulk import); per-type CRUD requires an existing database. This API never deletes databases.",
-                 "version":  "0.18.8"
+                 "version":  "0.18.9"
              },
     "servers":  [
                     {
@@ -17,20 +17,20 @@
                  },
                  {
                      "name":  "design-handler",
-                     "description":  "Starter DXL defaults (GET /defaults, GET /defaults/{type}) and bulk export/import of design elements as typed DXL (GET/PUT /designdxl). PUT creates the NSF if missing (bulk-only)."
+                     "description":  "Starter DXL defaults (GET /defaults, GET /defaults/{type}?kind= for script libraries) and bulk export/import (GET/PUT /designdxl). PUT creates the NSF if missing (bulk-only)."
                  }
              ],
     "paths":  {
                   "/defaults":  {
                                     "summary":  "Starter design DXL from keepdesign.nsf or embedded JAR defaults",
-                                    "description":  "Resolves starter DXL per type: if keep.design.defaultNsf (keepdesign.nsf) has elements of that type, use the first by alphabetical name; else classpath /defaults/{type}.dxl.",
+                                    "description":  "Resolves starter DXL per type: if keep.design.defaultNsf has matching elements, use first by name; else classpath /defaults/{type}.dxl. Script libraries emit four entries (kind=lotusscript|javascript|ssjs|java).",
                                     "get":  {
                                                 "tags":  [
                                                              "design-handler"
                                                          ],
                                                 "operationId":  "getDefaults",
                                                 "summary":  "List starter design DXL",
-                                                "description":  "Returns { defaultNsf, elements: [{ type, name, dxl, source }] } where source is nsf or embedded.",
+                                                "description":  "Returns { defaultNsf, elements: [{ type, name, dxl, source, kind? }] }. Script libraries appear once per kind.",
                                                 "x-keep-version":  1,
                                                 "security":  [
                                                                  {
@@ -107,6 +107,22 @@
                                                                              },
                                                                   "in":  "path",
                                                                   "required":  true
+                                                              },
+                                                              {
+                                                                  "name":  "kind",
+                                                                  "description":  "Script library language when type=scriptlibrary: lotusscript|javascript|ssjs|java (aliases: ls, js, server). Ignored for other types.",
+                                                                  "schema":  {
+                                                                                 "type":  "string",
+                                                                                 "enum":  [
+                                                                                              "lotusscript",
+                                                                                              "javascript",
+                                                                                              "ssjs",
+                                                                                              "java"
+                                                                                          ],
+                                                                                 "default":  "lotusscript"
+                                                                             },
+                                                                  "in":  "query",
+                                                                  "required":  false
                                                               }
                                                           ],
                                            "get":  {
@@ -115,7 +131,7 @@
                                                                 ],
                                                        "operationId":  "getDefault",
                                                        "summary":  "Get starter design DXL for a type",
-                                                       "description":  "Returns { defaultNsf, type, name, dxl, source }. Prefers first keepdesign.nsf element of the type (A-Z by name); else embedded JAR DXL.",
+                                                       "description":  "Returns { defaultNsf, type, name, dxl, source, kind? }. For scriptlibrary, pass kind= to select LotusScript, client JS, SSJS, or Java starter.",
                                                        "x-keep-version":  1,
                                                        "security":  [
                                                                         {
@@ -4324,7 +4340,7 @@
                                           },
                   "/scriptlibraries":  {
                                            "summary":  "Create or replace a ScriptLibrary",
-                                           "description":  "Create or replace a Domino ScriptLibrary from raw DXL",
+                                           "description":  "Create/replace a Domino ScriptLibrary from raw DXL, or with empty body from starter via kind+name.",
                                            "parameters":  [
                                                               {
                                                                   "name":  "nsfPath",
@@ -4334,6 +4350,30 @@
                                                                              },
                                                                   "in":  "query",
                                                                   "required":  true
+                                                              },
+                                                              {
+                                                                  "name":  "kind",
+                                                                  "description":  "Language kind. Required when body is empty. With DXL body, optional (echoed/detected).",
+                                                                  "schema":  {
+                                                                                 "type":  "string",
+                                                                                 "enum":  [
+                                                                                              "lotusscript",
+                                                                                              "javascript",
+                                                                                              "ssjs",
+                                                                                              "java"
+                                                                                          ]
+                                                                             },
+                                                                  "in":  "query",
+                                                                  "required":  false
+                                                              },
+                                                              {
+                                                                  "name":  "name",
+                                                                  "description":  "Library name. Required when body is empty (rewrites starter DXL name).",
+                                                                  "schema":  {
+                                                                                 "type":  "string"
+                                                                             },
+                                                                  "in":  "query",
+                                                                  "required":  false
                                                               }
                                                           ],
                                            "put":  {
@@ -4341,8 +4381,8 @@
                                                                     "design-element"
                                                                 ],
                                                        "operationId":  "createScriptLibrary",
-                                                       "summary":  "Create or replace a ScriptLibrary from DXL",
-                                                       "description":  "Upload DXL with root \u003cscriptlibrary\u003e. Uses REPLACE_ELSE_CREATE and signs after import.",
+                                                       "summary":  "Create or replace a ScriptLibrary from DXL or starter kind",
+                                                       "description":  "With text/xml body: import raw scriptlibrary DXL (LotusScript, client JS, SSJS, or Java). With empty body: require kind + name query params, load starter for kind, set name, import/sign.",
                                                        "x-keep-version":  1,
                                                        "security":  [
                                                                         {
@@ -4352,8 +4392,8 @@
                                                                         }
                                                                     ],
                                                        "requestBody":  {
-                                                                           "required":  true,
-                                                                           "description":  "ScriptLibrary DXL (text/xml)",
+                                                                           "required":  false,
+                                                                           "description":  "ScriptLibrary DXL (text/xml). Omit or leave empty to create from kind+name starter.",
                                                                            "content":  {
                                                                                            "text/xml":  {
                                                                                                             "schema":  {
