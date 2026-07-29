@@ -11,12 +11,12 @@ import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
 /**
- * Create/replace a Web Service Provider from raw DXL - PUT /webserviceproviders?nsfPath=
+ * Create/replace a Web Service Provider from raw DXL - PUT /webservices?nsfPath=
  *
  * <p>Designer exports are {@code <note>} with {@code $Flags} containing {@code {} }.
  */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateWebServiceProvider extends AsyncDominoJNXJson {
+public class CreateWebService extends AsyncDominoJNXJson {
 
   private static final String TYPE = "webservice";
 
@@ -34,13 +34,13 @@ public class CreateWebServiceProvider extends AsyncDominoJNXJson {
             .orElseThrow(
                 () ->
                     new KeepExceptionServer(
-                        "WebServiceProvider %s missing after DXL import; cannot sign", name));
+                        "WebService %s missing after DXL import; cannot sign", name));
     DesignElement el =
         WebServices.asDesignElement(db, entry.document())
             .orElseThrow(
                 () ->
                     new KeepExceptionServer(
-                        "WebServiceProvider %s not loadable as DesignElement after import", name));
+                        "WebService %s not loadable as DesignElement after import", name));
     el.sign();
     el.save();
 

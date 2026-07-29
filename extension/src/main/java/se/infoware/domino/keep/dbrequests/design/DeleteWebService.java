@@ -9,9 +9,9 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Delete one Web Service Provider - DELETE /webserviceproviders/{name}?nsfPath= */
+/** Delete one Web Service Provider - DELETE /webservices/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteWebServiceProvider extends AsyncDominoJNXJson {
+public class DeleteWebService extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
@@ -23,7 +23,7 @@ public class DeleteWebServiceProvider extends AsyncDominoJNXJson {
             .orElseThrow(
                 () ->
                     new KeepExceptionServer(
-                        "WebServiceProvider %s not loadable as DesignElement", entry.name()));
+                        "WebService %s not loadable as DesignElement", entry.name()));
     el.delete();
     request.emit(new JsonObject().put("success", true).put("name", entry.name()));
   }

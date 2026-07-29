@@ -10,9 +10,9 @@ import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
-/** List Web Service Provider names - GET /webserviceprovidernames?nsfPath= */
+/** List Web Service Provider names - GET /webservicenames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetWebServiceProviderNames extends AsyncDominoJNXJson {
+public class GetWebServiceNames extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
@@ -21,6 +21,6 @@ public class GetWebServiceProviderNames extends AsyncDominoJNXJson {
     for (WebServices.Entry e : WebServices.list(db, WebServices.Kind.PROVIDER)) {
       names.add(e.name());
     }
-    request.emit(new JsonObject().put("WebServiceProviders", new JsonArray(names)));
+    request.emit(new JsonObject().put("WebServices", new JsonArray(names)));
   }
 }

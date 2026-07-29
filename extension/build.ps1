@@ -259,13 +259,18 @@ try {
     Write-Host "  $($jar.FullName)" -ForegroundColor Green
     Write-Host ""
     Write-Host "Next steps:"
-    Write-Host "  1. Copy to DRAPI libs/ on your Domino REST server"
-    Write-Host "  2. Restart Domino REST API"
-    Write-Host "  3. Verify /api/design-v1/pages in Swagger"
+    Write-Host "  1. .\build.ps1 -InstallToDrapi   (quit via COM, swap JAR, load via COM)"
+    Write-Host "  2. Or manually: tools\restart-restapi-com.ps1 after copying the JAR"
+    Write-Host "  3. Verify /api/design-v1/webservicenames in Swagger"
     Write-Host ""
 
     $installRoot = if ($KeepJarDir) { $KeepJarDir } else { "C:\Domino\restapi" }
     if ($InstallToDrapi -and (Test-Path (Join-Path $installRoot "libs"))) {
+        $restartScript = Join-Path $RepoRoot "tools\restart-restapi-com.ps1"
+        Write-Host "Stopping restapi via Notes COM (so libs JAR can be replaced)..." -ForegroundColor Yellow
+        & $restartScript -QuitOnly
+        if ($LASTEXITCODE -ne 0) { throw "restart-restapi-com.ps1 -QuitOnly failed" }
+
         $libs = Join-Path $installRoot "libs"
         Get-ChildItem -Path $libs -Filter "iws-design-*.jar" -File -ErrorAction SilentlyContinue |
             ForEach-Object {
@@ -273,7 +278,6 @@ try {
                 Remove-Item $_.FullName -Force
             }
         Get-ChildItem -Path $libs -Filter "keep-design-*.jar" -File -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -ne $jar.Name } |
             ForEach-Object {
                 Write-Host "Removing previous keep-design JAR: $($_.FullName)" -ForegroundColor Yellow
                 Remove-Item $_.FullName -Force
@@ -281,7 +285,10 @@ try {
         $dest = Join-Path $libs $jar.Name
         Copy-Item $jar.FullName $dest -Force
         Write-Host "Copied to: $dest" -ForegroundColor Yellow
-        Write-Host "Restart Domino REST API to load the extension." -ForegroundColor Yellow
+
+        Write-Host "Starting restapi via Notes COM..." -ForegroundColor Yellow
+        & $restartScript -LoadOnly
+        if ($LASTEXITCODE -ne 0) { throw "restart-restapi-com.ps1 -LoadOnly failed" }
     }
 }
 finally {

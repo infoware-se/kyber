@@ -8,18 +8,20 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
 /**
- * Resolves starter DXL: prefer element named {@code Default} in configured NSF, else classpath
- * {@code /defaults/{type}.dxl}.
+ * Resolves starter DXL: if configured NSF is present, use the first element of that type by
+ * alphabetical name; else classpath {@code /defaults/{type}.dxl}.
  */
 final class DesignDefaults {
 
-  static final String DEFAULT_ELEMENT_NAME = "Default";
   private static final String PROPERTIES = "/keep-design.properties";
   private static final String PROP_NSF = "keep.design.defaultNsf";
   private static final String FALLBACK_NSF = "keepdesign.nsf";
@@ -104,7 +106,7 @@ final class DesignDefaults {
   }
 
   /**
-   * Resolve one starter. Prefers NSF element named Default (or singleton of that type); else JAR.
+   * Resolve one starter. Prefers first NSF element of the type (A–Z by name); else JAR.
    */
   static JsonObject resolveOne(KeepJnxSession session, String type)
       throws KeepExceptionWrongDataRequest {
@@ -124,7 +126,7 @@ final class DesignDefaults {
     }
     return new JsonObject()
         .put("type", key)
-        .put("name", DEFAULT_ELEMENT_NAME)
+        .put("name", "Default")
         .put("dxl", embedded.get())
         .put("source", "embedded");
   }
@@ -165,21 +167,25 @@ final class DesignDefaults {
     }
     try {
       JsonArray exported = DesignElementIO.exportAll(dbOpt.get());
+      List<JsonObject> matches = new ArrayList<>();
       for (int i = 0; i < exported.size(); i++) {
         JsonObject el = exported.getJsonObject(i);
         String t = DesignBulkTypes.normalize(el.getString("type", ""));
-        if (!type.equals(t)) {
-          continue;
-        }
-        if (DesignBulkTypes.isSingleton(type)) {
-          return Optional.of(copyWithSource(el, "nsf"));
-        }
-        String name = el.getString("name", "");
-        if (DEFAULT_ELEMENT_NAME.equalsIgnoreCase(name)) {
-          return Optional.of(copyWithSource(el, "nsf"));
+        if (type.equals(t)) {
+          matches.add(el);
         }
       }
-      return Optional.empty();
+      if (matches.isEmpty()) {
+        return Optional.empty();
+      }
+      if (DesignBulkTypes.isSingleton(type) || matches.size() == 1) {
+        return Optional.of(copyWithSource(matches.get(0), "nsf"));
+      }
+      matches.sort(
+          Comparator.comparing(
+              el -> el.getString("name", ""),
+              String.CASE_INSENSITIVE_ORDER.thenComparing(Comparator.naturalOrder())));
+      return Optional.of(copyWithSource(matches.get(0), "nsf"));
     } catch (Exception e) {
       return Optional.empty();
     }
@@ -188,10 +194,9 @@ final class DesignDefaults {
   private static JsonObject copyWithSource(JsonObject el, String source) {
     JsonObject out = new JsonObject();
     out.put("type", DesignBulkTypes.normalize(el.getString("type", "")));
-    if (el.getString("name") != null) {
-      out.put("name", el.getString("name"));
-    } else {
-      out.put("name", DEFAULT_ELEMENT_NAME);
+    String name = el.getString("name");
+    if (name != null && !name.isBlank()) {
+      out.put("name", name);
     }
     out.put("dxl", el.getString("dxl", ""));
     out.put("source", source);

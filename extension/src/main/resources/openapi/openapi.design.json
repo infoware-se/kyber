@@ -3,7 +3,7 @@
   "info": {
     "title": "KEEP Domino REST API design",
     "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL (PUT creates NSF if missing).",
-    "version": "0.17.0"
+    "version": "0.17.2"
   },
   "servers": [
     {
@@ -13,13 +13,13 @@
   "tags": [
     {
       "name": "keep-design",
-      "description": "KEEP database design element management (pages, outlines, framesets, forms, views, folders, subforms, fields, columns, images, files, stylesheets, themes, about, using, agents, scriptlibraries, webservices, webserviceconsumers, sharedactions, databasescript, applicationproperties, xpages, customcontrols, wiringproperties, compositeapplications, compositecomponents, bulk designdxl)"
+      "description": "KEEP database design element management (pages, outlines, framesets, forms, views, folders, subforms, fields, columns, images, files, stylesheets, themes, about, using, agents, scriptlibraries, webservices, webserviceconsumers, sharedactions, databasescript, xpages, customcontrols, wiringproperties, compositeapplications, compositecomponents, bulk designdxl)"
     }
   ],
   "paths": {
     "/defaults": {
       "summary": "Starter design DXL from keepdesign.nsf or embedded JAR defaults",
-      "description": "Resolves starter DXL per type: prefer element named Default in keep.design.defaultNsf (keepdesign.nsf), else classpath /defaults/{type}.dxl.",
+      "description": "Resolves starter DXL per type: if keep.design.defaultNsf (keepdesign.nsf) has elements of that type, use the first by alphabetical name; else classpath /defaults/{type}.dxl.",
       "get": {
         "tags": ["keep-design"],
         "operationId": "getDefaults",
@@ -65,7 +65,7 @@
       "parameters": [
         {
           "name": "type",
-          "description": "Design type key (view, form, page, …) or plural (views, forms)",
+          "description": "Design type key (view, form, page, â€¦) or plural (views, forms)",
           "schema": { "type": "string" },
           "in": "path",
           "required": true
@@ -75,7 +75,7 @@
         "tags": ["keep-design"],
         "operationId": "getDefault",
         "summary": "Get starter design DXL for a type",
-        "description": "Returns { defaultNsf, type, name, dxl, source }. Prefers keepdesign.nsf Default element; else embedded JAR DXL.",
+        "description": "Returns { defaultNsf, type, name, dxl, source }. Prefers first keepdesign.nsf element of the type (A-Z by name); else embedded JAR DXL.",
         "x-keep-version": 1,
         "security": [{ "jwt": [] }],
         "responses": {
@@ -3206,78 +3206,6 @@
         }
       }
     },
-    "/applicationproperties": {
-      "summary": "Retrieve or replace Application Properties",
-      "description": "Singleton Domino Application Properties (icon note / DbProperties). No DELETE.",
-      "parameters": [
-        { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
-      ],
-      "get": {
-        "tags": ["keep-design"],
-        "operationId": "getApplicationProperties",
-        "summary": "Retrieve Application Properties as DXL",
-        "description": "Export the Application Properties (icon) design note as DXL.",
-        "x-keep-version": 1,
-        "security": [{ "jwt": [] }],
-        "responses": {
-          "200": {
-            "description": "Successful retrieval",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "type": { "type": "string", "example": "applicationproperties" },
-                    "dxl": { "type": "string" }
-                  }
-                }
-              }
-            }
-          },
-          "400": { "$ref": "#/components/responses/400BadRequest" },
-          "403": { "$ref": "#/components/responses/403Forbidden" },
-          "500": { "$ref": "#/components/responses/500InternalServerError" }
-        }
-      },
-      "put": {
-        "tags": ["keep-design"],
-        "operationId": "createApplicationProperties",
-        "summary": "Create or replace Application Properties from DXL",
-        "description": "Upload DXL with root <note> (icon export) or <database> (replaceDbProperties). Signs after import.",
-        "x-keep-version": 1,
-        "security": [{ "jwt": [] }],
-        "requestBody": {
-          "required": true,
-          "description": "Application Properties DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": { "type": "string" },
-              "examples": { "minimal": { "value": "<?xml version='1.0'?>\n<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<note xmlns='http://www.lotus.com/dxl' version='14.5' class='icon'/>" } }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": { "type": "boolean" },
-                    "type": { "type": "string", "example": "applicationproperties" },
-                    "log": { "type": "string" }
-                  }
-                }
-              }
-            }
-          },
-          "400": { "$ref": "#/components/responses/400BadRequest" },
-          "403": { "$ref": "#/components/responses/403Forbidden" },
-          "500": { "$ref": "#/components/responses/500InternalServerError" }
-        }
-      }
-    },
     "/xpagenames": {
       "parameters": [
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
@@ -3555,13 +3483,13 @@
         }
       }
     },
-    "/webserviceprovidernames": {
+    "/webservicenames": {
       "parameters": [
         { "name": "nsfPath", "description": "Domino database filepath", "schema": { "type": "string" }, "in": "query", "required": true }
       ],
       "get": {
         "tags": ["keep-design"],
-        "operationId": "getWebServiceProviderNames",
+        "operationId": "getWebServiceNames",
         "summary": "List Web Service Provider names",
         "description": "Returns $TITLE of design notes whose $Flags contain the Web Service Provider flag '{'.",
         "x-keep-version": 1,
@@ -3574,7 +3502,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "WebServiceProviders": { "type": "array", "items": { "type": "string" } }
+                    "WebServices": { "type": "array", "items": { "type": "string" } }
                   }
                 }
               }
@@ -3586,7 +3514,7 @@
         }
       }
     },
-    "/webserviceproviders": {
+    "/webservices": {
       "summary": "Create or replace a Web Service Provider",
       "description": "Create or replace a Domino Web Service Provider from raw DXL (note export with $Flags containing '{')",
       "parameters": [
@@ -3594,7 +3522,7 @@
       ],
       "put": {
         "tags": ["keep-design"],
-        "operationId": "createWebServiceProvider",
+        "operationId": "createWebService",
         "summary": "Create or replace a Web Service Provider from DXL",
         "description": "Upload Designer-exported Web Service Provider DXL. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -3631,7 +3559,7 @@
         }
       }
     },
-    "/webserviceproviders/{name}": {
+    "/webservices/{name}": {
       "summary": "Retrieve or delete a Web Service Provider",
       "description": "Retrieve or delete a Domino Web Service Provider",
       "parameters": [
@@ -3640,7 +3568,7 @@
       ],
       "get": {
         "tags": ["keep-design"],
-        "operationId": "getWebServiceProvider",
+        "operationId": "getWebService",
         "summary": "Retrieve a Web Service Provider as DXL",
         "description": "Export the Web Service Provider design note as DXL.",
         "x-keep-version": 1,
@@ -3667,7 +3595,7 @@
       },
       "delete": {
         "tags": ["keep-design"],
-        "operationId": "deleteWebServiceProvider",
+        "operationId": "deleteWebService",
         "summary": "Delete a Web Service Provider",
         "description": "Delete the Web Service Provider from the database.",
         "x-keep-version": 1,

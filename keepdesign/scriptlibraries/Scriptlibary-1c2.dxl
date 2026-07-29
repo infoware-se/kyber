@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE scriptlibrary SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<scriptlibrary name='Scriptlibary' xmlns='http://www.lotus.com/dxl' version='14.5'
+ maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3 v4strict'
+ designerversion='8.5.3'>
+<noteinfo noteid='1c2' unid='EB38F79EDAE06CDFC1258E430024370D' sequence='5'>
+<created><datetime dst='true'>20260729T083533,89+02</datetime></created>
+<modified><datetime dst='true'>20260729T083701,56+02</datetime></modified>
+<revised><datetime dst='true'>20260729T083701,55+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T083701,55+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T083533,90+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby><code event='options'><lotusscript
+>%REM
+	Library Scriptlibary
+	Created Jul 29, 2026 by Designer/Infoware
+	Description: Comments for Library
+%END REM
+Option Public
+Option Declare
+
+</lotusscript></code><code event='Sub1'><lotusscript>%REM
+	Sub Sub1
+	Description: Comments for Sub
+%END REM
+Sub Sub1
+	Print Function1
+End Sub
+
+</lotusscript></code><code event='Function1'><lotusscript>%REM
+	Function Function1
+	Description: Comments for Function
+%END REM
+Function Function1 As String
+	Function1 = "Hello World"
+End Function</lotusscript></code>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></scriptlibrary>
+

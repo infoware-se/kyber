@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258E4300212830'>
+<noteinfo noteid='16a' unid='916E81389260C766C1258E43002142E6' sequence='2'>
+<created><datetime dst='true'>20260729T080318,14+02</datetime></created>
+<modified><datetime dst='true'>20260729T080318,18+02</datetime></modified>
+<revised><datetime dst='true'>20260729T080318,17+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T080318,17+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T080318,16+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+<item name='$Flags'><text>~C4gP</text></item>
+<item name='$TITLE'><text>plugin.xml</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='$FileSize' sign='true'><number>1191</number></item>
+<item name='$FileData' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAACnBAAAAQAAAAAAAAAAAAAAYAC5BAAApwSoBAAAAAAAAAAAPD94bWwgdmVyc2lvbj0i
+MS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPD9lY2xpcHNlIHZlcnNpb249IjMuMCI/Pgo8cGx1Z2lu
+IGNsYXNzPSJwbHVnaW4uQWN0aXZhdG9yIgogIGlkPSJEYW50b29pbmVfMmZvbkluZm93YXJlX2tl
+ZXBkZXNpZ25fbnNmIiBuYW1lPSJEb21pbm8gRGVzaWduZXIiCiAgcHJvdmlkZXI9IlRPRE8iIHZl
+cnNpb249IjEuMC4wIj4KICA8cmVxdWlyZXM+CiAgICA8IS0tQVVUT0dFTi1TVEFSVC1CVUlMREVS
+OiBBdXRvbWF0aWNhbGx5IGdlbmVyYXRlZCBieSBudWxsLiBEbyBub3QgbW9kaWZ5Li0tPgogICAg
+PGltcG9ydCBwbHVnaW49Im9yZy5lY2xpcHNlLnVpIi8+CiAgICA8aW1wb3J0IHBsdWdpbj0ib3Jn
+LmVjbGlwc2UuY29yZS5ydW50aW1lIi8+CiAgICA8aW1wb3J0IG9wdGlvbmFsPSJ0cnVlIiBwbHVn
+aW49ImNvbS5pYm0uY29tbW9ucyIvPgogICAgPGltcG9ydCBvcHRpb25hbD0idHJ1ZSIgcGx1Z2lu
+PSJjb20uaWJtLmNvbW1vbnMueG1sIi8+CiAgICA8aW1wb3J0IG9wdGlvbmFsPSJ0cnVlIiBwbHVn
+aW49ImNvbS5pYm0uY29tbW9ucy52ZnMiLz4KICAgIDxpbXBvcnQgb3B0aW9uYWw9InRydWUiIHBs
+dWdpbj0iY29tLmlibS5qc2NyaXB0Ii8+CiAgICA8aW1wb3J0IG9wdGlvbmFsPSJ0cnVlIiBwbHVn
+aW49ImNvbS5pYm0uZGVzaWduZXIucnVudGltZS5kaXJlY3RvcnkiLz4KICAgIDxpbXBvcnQgb3B0
+aW9uYWw9InRydWUiIHBsdWdpbj0iY29tLmlibS5kZXNpZ25lci5ydW50aW1lIi8+CiAgICA8aW1w
+b3J0IG9wdGlvbmFsPSJ0cnVlIiBwbHVnaW49ImNvbS5pYm0ueHNwLmNvcmUiLz4KICAgIDxpbXBv
+cnQgb3B0aW9uYWw9InRydWUiIHBsdWdpbj0iY29tLmlibS54c3AuZXh0c24iLz4KICAgIDxpbXBv
+cnQgb3B0aW9uYWw9InRydWUiIHBsdWdpbj0iY29tLmlibS54c3AuZGVzaWduZXIiLz4KICAgIDxp
+bXBvcnQgb3B0aW9uYWw9InRydWUiIHBsdWdpbj0iY29tLmlibS54c3AuZG9taW5vIi8+CiAgICA8
+aW1wb3J0IG9wdGlvbmFsPSJ0cnVlIiBwbHVnaW49ImNvbS5pYm0ubm90ZXMuamF2YS5hcGkiLz4K
+ICAgIDxpbXBvcnQgb3B0aW9uYWw9InRydWUiIHBsdWdpbj0iY29tLmlibS54c3AucmNwIi8+CiAg
+ICA8IS0tQVVUT0dFTi1FTkQtQlVJTERFUjogRW5kIG9mIGF1dG9tYXRpY2FsbHkgZ2VuZXJhdGVk
+IHNlY3Rpb24tLT4KICA8L3JlcXVpcmVzPgo8L3BsdWdpbj4KAA==
+</rawitemdata></item>
+<item name='$FileNames' sign='true'><text>plugin.xml</text></item></note>
+

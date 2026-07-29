@@ -13,12 +13,16 @@
 
 .PARAMETER Token
   Bearer JWT. If omitted, authenticates with DOMINO_REST_USER / DOMINO_REST_PASSWORD from env or .env
+
+.PARAMETER SkipTypes
+  API types to omit from export (default: none)
 #>
 param(
   [Parameter(Mandatory = $true)][string]$RestUrl,
   [Parameter(Mandatory = $true)][string]$NsfPath,
   [string]$OutDir = ".\design",
-  [string]$Token = ""
+  [string]$Token = "",
+  [string[]]$SkipTypes = @()
 )
 
 $ErrorActionPreference = "Stop"
@@ -105,6 +109,67 @@ function Get-DxlDoctype([string]$Dxl) {
   return "unknown"
 }
 
+function Get-DxlNoteId([string]$Dxl) {
+  $m = [regex]::Match($Dxl, "(?is)<noteinfo\b[^>]*\bnoteid\s*=\s*['""]([^'""]+)['""]")
+  if ($m.Success) { return $m.Groups[1].Value.Trim() }
+  return $null
+}
+
+function Get-DxlUnid([string]$Dxl) {
+  $m = [regex]::Match($Dxl, "(?is)<noteinfo\b[^>]*\bunid\s*=\s*['""]([^'""]+)['""]")
+  if ($m.Success) { return $m.Groups[1].Value.Trim() }
+  return $null
+}
+
+# API type -> repo folder (CRUD + typed bulk). Empty = use type name as folder.
+$script:RepoDirByType = [ordered]@{
+  about                 = "about"
+  using                 = "using"
+  sharedactions         = "sharedactions"
+  databasescript        = "databasescript"
+  image                 = "images"
+  fileresource          = "fileresources"
+  stylesheet            = "stylesheets"
+  theme                 = "themes"
+  scriptlibrary         = "scriptlibraries"
+  sharedfield           = "sharedfields"
+  sharedcolumn          = "sharedcolumns"
+  subform               = "subforms"
+  form                  = "forms"
+  page                  = "pages"
+  outline               = "outlines"
+  navigator             = "navigators"
+  frameset              = "framesets"
+  view                  = "views"
+  folder                = "folders"
+  agent                 = "agents"
+  webservice            = "webservices"
+  webserviceconsumer    = "webserviceconsumers"
+  dataconnection        = "dataconnections"
+  jar                   = "jars"
+  designnote            = "designnotes"
+  customcontrol         = "customcontrols"
+  xpage                 = "xpages"
+  wiringproperties      = "wiringproperties"
+  compositeapplication  = "compositeapplications"
+  compositecomponent    = "compositecomponents"
+}
+
+function Get-ExportDir([string]$Type, [string]$Doctype) {
+  $t = if ($Type) { $Type.Trim().ToLowerInvariant() } else { "" }
+  $d = if ($Doctype) { $Doctype.Trim().ToLowerInvariant() } else { "unknown" }
+
+  # CRUD / typed-bulk API types -> logical folders (even when DXL DOCTYPE is note)
+  if ($t -and $script:RepoDirByType.Contains($t)) {
+    $mapped = $script:RepoDirByType[$t]
+    if ([string]::IsNullOrWhiteSpace($mapped)) { return $t }
+    return $mapped
+  }
+
+  # Everything else (e.g. applicationproperties) stays under DXL DOCTYPE — often note/
+  return $d
+}
+
 function Get-UniqueRelPath([string]$OutDir, [string]$Dir, [string]$BaseName) {
   $file = "$BaseName.dxl"
   $rel = Join-Path $Dir $file
@@ -124,6 +189,9 @@ if (-not $RestUrl) {
   if (-not $RestUrl) { $RestUrl = $env:DOMINO_REST_API_DATA_URL }
 }
 $RestUrl = $RestUrl.TrimEnd("/")
+if (-not [System.IO.Path]::IsPathRooted($OutDir)) {
+  $OutDir = Join-Path (Get-Location).Path $OutDir
+}
 $bearer = Get-BearerToken
 $headers = @{ Authorization = "Bearer $bearer" }
 
@@ -139,17 +207,27 @@ New-Item -ItemType Directory -Path $OutDir | Out-Null
 $index = @()
 foreach ($el in $payload.elements) {
   $type = [string]$el.type
+  if ($SkipTypes -contains $type) { continue }
   $name = if ($null -ne $el.name) { [string]$el.name } else { $null }
   $dxl = [string]$el.dxl
   $doctype = Get-DxlDoctype $dxl
   if ([string]::IsNullOrWhiteSpace($doctype)) { $doctype = "unknown" }
 
-  # Folder = DOCTYPE local name (form, imageresource, helpaboutdocument, note, …)
-  $dir = $doctype.ToLowerInvariant()
+  # Known API types (CRUD + typed bulk) -> logical folders; else DXL DOCTYPE
+  $dir = Get-ExportDir -Type $type -Doctype $doctype
   $sub = Join-Path $OutDir $dir
   if (-not (Test-Path $sub)) { New-Item -ItemType Directory -Path $sub | Out-Null }
 
   $base = if ($name) { Sanitize-Name $name } else { Sanitize-Name $type }
+  $noteId = Get-DxlNoteId $dxl
+  $unid = Get-DxlUnid $dxl
+  if ($noteId) {
+    $base = "$base-$(Sanitize-Name $noteId)"
+  } elseif ($unid) {
+    # Fallback if noteid missing: last 8 of UNID keeps names unique/short
+    $tail = if ($unid.Length -gt 8) { $unid.Substring($unid.Length - 8) } else { $unid }
+    $base = "$base-$tail"
+  }
   $paths = Get-UniqueRelPath -OutDir $OutDir -Dir $dir -BaseName $base
 
   [System.IO.File]::WriteAllText($paths.Full, $dxl, [System.Text.UTF8Encoding]::new($false))
@@ -160,13 +238,15 @@ foreach ($el in $payload.elements) {
     path = $paths.Rel
   }
   if ($name) { $entry.name = $name }
+  if ($noteId) { $entry.noteid = $noteId }
+  if ($unid) { $entry.unid = $unid }
   $index += $entry
 }
 
 $manifest = @{
   nsfPath = $NsfPath
   exportedAt = (Get-Date).ToUniversalTime().ToString("o")
-  layout = "doctype"
+  layout = "api-type"
   elementCount = $index.Count
   elements = $index
 }
@@ -176,4 +256,4 @@ $manifestPath = Join-Path $OutDir "manifest.json"
   ($manifest | ConvertTo-Json -Depth 6),
   [System.Text.UTF8Encoding]::new($false))
 
-Write-Host "Wrote $($index.Count) elements to $OutDir (folders by DXL DOCTYPE)"
+Write-Host "Wrote $($index.Count) elements to $OutDir (folders by API type / CRUD)"

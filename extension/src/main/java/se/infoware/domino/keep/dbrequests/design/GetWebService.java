@@ -7,9 +7,9 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Export one Web Service Provider as DXL - GET /webserviceproviders/{name}?nsfPath= */
+/** Export one Web Service Provider as DXL - GET /webservices/{name}?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetWebServiceProvider extends AsyncDominoJNXJson {
+public class GetWebService extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

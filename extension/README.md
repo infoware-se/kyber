@@ -27,7 +27,6 @@ Manage database **design elements** via Domino REST API. Target database is sele
 | Script library | `GET /scriptlibrarynames` | `PUT /scriptlibraries` | `GET /scriptlibraries/{name}` | `DELETE /scriptlibraries/{name}` | `<scriptlibrary name="â€¦">` |
 | Shared Actions | â€” | `PUT /sharedactions` | `GET /sharedactions` | `DELETE /sharedactions` | `<sharedactions>` |
 | Database Script | â€” | `PUT /databasescript` | `GET /databasescript` | `DELETE /databasescript` | `<databasescript>` |
-| Application Properties | â€” | `PUT /applicationproperties` | `GET /applicationproperties` | â€” (no delete) | `<note class="icon">` / `<database>` |
 | XPage | `GET /xpagenames` | `PUT /xpages` | `GET /xpages/{name}` | `DELETE /xpages/{name}` | `<note>` / `<fileresource>` |
 | Custom Control | `GET /customcontrolnames` | `PUT /customcontrols` | `GET /customcontrols/{name}` | `DELETE /customcontrols/{name}` | `<note>` / `<fileresource>` |
 | Wiring Properties | `GET /wiringpropertiesnames` | `PUT /wiringproperties` | `GET /wiringproperties/{name}` | `DELETE /wiringproperties/{name}` | `<note>` / `<fileresource>` |
@@ -59,7 +58,6 @@ design/
   view/($All).dxl
   imageresource/logo.gif.dxl
   helpaboutdocument/about.dxl
-  note/applicationproperties.dxl
   ...
 ```
 
@@ -96,13 +94,12 @@ Mapped to the Designer outline. â€œInâ€ = typed DXL CRUD; â€œBulkâ
 | Resources | Themes | `/themes` |
 | Resources | About Document | `/about` (singleton) |
 | Resources | Using Document | `/using` (singleton) |
-| Application Configuration | Application Properties | `/applicationproperties` (GET/PUT; no DELETE) |
 | XPages | XPages | `/xpages` |
 | Custom Controls | Custom Controls | `/customcontrols` (`.xsp` notes without XPage `K` flag; not Composite Components) |
 | Application Configuration | Xsp Properties | **Bulk only** â€” type `xspproperties` (`WEB-INF/xsp.properties`) |
 | (XPages project) | Other `WEB-INF/` notes | **Bulk only** â€” type `xpagesresource` |
 | Shared Elements | Navigators | **Bulk only** â€” type `navigator` |
-| Code | Web Service Providers | `/webserviceproviders` (bulk type `webservice`) |
+| Code | Web Service Providers | `/webservices` (bulk type `webservice`) |
 | Code | Web Service Consumers | `/webserviceconsumers` (bulk type `webserviceconsumer`; not listed under `/scriptlibraries`) |
 | Data | Data Connections | **Bulk only** â€” type `dataconnection` |
 | Code | Jars (design Java resources) | **Bulk only** â€” type `jar` |
@@ -121,7 +118,6 @@ Singletons have no list/`{name}` path â€” only `GET` / `PUT` / `DELETE` on 
 | Designer section | Element | Reason |
 |------------------|---------|--------|
 | Resources | Applets | No first-class design-note type (often embedded in form/page DXL) |
-| Resources | Icon | Same note as Application Properties (`/applicationproperties`). Always present with the NSF â€” **GET/PUT only, never DELETE** |
 | Code | Java (separate node) | Same notes as Java **script libraries** â†’ use `/scriptlibraries` |
 
 | ACL | Operations |
@@ -298,14 +294,10 @@ Singletons have no list/`{name}` path â€” only `GET` / `PUT` / `DELETE` on 
 | PUT | `/api/design-v1/databasescript?nsfPath=` (`text/xml` databasescript DXL) |
 | DELETE | `/api/design-v1/databasescript?nsfPath=` |
 
-### Application Properties
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/applicationproperties?nsfPath=` |
-| PUT | `/api/design-v1/applicationproperties?nsfPath=` (`text/xml` icon note or `<database>` DXL) |
 
-No DELETE â€” Domino always creates the icon/Application Properties note with the NSF; it must remain.
 
 ### XPages
 
@@ -364,7 +356,7 @@ $env:DRAPI_HOME = "C:\Domino\restapi"
 
 **Output:** `target/keep-design-*.jar` â†’ `$env:DRAPI_HOME\libs\`.
 
-Restart: `tell restapi quit`, then `load restapi` on the Domino console (`load` cannot be done via management after quit).
+Restart: Notes COM `tell restapi quit` then `load restapi` (or `tools/restart-restapi-com.ps1` / `build.ps1 -InstallToDrapi`). Do not rely on `tell restapi reload` when swapping JARs.
 
 ## Manual test
 
