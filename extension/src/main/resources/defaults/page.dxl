@@ -3,17 +3,16 @@
 <page name='Default-Page' xmlns='http://www.lotus.com/dxl' version='14.5'
  maintenanceversion='1.0' replicaid='C1258E4300212830' publicaccess='false'
  designerversion='8.5.3' renderpassthrough='true'>
-<noteinfo noteid='182' unid='633562526EC171B6C1258E4300222464' sequence='112'>
+<noteinfo noteid='182' unid='633562526EC171B6C1258E4300222464' sequence='116'>
 <created><datetime dst='true'>20260729T081255,40+02</datetime></created>
-<modified><datetime dst='true'>20260729T160911,57+02</datetime></modified>
-<revised><datetime dst='true'>20260729T160911,56+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T160911,56+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260729T170033,86+02</datetime></modified>
+<revised><datetime dst='true'>20260729T170033,85+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T170033,85+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T081255,68+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Designer/O=Infoware</name><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
 <body><richtext>
 <pardef id='1'/>
-<par def='1'/></richtext></body>
-<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item>
-<item name='$$ScriptName' summary='false' sign='true'><text>Default-Page</text></item></page>
+<par def='1'>Default Page</par>
+<par def='1'>Starter page for DXL CRUD examples.</par></richtext></body></page>
 

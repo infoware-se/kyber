@@ -10,17 +10,17 @@
  boldunreadrows='false' evaluateactions='false' allownewdocuments='false'
  allowcustomizations='false' hidemarginborder='false' marginwidth='0px' marginbgcolor='white'
  uniquekeys='false' formatnoteid='DEEEAE2BF6A26632C1258E430021283C'>
-<noteinfo noteid='17a' unid='FF0A90FF94E3E9F3C1258E4300220A4B' sequence='109'>
+<noteinfo noteid='17a' unid='FF0A90FF94E3E9F3C1258E4300220A4B' sequence='111'>
 <created><datetime dst='true'>20260729T081148,59+02</datetime></created>
-<modified><datetime dst='true'>20260729T160911,52+02</datetime></modified>
-<revised><datetime dst='true'>20260729T160911,51+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T160911,51+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260729T170553,78+02</datetime></modified>
+<revised><datetime dst='true'>20260729T170553,77+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T170553,77+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T081148,63+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Designer/O=Infoware</name><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<updatedby><name>CN=Domino/O=Infoware</name><name>CN=Domino Administrator/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
 <actionbar bgcolor='#f0f0f0' bordercolor='black'>
-<actionbuttonstyle bgcolor='#f0f0f0'/><font color='system'/><border style='solid'
- width='0px 0px 1px'/>
+<actionbuttonstyle bgcolor='#f0f0f0'/><font size='9pt' color='system'/><border
+ style='solid' width='0px 0px 1px'/>
 <action title='Categori_ze' showinbar='false' systemcommand='categorize'/>
 <action title='_Edit Document' showinbar='false' systemcommand='edit'/>
 <action title='_Send Document' showinbar='false' systemcommand='send'/>
@@ -40,9 +40,14 @@
 <action title='P_aste' showinbar='false' systemcommand='paste'/>
 <action title='_Open' showinbar='false' systemcommand='open'/>
 <action title='Bookmark' showinbar='false' systemcommand='bookmark'/></actionbar>
+<column hidedetailrows='false' itemname='$0' width='10' resizable='true' separatemultiplevalues='false'
+ sortnoaccent='false' sortnocase='true' showaslinks='false'><columnheader
+ title='Created'><font size='9pt' style='bold'/></columnheader><code event='value'><formula
+>@Created</formula></code></column>
 <column hidedetailrows='false' itemname='Field1' width='10' resizable='true'
  separatemultiplevalues='false' sortnoaccent='true' sortnocase='true' showaslinks='false'><columnheader
  title='Column1'><font size='9pt' style='bold'/></columnheader></column>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item>
 <item name='$Name' sign='true'><text>Default-Folder</text></item>
 <item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></folder>
 

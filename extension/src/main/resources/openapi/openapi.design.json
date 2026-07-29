@@ -3,7 +3,7 @@
     "info":  {
                  "title":  "Infoware Domino REST API design",
                  "description":  "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (only bulk import); per-type CRUD requires an existing database. This API never deletes databases.",
-                 "version":  "0.19.21"
+                 "version":  "0.19.22"
              },
     "servers":  [
                     {
@@ -101,7 +101,7 @@
                                            "parameters":  [
                                                               {
                                                                   "name":  "type",
-                                                                  "description":  "Design type key (view, form, page, ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦) or plural (views, forms)",
+                                                                  "description":  "Design type key (view, form, page, ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦) or plural (views, forms)",
                                                                   "schema":  {
                                                                                  "type":  "string"
                                                                              },
@@ -3695,7 +3695,7 @@
                                      },
                   "/acl":  {
                                "summary":  "Retrieve or replace the database ACL",
-                               "description":  "Singleton database ACL as DXL (no name path parameter). No DELETE â€” ACL always exists. PUT requires Manager.",
+                               "description":  "Singleton database ACL as DXL (no name path parameter). No DELETE Ã¢â‚¬â€ ACL always exists. PUT requires Manager.",
                                "parameters":  [
                                                   {
                                                       "name":  "nsfPath",
@@ -4981,7 +4981,7 @@
                                             },
                   "/applicationproperties":  {
                                                  "summary":  "Retrieve or create/replace Application Properties",
-                                                 "description":  "Singleton Application Properties (no name path parameter). No DELETE â€” always present with the NSF.",
+                                                 "description":  "Singleton Application Properties (no name path parameter). No DELETE Ã¢â‚¬â€ always present with the NSF.",
                                                  "parameters":  [
                                                                     {
                                                                         "name":  "nsfPath",

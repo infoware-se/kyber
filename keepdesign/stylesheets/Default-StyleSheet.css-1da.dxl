@@ -3,13 +3,19 @@
 <stylesheetresource name='Default-StyleSheet.css' xmlns='http://www.lotus.com/dxl'
  version='14.5' maintenanceversion='1.0' replicaid='C1258E4300212830' publicaccess='false'
  designerversion='8.5.3' charset='UTF-8'>
-<noteinfo noteid='1da' unid='3AE31148CB9C96F4C1258E430024D4EB' sequence='7'>
+<noteinfo noteid='1da' unid='3AE31148CB9C96F4C1258E430024D4EB' sequence='11'>
 <created><datetime dst='true'>20260729T084218,03+02</datetime></created>
-<modified><datetime dst='true'>20260729T141759,99+02</datetime></modified>
-<revised><datetime dst='true'>20260729T141759,97+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T141759,97+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260729T165558,90+02</datetime></modified>
+<revised><datetime dst='true'>20260729T165558,89+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T165558,89+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T084218,03+02</datetime></addedtofile></noteinfo>
 <updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby><filedata
 >
+LyogRGVmYXVsdC1TdHlsZVNoZWV0LmNzcyDigJQgbWluaW1hbCBzdGFydGVyICovCmJvZHkgewog
+IGZvbnQtZmFtaWx5OiBBcmlhbCwgSGVsdmV0aWNhLCBzYW5zLXNlcmlmOwogIGZvbnQtc2l6ZTog
+MTJwdDsKICBjb2xvcjogIzIyMjsKICBtYXJnaW46IDFlbTsKfQoKaDEgewogIGZvbnQtc2l6ZTog
+MS41ZW07CiAgY29sb3I6ICMwMDMzNjY7Cn0KCmEgewogIGNvbG9yOiAjMDA2NmNjOwogIHRleHQt
+ZGVjb3JhdGlvbjogbm9uZTsKfQoKYTpob3ZlciB7CiAgdGV4dC1kZWNvcmF0aW9uOiB1bmRlcmxp
+bmU7Cn0=
 </filedata></stylesheetresource>
 

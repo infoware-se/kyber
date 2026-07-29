@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258E4300212830'>
+<noteinfo noteid='472' unid='07A054F26AB79D59C1258E4300520780' sequence='2'>
+<created><datetime dst='true'>20260729T165558,72+02</datetime></created>
+<modified><datetime dst='true'>20260729T170216,57+02</datetime></modified>
+<revised><datetime dst='true'>20260729T170216,56+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T170216,56+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T165558,72+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<item name='$TITLE'><text>Default-CompositeComponent.component</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='$Flags'><text>345CgQ_</text></item>
+<item name='$FileSize' sign='true'><number>317</number></item>
+<item name='$FileData' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAAA9AQAAAQAAAAAAAAAAAAAAYABPAQAAPQE+AQAAAAAAAAAAPD94bWwgdmVyc2lvbj0i
+MS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPGNvbXBvbmVudCB4bWxucz0iaHR0cDovL3d3dy5sb3R1
+cy5jb20vZHhsY29tcCIgbmFtZT0iRGVmYXVsdC1Db21wb3NpdGVDb21wb25lbnQiIHRpdGxlPSJE
+ZWZhdWx0IENvbXBvc2l0ZSBDb21wb25lbnQiPgogIDxkZXNjcmlwdGlvbj5NaW5pbWFsIHN0YXJ0
+ZXIgY29tcG9zaXRlIGNvbXBvbmVudCBmb3IgRFhMIENSVUQgZXhhbXBsZXMuPC9kZXNjcmlwdGlv
+bj4KICA8cHJvcGVydHkgbmFtZT0idGl0bGUiIHR5cGU9InN0cmluZyIgZGVmYXVsdD0iSGVsbG8i
+Lz4KPC9jb21wb25lbnQ+DQoA
+</rawitemdata></item>
+<item name='$FileNames' sign='true'><text>Default-CompositeComponent.component</text></item></note>
+

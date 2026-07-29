@@ -1,5 +1,5 @@
 {
-    "exportedAt":  "2026-07-29T14:17:54.8318466Z",
+    "exportedAt":  "2026-07-29T15:06:36.7947663Z",
     "layout":  "api-type",
     "nsfPath":  "keepdesign.nsf",
     "elements":  [
@@ -165,6 +165,14 @@
                          "noteid":  "186"
                      },
                      {
+                         "path":  "navigators/Default-Navigator-19a.dxl",
+                         "type":  "navigator",
+                         "unid":  "399FFD355415E77FC1258E4300238BCE",
+                         "name":  "Default-Navigator",
+                         "doctype":  "note",
+                         "noteid":  "19a"
+                     },
+                     {
                          "path":  "framesets/Default-Frameset-17e.dxl",
                          "type":  "frameset",
                          "unid":  "AF074C6B6F7A1D33C1258E4300221718",
@@ -221,12 +229,28 @@
                          "noteid":  "342"
                      },
                      {
-                         "path":  "customcontrols/Default-CustomControl.xsp-1a2.dxl",
+                         "path":  "customcontrols/Default-CustomControl.xsp-46e.dxl",
                          "type":  "customcontrol",
-                         "unid":  "6C6B7EFE6692798CC1258E4300239C85",
+                         "unid":  "AA396DB961DF3775C1258E4300520771",
                          "name":  "Default-CustomControl.xsp",
                          "doctype":  "note",
-                         "noteid":  "1a2"
+                         "noteid":  "46e"
+                     },
+                     {
+                         "path":  "customcontrols/Default-CustomControl.xsp-47a.dxl",
+                         "type":  "customcontrol",
+                         "unid":  "0F71F1BFF9E26F71C1258E4300527352",
+                         "name":  "Default-CustomControl.xsp",
+                         "doctype":  "note",
+                         "noteid":  "47a"
+                     },
+                     {
+                         "path":  "customcontrols/Default-CustomControl.xsp-486.dxl",
+                         "type":  "customcontrol",
+                         "unid":  "D95370120D506F1FC1258E4300529AF9",
+                         "name":  "Default-CustomControl.xsp",
+                         "doctype":  "note",
+                         "noteid":  "486"
                      },
                      {
                          "path":  "webservices/Default-WebService-346.dxl",
@@ -245,12 +269,28 @@
                          "noteid":  "396"
                      },
                      {
-                         "path":  "xpages/Default-XPage.xsp-19e.dxl",
+                         "path":  "xpages/Default-XPage.xsp-46a.dxl",
                          "type":  "xpage",
-                         "unid":  "EB0A9E5F2672E8A9C1258E4300239473",
+                         "unid":  "7D963F3B6ADB5525C1258E4300520762",
                          "name":  "Default-XPage.xsp",
                          "doctype":  "note",
-                         "noteid":  "19e"
+                         "noteid":  "46a"
+                     },
+                     {
+                         "path":  "xpages/Default-XPage.xsp-476.dxl",
+                         "type":  "xpage",
+                         "unid":  "FF54D864CF1391C5C1258E4300527341",
+                         "name":  "Default-XPage.xsp",
+                         "doctype":  "note",
+                         "noteid":  "476"
+                     },
+                     {
+                         "path":  "xpages/Default-XPage.xsp-482.dxl",
+                         "type":  "xpage",
+                         "unid":  "A7C09564274EE287C1258E4300529ADA",
+                         "name":  "Default-XPage.xsp",
+                         "doctype":  "note",
+                         "noteid":  "482"
                      },
                      {
                          "path":  "wiringproperties/Default-Wiring.wsdl-34e.dxl",
@@ -269,15 +309,31 @@
                          "noteid":  "352"
                      },
                      {
-                         "path":  "compositecomponents/Default-CompositeComponent.component-43e.dxl",
+                         "path":  "compositecomponents/Default-CompositeComponent.component-472.dxl",
                          "type":  "compositecomponent",
-                         "unid":  "22DA73CAC7959B35C1258E43004CFF17",
+                         "unid":  "07A054F26AB79D59C1258E4300520780",
                          "name":  "Default-CompositeComponent.component",
                          "doctype":  "note",
-                         "noteid":  "43e"
+                         "noteid":  "472"
                      },
                      {
-                         "path":  "appletresource/Default-Applet-44a.dxl",
+                         "path":  "compositecomponents/Default-CompositeComponent.component-47e.dxl",
+                         "type":  "compositecomponent",
+                         "unid":  "62C41EFB275B077DC1258E430052736B",
+                         "name":  "Default-CompositeComponent.component",
+                         "doctype":  "note",
+                         "noteid":  "47e"
+                     },
+                     {
+                         "path":  "compositecomponents/Default-CompositeComponent.component-48a.dxl",
+                         "type":  "compositecomponent",
+                         "unid":  "0F5CF386873136E8C1258E4300529B17",
+                         "name":  "Default-CompositeComponent.component",
+                         "doctype":  "note",
+                         "noteid":  "48a"
+                     },
+                     {
+                         "path":  "applets/Default-Applet-44a.dxl",
                          "type":  "applet",
                          "unid":  "0BB24FF7D94C6BDFC1258E43004D4697",
                          "name":  "Default-Applet",
@@ -301,7 +357,7 @@
                          "noteid":  "426"
                      },
                      {
-                         "path":  "note/se_infoware_keep_DefaultHello.java-42e.dxl",
+                         "path":  "javasources/se_infoware_keep_DefaultHello.java-42e.dxl",
                          "type":  "javasource",
                          "unid":  "71C6D8BFC573343AC1258E43004BB2C5",
                          "name":  "se/infoware/keep/DefaultHello.java",
@@ -309,7 +365,7 @@
                          "noteid":  "42e"
                      },
                      {
-                         "path":  "note/se_infoware_keep_DefaultHelloEnum.java-432.dxl",
+                         "path":  "javasources/se_infoware_keep_DefaultHelloEnum.java-432.dxl",
                          "type":  "javasource",
                          "unid":  "BE10586BC5B48C77C1258E43004BED28",
                          "name":  "se/infoware/keep/DefaultHelloEnum.java",
@@ -317,7 +373,7 @@
                          "noteid":  "432"
                      },
                      {
-                         "path":  "note/se_infoware_keep_DefaultHelloInterface.java-436.dxl",
+                         "path":  "javasources/se_infoware_keep_DefaultHelloInterface.java-436.dxl",
                          "type":  "javasource",
                          "unid":  "EDEF54D313697C8DC1258E43004BED2F",
                          "name":  "se/infoware/keep/DefaultHelloInterface.java",
@@ -325,15 +381,7 @@
                          "noteid":  "436"
                      },
                      {
-                         "path":  "navigators/Default-Navigator-19a.dxl",
-                         "type":  "navigator",
-                         "unid":  "399FFD355415E77FC1258E4300238BCE",
-                         "name":  "Default-Navigator",
-                         "doctype":  "note",
-                         "noteid":  "19a"
-                     },
-                     {
-                         "path":  "note/.classpath-44e.dxl",
+                         "path":  "xpagesresources/.classpath-44e.dxl",
                          "type":  "xpagesresource",
                          "unid":  "3097AE828AE26E41C1258E43004DB57B",
                          "name":  ".classpath",
@@ -341,7 +389,7 @@
                          "noteid":  "44e"
                      },
                      {
-                         "path":  "note/.project-16e.dxl",
+                         "path":  "xpagesresources/.project-16e.dxl",
                          "type":  "xpagesresource",
                          "unid":  "955377947BA55856C1258E43002142ED",
                          "name":  ".project",
@@ -349,7 +397,7 @@
                          "noteid":  "16e"
                      },
                      {
-                         "path":  "note/.settings_.jsdtscope-162.dxl",
+                         "path":  "xpagesresources/.settings_.jsdtscope-162.dxl",
                          "type":  "xpagesresource",
                          "unid":  "EB13D0776633C127C1258E43002142DD",
                          "name":  ".settings/.jsdtscope",
@@ -357,7 +405,7 @@
                          "noteid":  "162"
                      },
                      {
-                         "path":  "note/.settings_org.eclipse.core.resources.prefs-456.dxl",
+                         "path":  "xpagesresources/.settings_org.eclipse.core.resources.prefs-456.dxl",
                          "type":  "xpagesresource",
                          "unid":  "ABA92DB761D6B179C1258E43004DBEAC",
                          "name":  ".settings/org.eclipse.core.resources.prefs",
@@ -365,7 +413,7 @@
                          "noteid":  "456"
                      },
                      {
-                         "path":  "note/.settings_org.eclipse.wst.jsdt.ui.superType.container-15e.dxl",
+                         "path":  "xpagesresources/.settings_org.eclipse.wst.jsdt.ui.superType.container-15e.dxl",
                          "type":  "xpagesresource",
                          "unid":  "EA8EC99B2794C229C1258E43002142DC",
                          "name":  ".settings/org.eclipse.wst.jsdt.ui.superType.container",
@@ -373,7 +421,7 @@
                          "noteid":  "15e"
                      },
                      {
-                         "path":  "note/.settings_org.eclipse.wst.jsdt.ui.superType.name-15a.dxl",
+                         "path":  "xpagesresources/.settings_org.eclipse.wst.jsdt.ui.superType.name-15a.dxl",
                          "type":  "xpagesresource",
                          "unid":  "94C18332600D1A4EC1258E43002142DB",
                          "name":  ".settings/org.eclipse.wst.jsdt.ui.superType.name",
@@ -381,7 +429,7 @@
                          "noteid":  "15a"
                      },
                      {
-                         "path":  "note/.settings_org.eclipse.wst.validation.prefs-14e.dxl",
+                         "path":  "xpagesresources/.settings_org.eclipse.wst.validation.prefs-14e.dxl",
                          "type":  "xpagesresource",
                          "unid":  "F165ABB536B59D08C1258E43002142C1",
                          "name":  ".settings/org.eclipse.wst.validation.prefs",
@@ -389,7 +437,7 @@
                          "noteid":  "14e"
                      },
                      {
-                         "path":  "note/AppProperties_xspdesign.properties-1ee.dxl",
+                         "path":  "xpagesresources/AppProperties_xspdesign.properties-1ee.dxl",
                          "type":  "xpagesresource",
                          "unid":  "9344B1EEEA2885D6C1258E4300252D80",
                          "name":  "AppProperties/xspdesign.properties",
@@ -397,7 +445,7 @@
                          "noteid":  "1ee"
                      },
                      {
-                         "path":  "note/build.properties-166.dxl",
+                         "path":  "xpagesresources/build.properties-166.dxl",
                          "type":  "xpagesresource",
                          "unid":  "70A865A19AB3FC89C1258E43002142E5",
                          "name":  "build.properties",
@@ -405,7 +453,7 @@
                          "noteid":  "166"
                      },
                      {
-                         "path":  "note/plugin.xml-16a.dxl",
+                         "path":  "xpagesresources/plugin.xml-16a.dxl",
                          "type":  "xpagesresource",
                          "unid":  "916E81389260C766C1258E43002142E6",
                          "name":  "plugin.xml",
@@ -421,5 +469,5 @@
                          "noteid":  "152"
                      }
                  ],
-    "elementCount":  53
+    "elementCount":  59
 }

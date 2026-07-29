@@ -3,17 +3,25 @@
 <scriptlibrary name='Default-LotusScript' xmlns='http://www.lotus.com/dxl'
  version='14.5' maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3 v4strict'
  designerversion='8.5.3'>
-<noteinfo noteid='302' unid='8E8445F9860491EBC1258E43004390EE' sequence='87'>
+<noteinfo noteid='302' unid='8E8445F9860491EBC1258E43004390EE' sequence='89'>
 <created><datetime dst='true'>20260729T141800,14+02</datetime></created>
-<modified><datetime dst='true'>20260729T160911,05+02</datetime></modified>
-<revised><datetime dst='true'>20260729T160911,04+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T160911,04+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260729T170618,92+02</datetime></modified>
+<revised><datetime dst='true'>20260729T170618,91+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T170618,91+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T141800,24+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Designer/O=Infoware</name><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Domino/O=Infoware</name></wassignedby><code event='options'><lotusscript
 >Option Public
 Option Declare
-</lotusscript></code><code event='Hello'><lotusscript>Function Hello As String
-	Hello = "Hello World"
+</lotusscript></code><code event='FormatTitle'><lotusscript>Function Hello(Optional name As String = "World") As String
+	Hello = "Hello, " &amp; name &amp; "!"
+End Function
+
+Function FormatTitle(title As String) As String
+	If title = "" Then
+		FormatTitle = "(untitled)"
+	Else
+		FormatTitle = Trim$(title)
+	End If
 End Function</lotusscript></code></scriptlibrary>
 

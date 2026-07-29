@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258E4300212830'>
+<noteinfo noteid='46a' unid='7D963F3B6ADB5525C1258E4300520762' sequence='2'>
+<created><datetime dst='true'>20260729T165558,42+02</datetime></created>
+<modified><datetime dst='true'>20260729T170215,97+02</datetime></modified>
+<revised><datetime dst='true'>20260729T170215,96+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T170215,96+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T165558,42+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<item name='$Flags'><text>gC~4K</text></item>
+<item name='$TITLE'><text>Default-XPage.xsp</text></item>
+<item name='$FileSize' sign='true'><number>396</number></item>
+<item name='$FileData' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAACMAQAAAQAAAAAAAAAAAAAAYACeAQAAjAGMAQAAAAAAAAAAPD94bWwgdmVyc2lvbj0i
+MS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHhwOnZpZXcgeG1sbnM6eHA9Imh0dHA6Ly93d3cuaWJt
+LmNvbS94c3AvY29yZSI+CiAgPHhwOmxhYmVsIHZhbHVlPSJEZWZhdWx0IFhQYWdlIiBpZD0ibGFi
+ZWwxIiBzdHlsZT0iZm9udC13ZWlnaHQ6Ym9sZDtmb250LXNpemU6MTRwdCIvPgogIDx4cDpici8+
+CiAgPHhwOmxhYmVsIHZhbHVlPSJTdWJqZWN0IiBpZD0ibGFiZWwyIiBmb3I9ImlucHV0U3ViamVj
+dCIvPgogIDx4cDppbnB1dFRleHQgaWQ9ImlucHV0U3ViamVjdCIgdmFsdWU9IiN7amF2YXNjcmlw
+dDonU2FtcGxlJ30iIHN0eWxlPSJ3aWR0aDoyMGVtIi8+CiAgPHhwOmJyLz4KICA8eHA6YnV0dG9u
+IHZhbHVlPSJPSyIgaWQ9ImJ1dHRvbjEiLz4KPC94cDp2aWV3Pg0K
+</rawitemdata></item>
+<item name='$FileNames' sign='true'><text>Default-XPage.xsp</text></item></note>
+
