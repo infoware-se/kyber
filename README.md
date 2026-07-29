@@ -16,7 +16,7 @@ Full endpoint tables and Designer coverage: **[extension/README.md](extension/RE
 
 **In (CRUD):** Forms, Views, Folders, Framesets, Pages, Subforms, Shared Fields/Columns, Outlines, Agents, Shared Actions, Script Libraries (incl. Java libs), **Web Service Providers/Consumers**, Database Script, Images, Files, Style Sheets, Themes, About/Using, XPages, **Custom Controls**, **Wiring Properties**, **Composite Applications**, **Composite Components**.
 
-**Starters:** `GET /defaults` and `GET /defaults/{type}` — if `keepdesign.nsf` has elements of that type, use the first by alphabetical name; else embedded DXL in the JAR (`resources/defaults/`). Create/replace stays raw DXL (no merge). Seed NSF with [`tools/create-keepdesign-nsf.ps1`](tools/create-keepdesign-nsf.ps1). Repo snapshot of the NSF: [`keepdesign/`](keepdesign/).
+**Starters:** `GET /defaults` and `GET /defaults/{type}` — if `keepdesign.nsf` has elements of that type, use the first by alphabetical name; else embedded DXL in the JAR (`resources/defaults/`). Create/replace stays raw DXL (no merge). Repo snapshot of the NSF: [`keepdesign/`](keepdesign/).
 
 **Bulk only:** Navigators, Data Connections, Jars, Xsp Properties, XPages project notes (`WEB-INF/`, i18n `*.properties`, `.settings/`, …), plus catch-all **`designnote`** for any remaining design note not covered by a typed exporter.
 
