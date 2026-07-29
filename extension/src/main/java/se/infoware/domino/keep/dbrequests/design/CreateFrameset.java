@@ -40,13 +40,23 @@ public class CreateFrameset extends AsyncDominoJNXJson {
   }
 
   private static void signFrameset(Database db, String name) throws KeepExceptionServer {
-    Frameset frameset =
-        db.getDesign()
-            .getFrameset(name)
-            .orElseThrow(
-                () ->
-                    new KeepExceptionServer(
-                        "Frameset %s missing after DXL import; cannot sign", name));
+    Frameset frameset;
+    try {
+      frameset =
+          db.getDesign()
+              .getFrameset(name)
+              .orElseThrow(
+                  () ->
+                      new KeepExceptionServer(
+                          "Frameset %s missing after DXL import; cannot sign", name));
+    } catch (KeepExceptionServer e) {
+      throw e;
+    } catch (RuntimeException e) {
+      // JNX may fail wrapping framesets with unsupported/missing version
+      throw new KeepExceptionServer(
+          "Frameset %s imported but cannot be signed (%s)",
+          name, e.getMessage() == null ? e.toString() : e.getMessage());
+    }
     frameset.sign();
     frameset.save();
   }

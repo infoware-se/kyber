@@ -19,7 +19,13 @@ public class DeleteFrameset extends AsyncDominoJNXJson {
     String name = RequestParams.requireName(request.incoming);
     Database db = request.db();
 
-    Optional<Frameset> frameset = db.getDesign().getFrameset(name);
+    Optional<Frameset> frameset;
+    try {
+      frameset = db.getDesign().getFrameset(name);
+    } catch (RuntimeException e) {
+      throw new KeepExceptionWrongDataRequest(
+          "Frameset not readable (unsupported/missing version): " + name);
+    }
     if (frameset.isEmpty()) {
       throw new KeepExceptionWrongDataRequest("Frameset not found: " + name);
     }

@@ -8,17 +8,17 @@ KEEP extension for Domino REST API: manage database **design elements** via `nsf
 | **API** | `/api/design-v1` |
 | **Swagger** | tags **`design-element`** (typed CRUD), **`design-handler`** (`/defaults*` + bulk GET/PUT `/designdxl`) |
 | **Defaults NSF** | `keepdesign.nsf` (property `keep.design.defaultNsf`) |
-| **Version** | 0.18.7 |
+| **Version** | 0.18.8 |
 
 Full endpoint tables and Designer coverage: **[extension/README.md](extension/README.md)**.
 
 ## What’s in / what’s out
 
-**In (CRUD):** Forms, Views, Folders, Framesets, Pages, Subforms, Shared Fields/Columns, Outlines, Agents, Shared Actions, Script Libraries (incl. Java libs), **Web Service Providers/Consumers**, Database Script, Images, Files, Style Sheets, Themes, About/Using, XPages, **Custom Controls**, **Wiring Properties**, **Composite Applications**, **Composite Components**.
+**In (CRUD):** Forms, Views, Folders, Framesets, Pages, Subforms, Shared Fields/Columns, Outlines, Agents, Shared Actions, Script Libraries (incl. Java libs), **Web Service Providers/Consumers**, Database Script, Images, Files, Style Sheets, Themes, About/Using, XPages, **Custom Controls**.
 
 **Starters:** `GET /defaults` and `GET /defaults/{type}` — if `keepdesign.nsf` has elements of that type, use the first by alphabetical name; else embedded DXL in the JAR (`resources/defaults/`). Create/replace stays raw DXL (no merge). Repo snapshot of the NSF: [`keepdesign/`](keepdesign/).
 
-**Bulk only:** Navigators, Data Connections, Jars, Xsp Properties, XPages project notes (`WEB-INF/`, i18n `*.properties`, `.settings/`, …), plus catch-all **`designnote`** for any remaining design note not covered by a typed exporter.
+**Bulk only:** Navigators, Data Connections, Jars, Xsp Properties, XPages project notes (`WEB-INF/`, i18n `*.properties`, `.settings/`, …), **Wiring Properties**, **Composite Applications**, **Composite Components**, plus catch-all **`designnote`** for any remaining design note not covered by a typed exporter.
 
 **Bulk + git:** `GET`/`PUT /api/design-v1/designdxl` exports/imports all CRUD + bulk-only + residual design notes. PUT **creates the NSF if missing** (only bulk import; per-type CRUD requires an existing NSF). API never deletes databases. Bridge scripts: [`tools/export-to-repo.ps1`](tools/export-to-repo.ps1), [`tools/import-from-repo.ps1`](tools/import-from-repo.ps1).
 

@@ -29,9 +29,6 @@ Manage database **design elements** via Domino REST API. Target database is sele
 | Database Script | â€” | `PUT /databasescript` | `GET /databasescript` | `DELETE /databasescript` | `<databasescript>` |
 | XPage | `GET /xpagenames` | `PUT /xpages` | `GET /xpages/{name}` | `DELETE /xpages/{name}` | `<note>` / `<fileresource>` |
 | Custom Control | `GET /customcontrolnames` | `PUT /customcontrols` | `GET /customcontrols/{name}` | `DELETE /customcontrols/{name}` | `<note>` / `<fileresource>` |
-| Wiring Properties | `GET /wiringpropertiesnames` | `PUT /wiringproperties` | `GET /wiringproperties/{name}` | `DELETE /wiringproperties/{name}` | `<note>` / `<fileresource>` |
-| Composite Application | `GET /compositeapplicationnames` | `PUT /compositeapplications` | `GET /compositeapplications/{name}` | `DELETE /compositeapplications/{name}` | `<note>` / `<fileresource>` |
-| Composite Component | `GET /compositecomponentnames` | `PUT /compositecomponents` | `GET /compositecomponents/{name}` | `DELETE /compositecomponents/{name}` | `<note>` / `<fileresource>` |
 
 All paths are under `/api/design-v1` and require `?nsfPath=`.
 
@@ -67,7 +64,7 @@ design/
 
 After PUT, the API compiles LotusScript (script libraries first) and returns a `lotusscript` summary. Notes â€œError processing use list moduleâ€ after a restore usually means code was not compiled; re-import with 0.12+ or run Designer **Recompile All LotusScript**. Some complex libraries (e.g. DDM) can still report syntax errors after DXL round-trip â€” open those in Designer if needed.
 
-**Bulk-only types** (no list/get/put/delete endpoints; only in `/designdxl`): `navigator`, `dataconnection`, `jar`, `xspproperties`, `xpagesresource` (incl. `WEB-INF/`, i18n `*.properties`, `.settings/`, `icons/`), and catch-all `designnote` for any other remaining design note (UNID-deduped after typed exporters).
+**Bulk-only types** (no list/get/put/delete endpoints; only in `/designdxl`): `navigator`, `dataconnection`, `jar`, `xspproperties`, `xpagesresource` (incl. `WEB-INF/`, i18n `*.properties`, `.settings/`, `icons/`), `wiringproperties`, `compositeapplication`, `compositecomponent`, and catch-all `designnote` for any other remaining design note (UNID-deduped after typed exporters).
 
 ## Coverage (Domino Designer)
 
@@ -104,10 +101,10 @@ Mapped to the Designer outline. â€œInâ€ = typed DXL CRUD; â€œBulkâ
 | Code | Web Service Providers | `/webservices` (bulk type `webservice`) |
 | Code | Web Service Consumers | `/webserviceconsumers` (bulk type `webserviceconsumer`; not listed under `/scriptlibraries`) |
 | Data | Data Connections | **Bulk only** â€” type `dataconnection` |
-| Code | Jars (design Java resources) | **Bulk only** â€” type `jar` |
-| Composite Applications | Wiring Properties | `/wiringproperties` |
-| Composite Applications | Applications | `/compositeapplications` |
-| Composite Applications | Components | `/compositecomponents` |
+| Code | Jars (design Java resources) | **Bulk only** — type `jar` |
+| Composite Applications | Wiring Properties | **Bulk only** — type `wiringproperties` |
+| Composite Applications | Applications | **Bulk only** — type `compositeapplication` |
+| Composite Applications | Components | **Bulk only** — type `compositecomponent` |
 
 Singletons have no list/`{name}` path â€” only `GET` / `PUT` / `DELETE` on the collection path.
 
@@ -312,7 +309,7 @@ Singletons have no list/`{name}` path â€” only `GET` / `PUT` / `DELETE` on 
 
 ### Custom Controls
 
-XPages Custom Controls (Designer â€œCustom Controlsâ€) â€” `.xsp` design notes with `$Flags` like `gC~4;` (no `K`). Not the same as Composite Components (`/compositecomponents`).
+XPages Custom Controls (Designer "Custom Controls") — `.xsp` design notes with `$Flags` like `gC~4;` (no `K`). Not the same as Composite Components (bulk type `compositecomponent`).
 
 | Method | Path |
 |--------|------|
@@ -320,33 +317,6 @@ XPages Custom Controls (Designer â€œCustom Controlsâ€) â€” `.xsp` 
 | PUT | `/api/design-v1/customcontrols?nsfPath=` (`text/xml`; Designer-exported DXL) |
 | GET | `/api/design-v1/customcontrols/{name}?nsfPath=` |
 | DELETE | `/api/design-v1/customcontrols/{name}?nsfPath=` |
-
-### Wiring Properties
-
-| Method | Path |
-|--------|------|
-| GET | `/api/design-v1/wiringpropertiesnames?nsfPath=` |
-| PUT | `/api/design-v1/wiringproperties?nsfPath=` |
-| GET | `/api/design-v1/wiringproperties/{name}?nsfPath=` |
-| DELETE | `/api/design-v1/wiringproperties/{name}?nsfPath=` |
-
-### Composite Applications
-
-| Method | Path |
-|--------|------|
-| GET | `/api/design-v1/compositeapplicationnames?nsfPath=` |
-| PUT | `/api/design-v1/compositeapplications?nsfPath=` |
-| GET | `/api/design-v1/compositeapplications/{name}?nsfPath=` |
-| DELETE | `/api/design-v1/compositeapplications/{name}?nsfPath=` |
-
-### Composite Components
-
-| Method | Path |
-|--------|------|
-| GET | `/api/design-v1/compositecomponentnames?nsfPath=` |
-| PUT | `/api/design-v1/compositecomponents?nsfPath=` |
-| GET | `/api/design-v1/compositecomponents/{name}?nsfPath=` |
-| DELETE | `/api/design-v1/compositecomponents/{name}?nsfPath=` |
 
 ## Build
 

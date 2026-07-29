@@ -20,15 +20,24 @@ public class GetFramesetNames extends AsyncDominoJNXJson {
     Database db = request.db();
 
     List<String> names = new ArrayList<>();
-    db.getDesign()
-        .getFramesets()
-        .forEach(
-            frameset -> {
-              String title = frameset.getTitle();
-              if (title != null && !title.isBlank()) {
-                names.add(title);
-              }
-            });
+    try {
+      var it = db.getDesign().getFramesets().iterator();
+      while (true) {
+        try {
+          if (!it.hasNext()) {
+            break;
+          }
+          String title = it.next().getTitle();
+          if (title != null && !title.isBlank()) {
+            names.add(title);
+          }
+        } catch (RuntimeException skipped) {
+          // JNX FramesetImpl may throw on Optional.empty version
+        }
+      }
+    } catch (RuntimeException ignored) {
+      // return whatever we collected
+    }
     Collections.sort(names);
 
     request.emit(new JsonObject().put("Framesets", new JsonArray(names)));

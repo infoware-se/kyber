@@ -202,9 +202,32 @@ final class DesignLotusScriptCompile {
       JsonArray skipped,
       JsonArray errors,
       Set<String> done) {
-    List<? extends DesignElement> list = stream.toList();
+    List<DesignElement> list = new ArrayList<>();
+    try {
+      var it = stream.iterator();
+      while (true) {
+        DesignElement el;
+        try {
+          if (!it.hasNext()) {
+            break;
+          }
+          el = it.next();
+        } catch (RuntimeException skippedEl) {
+          continue;
+        }
+        if (el != null) {
+          list.add(el);
+        }
+      }
+    } catch (RuntimeException ignored) {
+      // e.g. frameset Optional.empty — skip remaining of this type
+    }
     for (DesignElement el : list) {
-      compileOne(el, type, titleOf(el), compiled, skipped, errors, done);
+      try {
+        compileOne(el, type, titleOf(el), compiled, skipped, errors, done);
+      } catch (RuntimeException skippedEl) {
+        // keep compiling other elements
+      }
     }
   }
 

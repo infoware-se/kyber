@@ -107,26 +107,28 @@ final class DesignElementIO {
     exportNamed(elements, "form", db.getDesign().getForms(), exporter, exportedUnids);
     exportNamed(elements, "page", db.getDesign().getPages(), exporter, exportedUnids);
     exportNamed(elements, "outline", db.getDesign().getOutlines(), exporter, exportedUnids);
-    exportNamed(elements, "frameset", db.getDesign().getFramesets(), exporter, exportedUnids);
+    // JNX FramesetImpl can throw on missing frameset version (Optional.empty); skip bad
+    // notes so bulk GET continues — residual notes may still appear as designnote.
+    exportNamedSafe(elements, "frameset", db.getDesign().getFramesets(), exporter, exportedUnids);
     exportNamed(elements, "view", db.getDesign().getViews(), exporter, exportedUnids);
     exportNamed(elements, "folder", db.getDesign().getFolders(), exporter, exportedUnids);
     exportNamed(elements, "agent", db.getDesign().getAgents(), exporter, exportedUnids);
     exportCustomControls(elements, db, exporter, exportedUnids);
     exportWebServices(elements, db, exporter, exportedUnids);
     exportNamed(elements, "xpage", db.getDesign().getXPages(), exporter, exportedUnids);
-    exportNamed(
+    exportNamedSafe(
         elements,
         "wiringproperties",
         db.getDesign().getWiringPropertiesElements(),
         exporter,
         exportedUnids);
-    exportNamed(
+    exportNamedSafe(
         elements,
         "compositeapplication",
         db.getDesign().getCompositeApplications(),
         exporter,
         exportedUnids);
-    exportNamed(
+    exportNamedSafe(
         elements,
         "compositecomponent",
         db.getDesign().getCompositeComponents(),
@@ -275,7 +277,12 @@ final class DesignElementIO {
       case "frameset" -> {
         name = DesignDxl.requireRootName(dxl, "frameset");
         log = DxlDesignPatch.importDesign(importer, dxl, db);
-        signWarning = signNamed(db.getDesign().getFrameset(name), "Frameset", name);
+        try {
+          signWarning = signNamed(db.getDesign().getFrameset(name), "Frameset", name);
+        } catch (RuntimeException e) {
+          // JNX FramesetImpl Optional.empty version — import succeeded, sign skipped
+          signWarning = e.getMessage() == null ? e.toString() : e.getMessage();
+        }
       }
       case "view" -> {
         name = DesignDxl.requireRootName(dxl, "view");
@@ -493,6 +500,59 @@ final class DesignElementIO {
               .put("type", type)
               .put("name", el.getTitle())
               .put("dxl", exporter.exportDocument(el.getDocument())));
+    }
+  }
+
+  /**
+   * Like {@link #exportNamed} but tolerates JNX wrappers that throw while iterating (e.g. framesets
+   * with unsupported/missing version). Failed notes are left for {@link #exportBulkOnly}.
+   */
+  private static void exportNamedSafe(
+      JsonArray elements,
+      String type,
+      Stream<? extends DesignElement.NamedDesignElement> stream,
+      DxlExporter exporter,
+      Set<String> exportedUnids) {
+    List<DesignElement.NamedDesignElement> list = new ArrayList<>();
+    try {
+      var it = stream.iterator();
+      while (true) {
+        DesignElement.NamedDesignElement el;
+        try {
+          if (!it.hasNext()) {
+            break;
+          }
+          el = it.next();
+        } catch (RuntimeException skipped) {
+          continue;
+        }
+        try {
+          if (el != null && el.getTitle() != null && !el.getTitle().isBlank()) {
+            list.add(el);
+          }
+        } catch (RuntimeException skipped) {
+          // title/access can also throw on broken wrappers
+        }
+      }
+    } catch (RuntimeException ignored) {
+      // entire enumeration failed; bulk catch-all may still export raw notes
+      return;
+    }
+    list.sort(
+        Comparator.comparing(
+            DesignElement.NamedDesignElement::getTitle, String.CASE_INSENSITIVE_ORDER));
+    for (DesignElement.NamedDesignElement el : list) {
+      try {
+        Document doc = el.getDocument();
+        trackUnid(exportedUnids, doc);
+        elements.add(
+            new JsonObject()
+                .put("type", type)
+                .put("name", el.getTitle())
+                .put("dxl", exporter.exportDocument(doc)));
+      } catch (Exception skipped) {
+        // leave UNID untracked so exportBulkOnly can try raw DXL
+      }
     }
   }
 

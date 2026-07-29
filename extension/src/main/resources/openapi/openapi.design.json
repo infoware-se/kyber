@@ -3,7 +3,7 @@
     "info":  {
                  "title":  "Infoware Domino REST API design",
                  "description":  "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (only bulk import); per-type CRUD requires an existing database. This API never deletes databases.",
-                 "version":  "0.18.7"
+                 "version":  "0.18.8"
              },
     "servers":  [
                     {
