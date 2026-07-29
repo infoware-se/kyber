@@ -3,7 +3,7 @@
   "info": {
     "title": "KEEP Domino REST API design",
     "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (only bulk import); per-type CRUD requires an existing database. This API never deletes databases.",
-    "version": "0.17.5"
+    "version": "0.17.6"
   },
   "servers": [
     {
@@ -25,7 +25,7 @@
       "summary": "Starter design DXL from keepdesign.nsf or embedded JAR defaults",
       "description": "Resolves starter DXL per type: if keep.design.defaultNsf (keepdesign.nsf) has elements of that type, use the first by alphabetical name; else classpath /defaults/{type}.dxl.",
       "get": {
-        "tags": ["keep-design"],
+        "tags": ["design-handler"],
         "operationId": "getDefaults",
         "summary": "List starter design DXL",
         "description": "Returns { defaultNsf, elements: [{ type, name, dxl, source }] } where source is nsf or embedded.",
@@ -76,7 +76,7 @@
         }
       ],
       "get": {
-        "tags": ["keep-design"],
+        "tags": ["design-handler"],
         "operationId": "getDefault",
         "summary": "Get starter design DXL for a type",
         "description": "Returns { defaultNsf, type, name, dxl, source }. Prefers first keepdesign.nsf element of the type (A-Z by name); else embedded JAR DXL.",
