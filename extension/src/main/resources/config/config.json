@@ -8,7 +8,7 @@
   "verticles": {
     "Design": {
       "tags": {
-        "keep-design": "se.infoware.domino.keep.dbrequests.design",
+        "design-element": "se.infoware.domino.keep.dbrequests.design",
         "design-handler": "se.infoware.domino.keep.dbrequests.design"
       }
     },

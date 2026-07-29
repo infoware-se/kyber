@@ -42,7 +42,7 @@ All paths are under `/api/design-v1` and require `?nsfPath=`.
 | GET | `/designdxl?nsfPath=` | Export all supported elements as `{ nsfPath, elements: [{ type, name?, dxl }] }` |
 | PUT | `/designdxl?nsfPath=` | Import that array; **create NSF if missing**; same import/sign as per-type `Create*` |
 
-Swagger tag: **`design-handler`** for `/defaults`, `/defaults/{type}`, and `/designdxl` (per-type CRUD stays under **`keep-design`**).
+Swagger tag: **`design-handler`** for `/defaults`, `/defaults/{type}`, and `/designdxl` (per-type CRUD stays under **`design-element`**).
 
 Element `type` values match repo layout (`form`, `about`, `image`, â€¦). Bridge scripts in repo root [`tools/`](../tools/):
 
@@ -414,13 +414,13 @@ extension/
     dbrequests/design/       per-type CRUD + shared DesignDxl / DxlDesignPatch
     handlers/design/         AbstractImportDxlHandler + Create{Page,Outline,Frameset,Form,View,Folder}
   src/main/resources/
-    config/config.json       # OpenAPI tags keep-design + design-handler (not design — avoids HCL Setup clash)
+    config/config.json       # OpenAPI tags design-element + design-handler (not design — avoids HCL Setup clash)
     openapi/openapi.design.json
 ```
 
 ## Adding another design type
 
-1. OpenAPI paths + `operationId`s (`getXNames`, `getX`, `createX`, `deleteX`) under tag **`keep-design`**; `/defaults*` and bulk `/designdxl` under **`design-handler`**
+1. OpenAPI paths + `operationId`s (`getXNames`, `getX`, `createX`, `deleteX`) under tag **`design-element`**; `/defaults*` and bulk `/designdxl` under **`design-handler`**
 2. `dbrequests/design` handlers (JNX `getX` / `getXs` / `delete`, DXL import via `DesignDxl.requireRootName(dxl, "root")`)
 3. `handlers/design/CreateX extends AbstractImportDxlHandler` for `text/xml` PUT
 4. Document the type in this README table
