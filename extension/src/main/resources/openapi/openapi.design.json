@@ -3,7 +3,7 @@
   "info": {
     "title": "KEEP Domino REST API design",
     "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (only bulk import); per-type CRUD requires an existing database. This API never deletes databases.",
-    "version": "0.18.1"
+    "version": "0.18.2"
   },
   "servers": [
     {
@@ -13,7 +13,7 @@
   "tags": [
     {
       "name": "design-element",
-      "description": "Database design element CRUD (pages, outlines, framesets, forms, views, folders, subforms, fields, columns, images, files, stylesheets, themes, about, using, agents, scriptlibraries, webservices, webserviceconsumers, sharedactions, databasescript, xpages, customcontrols, wiringproperties, compositeapplications, compositecomponents)"
+      "description": "Database design element CRUD"
     },
     {
       "name": "design-handler",
