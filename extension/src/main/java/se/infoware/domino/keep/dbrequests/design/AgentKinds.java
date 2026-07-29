@@ -95,10 +95,10 @@ final class AgentKinds {
 
   static String defaultName(String kind) throws KeepExceptionWrongDataRequest {
     return switch (normalize(kind)) {
-      case FORMULA -> "DefaultFormulaAgent";
-      case SIMPLEACTION -> "DefaultSimpleAgent";
-      case JAVA -> "DefaultJavaAgent";
-      default -> "DefaultLotusScriptAgent";
+      case FORMULA -> "Default-FormulaAgent";
+      case SIMPLEACTION -> "Default-SimpleAgent";
+      case JAVA -> "Default-JavaAgent";
+      default -> "Default-LotusScriptAgent";
     };
   }
 

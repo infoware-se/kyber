@@ -1,17 +1,19 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE frameset SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<frameset name='Frameset' xmlns='http://www.lotus.com/dxl' version='14.5'
+<frameset name='Default-Frameset' xmlns='http://www.lotus.com/dxl' version='14.5'
  maintenanceversion='1.0' replicaid='C1258E4300212830' publicaccess='false'
- designerversion='8.5.3' columns='20% 80%' spacing='0px' bordercolor='none'>
-<noteinfo noteid='17e' unid='AF074C6B6F7A1D33C1258E4300221718' sequence='6'>
+ designerversion='8.5.3' columns='1 1' spacing='0px' bordercolor='none'>
+<noteinfo noteid='17e' unid='AF074C6B6F7A1D33C1258E4300221718' sequence='114'>
 <created><datetime dst='true'>20260729T081221,36+02</datetime></created>
-<modified><datetime dst='true'>20260729T081459,82+02</datetime></modified>
-<revised><datetime dst='true'>20260729T081459,81+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T081459,81+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260729T160911,73+02</datetime></modified>
+<revised><datetime dst='true'>20260729T160911,72+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T160911,72+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T081221,42+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
-<frame><namedelementlink type='page' name='Page'/></frame>
-<frame><namedelementlink type='view' name='View'/></frame>
-<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></frameset>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name><name
+>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<frame><namedelementlink type='page' name='Default-Page'/></frame>
+<frame><namedelementlink type='view' name='Default-View'/></frame>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item>
+<item name='$$ScriptName' summary='false' sign='true'><text>Default-Frameset</text></item></frameset>
 

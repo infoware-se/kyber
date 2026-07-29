@@ -1,8 +1,20 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE agent SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<agent name='DefaultSimpleAgent' xmlns='http://www.lotus.com/dxl' version='14.5'
- publicaccess='false' designerversion='8.5.3'>
+<agent name='Default-SimpleAgent' xmlns='http://www.lotus.com/dxl' version='14.5'
+ maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3' publicaccess='false'
+ designerversion='8.5.3'>
+<noteinfo noteid='342' unid='758DFBC2C02CC2B3C1258E4300439181' sequence='3'>
+<created><datetime dst='true'>20260729T141801,61+02</datetime></created>
+<modified><datetime dst='true'>20260729T143230,65+02</datetime></modified>
+<revised><datetime dst='true'>20260729T143230,64+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T143230,64+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T141801,61+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<designchange><datetime dst='true'>20260729T143230,62+02</datetime></designchange>
 <trigger type='actionsmenu'/>
-<documentset type='selected'/>
-<code event='action'><simpleaction action='modifyfield' field='Subject' value='Hello'/></code>
-</agent>
+<documentset type='selected'/><code event='action'>
+<simpleaction action='modifyfield' field='Subject' value='Hello'/></code>
+<rundata processeddocs='0' exitcode='0'>
+<agentmodified><datetime dst='true'>20260729T143230,62+02</datetime></agentmodified></rundata>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></agent>
+

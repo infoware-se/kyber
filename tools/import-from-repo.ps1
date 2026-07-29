@@ -116,10 +116,14 @@ $headers = @{
 
 $bodyObj = @{ elements = $elements }
 $bodyJson = $bodyObj | ConvertTo-Json -Depth 20
+$aclCount = @($elements | Where-Object { [string]$_.type -eq 'acl' }).Count
+if ($aclCount -gt 0) {
+  Write-Host "ACL present in manifest - will be applied last by PUT /designdxl"
+}
 
 $uri = "$RestUrl/api/design-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfPath))"
-Write-Host "PUT $uri ($($elements.Count) elements)"
+Write-Host ("PUT {0} ({1} elements)" -f $uri, $elements.Count)
 $result = Invoke-Drapi -Method PUT -Uri $uri -Headers $headers -Body $bodyJson -ContentType "application/json; charset=utf-8"
 
-Write-Host ("imported={0} created={1} nsfPath={2}" -f $result.imported, $result.created, $result.nsfPath)
+Write-Host ("imported={0} created={1} aclApplied={2} nsfPath={3}" -f $result.imported, $result.created, $result.aclApplied, $result.nsfPath)
 $result | ConvertTo-Json -Depth 4 | Write-Output

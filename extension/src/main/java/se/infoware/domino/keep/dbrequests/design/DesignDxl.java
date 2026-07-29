@@ -53,21 +53,46 @@ final class DesignDxl {
     Element root = parseAndRequireRoot(dxl, expectedRoots);
     String localName = root.getLocalName() != null ? root.getLocalName() : root.getTagName();
 
+    String resolved = designNameFromRoot(root);
+    if (resolved != null) {
+      return resolved;
+    }
+
+    throw new KeepExceptionWrongDataRequest(
+        localName.toLowerCase(Locale.ROOT)
+            + " DXL requires a non-empty name attribute or $TITLE item");
+  }
+
+  /**
+   * Shared Actions name: {@code name} attribute, {@code $TITLE}, or {@code $$ScriptName} (often
+   * {@code $ACTIONS}).
+   */
+  static String requireSharedActionsName(String dxl) throws KeepExceptionWrongDataRequest {
+    Element root = parseAndRequireRoot(dxl, "sharedactions");
+    String resolved = designNameFromRoot(root);
+    if (resolved != null) {
+      return resolved;
+    }
+    String script = findItemText(root, "$$ScriptName");
+    if (script != null && !script.isBlank()) {
+      return script.trim();
+    }
+    throw new KeepExceptionWrongDataRequest(
+        "sharedactions DXL requires a non-empty name attribute, $TITLE, or $$ScriptName item");
+  }
+
+  private static String designNameFromRoot(Element root) {
     String name = root.getAttribute("name");
     if (name != null && !name.isBlank()) {
       return name.trim();
     }
-
     String fromTitle = findItemText(root, "$TITLE");
     if (fromTitle != null && !fromTitle.isBlank()) {
       // Domino titles can be "Name|Alias" - use the first segment as design name.
       int pipe = fromTitle.indexOf('|');
       return (pipe >= 0 ? fromTitle.substring(0, pipe) : fromTitle).trim();
     }
-
-    throw new KeepExceptionWrongDataRequest(
-        localName.toLowerCase(Locale.ROOT)
-            + " DXL requires a non-empty name attribute or $TITLE item");
+    return null;
   }
 
   private static Element parseAndRequireRoot(String dxl, String... expectedRoots)

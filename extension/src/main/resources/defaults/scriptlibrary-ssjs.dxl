@@ -1,14 +1,21 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE scriptlibrary SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<scriptlibrary name='DefaultSsjs' xmlns='http://www.lotus.com/dxl' version='14.5'
+<scriptlibrary name='Default-Ssjs' xmlns='http://www.lotus.com/dxl' version='14.5'
+ maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3 v4strict'
  designerversion='8.5.3'>
-<item name='$Flags'><text>.5834Q</text></item>
-<item name='$TITLE'><text>DefaultSsjs</text></item>
+<noteinfo noteid='316' unid='5F6F132A1B2F57D1C1258E430043910C' sequence='87'>
+<created><datetime dst='true'>20260729T141800,44+02</datetime></created>
+<modified><datetime dst='true'>20260729T160911,10+02</datetime></modified>
+<revised><datetime dst='true'>20260729T160911,09+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T160911,09+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T141800,45+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
 <item name='$ServerJavaScriptLibrary' summary='false'><text>/**
  * Server JavaScript (SSJS) script library starter.
  */
 function hello() {
 	return "hello";
 }
-</text></item>
-</scriptlibrary>
+</text></item></scriptlibrary>
+

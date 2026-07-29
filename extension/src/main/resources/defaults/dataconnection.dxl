@@ -1,7 +1,15 @@
 <?xml version='1.0' encoding='utf-8'?>
-<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5'>
-<item name='$TITLE'><text>DefaultDataConnection</text></item>
-<item name='$Flags'><text>~C4gk</text></item>
-<item name='$FlagsExt'><text/></item>
-</note>
+<!DOCTYPE dataconnection SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<dataconnection name='Default-DataConnection' xmlns='http://www.lotus.com/dxl'
+ version='14.5' maintenanceversion='1.0' replicaid='C1258E4300212830' nocompose='true'
+ class='rdbms' type='odbc2' datasource='DefaultDSN' objectname='DefaultTable'
+ objecttype='table'>
+<noteinfo noteid='2f6' unid='B969CA62EEDA2840C1258E430040FBBB' sequence='4'>
+<created><datetime dst='true'>20260729T134947,47+02</datetime></created>
+<modified><datetime dst='true'>20260729T141801,89+02</datetime></modified>
+<revised><datetime dst='true'>20260729T141801,88+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T141801,88+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T134947,47+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby></dataconnection>
+

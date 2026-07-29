@@ -35,6 +35,22 @@ final class DxlDesignPatch {
     return importer.getResultLog();
   }
 
+  /**
+   * Import root {@code <acl>} DXL. Design notes stay ignored; only ACL is replaced/created.
+   */
+  static String importAcl(DxlImporter importer, String dxl, Database db) throws IOException {
+    importer.setExitOnFirstFatalError(false);
+    importer.setDesignImportOption(DXLImportOption.IGNORE);
+    importer.setDocumentsImportOption(DXLImportOption.IGNORE);
+    importer.setACLImportOption(DXLImportOption.REPLACE_ELSE_CREATE);
+    importer.setReplaceDbProperties(false);
+    importer.setUnknownTokenLogOption(DXLLogOption.WARNING);
+    importer.setReplicaRequiredForReplaceOrUpdate(false);
+    importer.setInputValidationOption(XMLValidationOption.NEVER);
+    importer.importDxl(dxl, db);
+    return importer.getResultLog();
+  }
+
   private static void configureCommon(DxlImporter importer) {
     importer.setExitOnFirstFatalError(false);
     importer.setDesignImportOption(DXLImportOption.REPLACE_ELSE_CREATE);

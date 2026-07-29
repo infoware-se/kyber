@@ -23,10 +23,11 @@ final class DesignBulkTypes {
 
   static {
     Map<String, String> dirs = new LinkedHashMap<>();
+    dirs.put("acl", "acl");
     dirs.put("applicationproperties", "");
     dirs.put("about", "");
     dirs.put("using", "");
-    dirs.put("sharedactions", "");
+    dirs.put("sharedactions", "sharedactions");
     dirs.put("databasescript", "");
     dirs.put("image", "images");
     dirs.put("fileresource", "fileresources");
@@ -48,7 +49,9 @@ final class DesignBulkTypes {
     dirs.put("webserviceconsumer", "webserviceconsumers");
     dirs.put("dataconnection", "dataconnections");
     dirs.put("jar", "jars");
-    dirs.put("xspproperties", "xspproperties");
+    dirs.put("applet", "applets");
+    dirs.put("javasource", "javasources");
+    dirs.put("xspproperties", "");
     dirs.put("xpagesresource", "xpagesresources");
     dirs.put("designnote", "designnotes");
     dirs.put("customcontrol", "customcontrols");
@@ -70,6 +73,8 @@ final class DesignBulkTypes {
           "image",
           "fileresource",
           "jar",
+          "applet",
+          "javasource",
           "stylesheet",
           "theme",
           "xspproperties",
@@ -94,7 +99,9 @@ final class DesignBulkTypes {
           "xpage",
           "wiringproperties",
           "compositeapplication",
-          "compositecomponent"
+          "compositecomponent",
+          // ACL last: apply after design so the payload ACL is the final state when present
+          "acl"
         }) {
       order.put(t, i++);
     }
@@ -102,7 +109,13 @@ final class DesignBulkTypes {
   }
 
   private static final Set<String> SINGLETONS =
-      Set.of("applicationproperties", "about", "using", "sharedactions", "databasescript");
+      Set.of(
+          "acl",
+          "applicationproperties",
+          "about",
+          "using",
+          "databasescript",
+          "xspproperties");
 
   private DesignBulkTypes() {}
 

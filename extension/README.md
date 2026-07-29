@@ -23,10 +23,13 @@ Manage database **design elements** via Domino REST API. Target database is sele
 | Theme | `GET /themenames` | `PUT /themes` | `GET /themes/{name}` | `DELETE /themes/{name}` | `<theme>` / note-form |
 | About Document | â€” | `PUT /about` | `GET /about` | `DELETE /about` | `<helpaboutdocument>` |
 | Using Document | â€” | `PUT /using` | `GET /using` | `DELETE /using` | `<helpusingdocument>` |
+| ACL | — | `PUT /acl` (Manager) | `GET /acl` | — | `<acl>` |
 | Agent | `GET /agentnames` | `PUT /agents` | `GET /agents/{name}` | `DELETE /agents/{name}` | `<agent name="â€¦">` |
 | Script library | `GET /scriptlibrarynames` | `PUT /scriptlibraries` | `GET /scriptlibraries/{name}` | `DELETE /scriptlibraries/{name}` | `<scriptlibrary name="â€¦">` |
-| Shared Actions | â€” | `PUT /sharedactions` | `GET /sharedactions` | `DELETE /sharedactions` | `<sharedactions>` |
+| Shared Actions | `GET /sharedactionnames` | `PUT /sharedactions` | `GET /sharedactions/{name}` | `DELETE /sharedactions/{name}` | `<sharedactions name="â€¦">` |
 | Database Script | â€” | `PUT /databasescript` | `GET /databasescript` | `DELETE /databasescript` | `<databasescript>` |
+| Application Properties | â€” | `PUT /applicationproperties` | `GET /applicationproperties` | â€” (no delete) | `<note class="icon">` / `<database>` |
+| Xsp Properties | â€” | `PUT /xspproperties` | `GET /xspproperties` | â€” (no delete) | `<note>` (`WEB-INF/xsp.properties`) |
 | XPage | `GET /xpagenames` | `PUT /xpages` | `GET /xpages/{name}` | `DELETE /xpages/{name}` | `<note>` / `<fileresource>` |
 | Custom Control | `GET /customcontrolnames` | `PUT /customcontrols` | `GET /customcontrols/{name}` | `DELETE /customcontrols/{name}` | `<note>` / `<fileresource>` |
 
@@ -64,7 +67,9 @@ design/
 
 After PUT, the API compiles LotusScript (script libraries first) and returns a `lotusscript` summary. Notes â€œError processing use list moduleâ€ after a restore usually means code was not compiled; re-import with 0.12+ or run Designer **Recompile All LotusScript**. Some complex libraries (e.g. DDM) can still report syntax errors after DXL round-trip â€” open those in Designer if needed.
 
-**Bulk-only types** (no list/get/put/delete endpoints; only in `/designdxl`): `navigator`, `dataconnection`, `jar`, `xspproperties`, `xpagesresource` (incl. `WEB-INF/`, i18n `*.properties`, `.settings/`, `icons/`), `wiringproperties`, `compositeapplication`, `compositecomponent`, and catch-all `designnote` for any other remaining design note (UNID-deduped after typed exporters). Starters: `GET /defaults/{type}` for all of these except `designnote`.
+**Bulk-only types** (no list/get/put/delete endpoints; only in `/designdxl`): `navigator`, `dataconnection`, `jar`, `applet`, `javasource`, `xpagesresource` (incl. `WEB-INF/` except `xsp.properties`, i18n `*.properties`, `.settings/`, `icons/`, `Local/`), `wiringproperties`, `compositeapplication`, `compositecomponent`, and catch-all `designnote` for any other remaining design note (UNID-deduped after typed exporters). Starters: `GET /defaults/{type}` for all of these except `designnote`.
+
+**Blank NSF baseline** (reference DXL, not starters): [`resources/defaults/blank/`](src/main/resources/defaults/blank/) — `acl.dxl`, `applicationproperties.dxl`, `image-DBIcon.dxl`, `view-default.dxl`, plus `manifest.json` from a Domino blank database.
 
 ## Coverage (Domino Designer)
 
@@ -84,9 +89,11 @@ Mapped to the Designer outline. â€œInâ€ = typed DXL CRUD; â€œBulkâ
 | Shared Elements | Columns | `/sharedcolumns` |
 | Shared Elements | Outlines | `/outlines` |
 | Code | Agents | `/agents` — kinds `lotusscript` \| `formula` \| `simpleaction` \| `java` |
-| Code | Shared Actions | `/sharedactions` (singleton) |
+| Code | Shared Actions | `/sharedactions/{name}` |
 | Code | Script Libraries | `/scriptlibraries` — kinds `lotusscript` \| `javascript` \| `ssjs` \| `java` (defaults + empty-body create) |
 | Code | Database Script | `/databasescript` (singleton) |
+| Application Configuration | Application Properties | `/applicationproperties` (singleton; GET/PUT, no DELETE) |
+| Application Configuration | Xsp Properties | `/xspproperties` (singleton; GET/PUT, no DELETE; `WEB-INF/xsp.properties`) |
 | Resources | Images | `/images` |
 | Resources | Files | `/fileresources` |
 | Resources | Style Sheets | `/stylesheets` |
@@ -95,7 +102,6 @@ Mapped to the Designer outline. â€œInâ€ = typed DXL CRUD; â€œBulkâ
 | Resources | Using Document | `/using` (singleton) |
 | XPages | XPages | `/xpages` |
 | Custom Controls | Custom Controls | `/customcontrols` (`.xsp` notes without XPage `K` flag; not Composite Components) |
-| Application Configuration | Xsp Properties | **Bulk only** â€” type `xspproperties` (`WEB-INF/xsp.properties`) |
 | (XPages project) | Other `WEB-INF/` notes | **Bulk only** â€” type `xpagesresource` |
 | Shared Elements | Navigators | **Bulk only** â€” type `navigator` |
 | Code | Web Service Providers | `/webservices` + `GET /defaults/webservice` |
@@ -105,8 +111,9 @@ Mapped to the Designer outline. â€œInâ€ = typed DXL CRUD; â€œBulkâ
 | Composite Applications | Wiring Properties | **Bulk only** — type `wiringproperties` |
 | Composite Applications | Applications | **Bulk only** — type `compositeapplication` |
 | Composite Applications | Components | **Bulk only** — type `compositecomponent` |
+| Database | ACL | `/acl` (singleton; also in bulk) |
 
-Singletons have no list/`{name}` path â€” only `GET` / `PUT` / `DELETE` on the collection path.
+Singletons have no list/`{name}` path â€” only `GET` / `PUT` / `DELETE` on the collection path (ACL has no DELETE).
 
 ### Not included
 
@@ -117,12 +124,14 @@ Singletons have no list/`{name}` path â€” only `GET` / `PUT` / `DELETE` on 
 | Designer section | Element | Reason |
 |------------------|---------|--------|
 | Resources | Applets | No first-class design-note type (often embedded in form/page DXL) |
-| Code | Java (separate node) | Same notes as Java **script libraries** â†’ use `/scriptlibraries` |
+| Code | Java (separate node) | Same notes as Java **script libraries** → use `/scriptlibraries` |
+
+### KEEP ACL (endpoint access)
 
 | ACL | Operations |
 |-----|------------|
 | Reader | list, get |
-| Designer | create/replace, delete |
+| Designer | create/replace, delete (ACL PUT requires Manager) |
 
 ## Endpoints
 
@@ -243,6 +252,14 @@ Singletons have no list/`{name}` path â€” only `GET` / `PUT` / `DELETE` on 
 | GET | `/api/design-v1/themes/{name}?nsfPath=` |
 | DELETE | `/api/design-v1/themes/{name}?nsfPath=` |
 
+
+### ACL
+
+| Method | Path |
+|--------|------|
+| GET | `/api/design-v1/acl?nsfPath=` |
+| PUT | `/api/design-v1/acl?nsfPath=` (`text/xml` `<acl>` DXL; requires Manager) |
+
 ### About Document
 
 | Method | Path |
@@ -289,9 +306,10 @@ Kinds: `lotusscript` (default), `javascript` (client), `ssjs` (server JS), `java
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/sharedactions?nsfPath=` |
+| GET | `/api/design-v1/sharedactionnames?nsfPath=` |
+| GET | `/api/design-v1/sharedactions/{name}?nsfPath=` |
 | PUT | `/api/design-v1/sharedactions?nsfPath=` (`text/xml` sharedactions DXL) |
-| DELETE | `/api/design-v1/sharedactions?nsfPath=` |
+| DELETE | `/api/design-v1/sharedactions/{name}?nsfPath=` |
 
 ### Database Script
 

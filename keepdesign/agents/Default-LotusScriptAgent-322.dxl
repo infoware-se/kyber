@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE agent SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<agent name='Default-LotusScriptAgent' xmlns='http://www.lotus.com/dxl' version='14.5'
+ maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3' publicaccess='false'
+ designerversion='8.5.3'>
+<noteinfo noteid='322' unid='7FC76C47741D82EBC1258E4300439172' sequence='87'>
+<created><datetime dst='true'>20260729T141801,46+02</datetime></created>
+<modified><datetime dst='true'>20260729T160911,33+02</datetime></modified>
+<revised><datetime dst='true'>20260729T160911,32+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T160911,32+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T141801,46+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<designchange><datetime dst='true'>20260729T160911,31+02</datetime></designchange>
+<trigger type='actionsmenu'/>
+<documentset type='selected'/><code event='options'><lotusscript>Option Public
+Option Declare
+</lotusscript></code><code event='initialize'><lotusscript>Sub Initialize
+	Print "Hello World"
+End Sub</lotusscript></code>
+<rundata processeddocs='0' exitcode='0'>
+<agentmodified><datetime dst='true'>20260729T143232,56+02</datetime></agentmodified></rundata>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></agent>
+

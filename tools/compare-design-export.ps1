@@ -1,6 +1,7 @@
 ﻿<#
 .SYNOPSIS
   Compare Domino design sets: Notes COM DXL file vs keep-design bulk /designdxl (by UNID).
+  ACL is not part of COM SelectAllDesignElements / UNID compare — use GET /acl separately.
 
 .EXAMPLE
   cscript //nologo .\tools\export-design-dxl-com.vbs $env:TEMP\com.xml YourDominoServer test\testdiscussion.nsf

@@ -123,6 +123,7 @@ function Get-DxlUnid([string]$Dxl) {
 
 # API type -> repo folder (CRUD + typed bulk). Empty = use type name as folder.
 $script:RepoDirByType = [ordered]@{
+  acl                   = "acl"
   about                 = "about"
   using                 = "using"
   sharedactions         = "sharedactions"

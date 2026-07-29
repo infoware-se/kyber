@@ -1,0 +1,29 @@
+{
+  "source": "blank.nsf",
+  "description": "Platform baseline design notes present in a newly created blank Domino database. Keep these; do not treat as app design to delete on sync.",
+  "captured": "2026-07-29",
+  "elements": [
+    {
+      "type": "acl",
+      "role": "databaseAcl",
+      "file": "acl.dxl"
+    },
+    {
+      "type": "applicationproperties",
+      "role": "dbproperties",
+      "file": "applicationproperties.dxl"
+    },
+    {
+      "type": "image",
+      "role": "dbicon",
+      "name": "$DBIcon",
+      "file": "image-DBIcon.dxl"
+    },
+    {
+      "type": "view",
+      "role": "defaultUntitledView",
+      "file": "view-default.dxl",
+      "match": "default=true and noviewformat=true (no $TITLE)"
+    }
+  ]
+}

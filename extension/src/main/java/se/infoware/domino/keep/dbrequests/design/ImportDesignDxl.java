@@ -8,16 +8,10 @@ import com.hcl.domino.keep.dbrequests.DbRequestParameters;
 import com.hcl.domino.keep.dbrequests.KeepJnxSession;
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
-import com.hcl.domino.security.Acl;
-import com.hcl.domino.security.AclEntry;
-import com.hcl.domino.security.AclFlag;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Bulk import design DXL - PUT /designdxl?nsfPath=
@@ -28,14 +22,15 @@ import java.util.Optional;
  * <p>This is the only endpoint that may create an NSF. Per-type CRUD requires an existing database.
  * The API never deletes databases.
  *
- * <p>On create, grants Manager to the JWT user plus LocalDomainAdmins / LocalDomainServers so the
- * new NSF is usable via REST and Notes.
+ * <p>On create, ensures LocalDomainAdmins / LocalDomainServers as Manager (add or overwrite).
+ * When the payload includes {@code type=acl}, that ACL DXL fully replaces the database ACL
+ * (overwrite/drop), then LocalDomain* are ensured as Manager again.
+ *
+ * <p>Elements may set {@code "delete": true} with {@code name} and/or {@code unid} to remove a
+ * design note (bulk-only cleanup) instead of importing DXL.
  */
-@MinimumAcl(AclLevel.DESIGNER)
+@MinimumAcl(AclLevel.MANAGER)
 public class ImportDesignDxl extends AsyncDominoJNXJson {
-
-  private static final String LOCAL_DOMAIN_ADMINS = "LocalDomainAdmins";
-  private static final String LOCAL_DOMAIN_SERVERS = "LocalDomainServers";
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
@@ -57,6 +52,8 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
       throw new KeepExceptionWrongDataRequest("elements array is required");
     }
 
+    boolean hasAcl = containsType(elements, "acl");
+
     KeepJnxSession session = request.session();
     boolean created = openOrCreate(session, target);
 
@@ -67,16 +64,32 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
     JsonArray results = new JsonArray();
     int ok = 0;
     int failed = 0;
+    String aclError = null;
     for (JsonObject el : ordered) {
       String type = el.getString("type", "");
       String dxl = el.getString("dxl", "");
+      boolean isAcl = "acl".equalsIgnoreCase(DesignBulkTypes.normalize(type));
+      boolean delete = el.getBoolean("delete", false);
       try {
-        JsonObject one = DesignElementIO.importOne(importer, db, type, dxl);
+        JsonObject one;
+        if (delete) {
+          if (isAcl) {
+            throw new KeepExceptionWrongDataRequest("Cannot delete ACL via designdxl delete flag");
+          }
+          one =
+              DesignElementIO.deleteOne(
+                  db, type, el.getString("name"), el.getString("unid"));
+        } else {
+          one = DesignElementIO.importOne(importer, db, type, dxl, session);
+        }
         results.add(one);
         ok++;
       } catch (Exception e) {
         failed++;
         String message = e.getMessage() == null ? e.toString() : e.getMessage();
+        if (isAcl) {
+          aclError = message;
+        }
         JsonObject row =
             new JsonObject()
                 .put("success", false)
@@ -86,7 +99,19 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
           row.put("name", el.getString("name"));
         }
         results.add(row);
+        // ACL in payload must be applied; stop so we do not leave a half-imported ACL state unclear
+        if (isAcl) {
+          break;
+        }
       }
+    }
+
+    if (hasAcl && aclError != null) {
+      throw new KeepExceptionWrongDataRequest("ACL import failed: " + aclError);
+    }
+    if (hasAcl && !resultsContainSuccessfulAcl(results)) {
+      throw new KeepExceptionWrongDataRequest(
+          "ACL was present in the import payload but was not applied successfully");
     }
 
     JsonObject compile = DesignLotusScriptCompile.compileAll(db);
@@ -98,8 +123,36 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
             .put("nsfPath", target)
             .put("imported", ok)
             .put("failed", failed)
+            .put("aclApplied", hasAcl)
             .put("results", results)
             .put("lotusscript", compile));
+  }
+
+  private static boolean containsType(JsonArray elements, String type) {
+    String want = DesignBulkTypes.normalize(type);
+    for (int i = 0; i < elements.size(); i++) {
+      Object o = elements.getValue(i);
+      if (o instanceof JsonObject jo) {
+        if (want.equals(DesignBulkTypes.normalize(jo.getString("type", "")))) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private static boolean resultsContainSuccessfulAcl(JsonArray results) {
+    for (int i = 0; i < results.size(); i++) {
+      Object o = results.getValue(i);
+      if (!(o instanceof JsonObject jo)) {
+        continue;
+      }
+      if (!"acl".equals(DesignBulkTypes.normalize(jo.getString("type", "")))) {
+        continue;
+      }
+      return jo.getBoolean("success", false);
+    }
+    return false;
   }
 
   /**
@@ -124,43 +177,8 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
 
     Database created =
         client.createDatabase(server, path, false, true, DominoClient.Encryption.None);
-    applyCreatorAcl(session, created);
+    DesignAcl.ensureDomainManagers(created);
     return true;
-  }
-
-  /**
-   * Same idea as KEEP {@code CreateNSF} / domino-design domain ACL: caller + domain groups as
-   * Manager so Notes and REST can open the new file.
-   */
-  private static void applyCreatorAcl(KeepJnxSession session, Database db) {
-    Acl acl = db.getACL();
-
-    String user = session.getUserName();
-    if (user != null && !user.isBlank()) {
-      ensureAclEntry(acl, user.trim(), AclLevel.MANAGER, EnumSet.of(AclFlag.PERSON));
-    }
-
-    ensureAclEntry(acl, LOCAL_DOMAIN_ADMINS, AclLevel.MANAGER, EnumSet.of(AclFlag.GROUP));
-    ensureAclEntry(acl, LOCAL_DOMAIN_SERVERS, AclLevel.MANAGER, EnumSet.of(AclFlag.SERVER));
-
-    String adminServer = db.getServer();
-    if (adminServer != null && !adminServer.isBlank()) {
-      acl.setAdminServer(adminServer.trim());
-      ensureAclEntry(
-          acl, adminServer.trim(), AclLevel.MANAGER, EnumSet.of(AclFlag.SERVER, AclFlag.ADMIN_SERVER));
-    }
-
-    acl.save();
-  }
-
-  private static void ensureAclEntry(
-      Acl acl, String name, AclLevel level, Collection<AclFlag> flags) {
-    Optional<AclEntry> existing = acl.getEntry(name);
-    if (existing.isPresent()) {
-      acl.updateEntry(name, name, level, List.of(), flags);
-    } else {
-      acl.addEntry(name, level, List.of(), flags);
-    }
   }
 
   private static String firstNonBlank(String a, String b) {

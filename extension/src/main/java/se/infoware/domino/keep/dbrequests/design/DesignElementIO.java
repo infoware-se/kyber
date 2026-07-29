@@ -10,10 +10,12 @@ import com.hcl.domino.design.SharedActions;
 import com.hcl.domino.design.UsingDocument;
 import com.hcl.domino.dxl.DxlExporter;
 import com.hcl.domino.dxl.DxlImporter;
+import com.hcl.domino.keep.dbrequests.KeepJnxSession;
 import com.hcl.domino.keep.exceptions.KeepExceptionServer;
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -35,6 +37,19 @@ final class DesignElementIO {
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();
     JsonArray elements = new JsonArray();
     Set<String> exportedUnids = new HashSet<>();
+
+    exportSingleton(
+        elements,
+        "acl",
+        () -> {
+          StringWriter sw = new StringWriter();
+          exporter.exportACL(db, sw);
+          String dxl = sw.toString();
+          if (dxl == null || dxl.isBlank()) {
+            return Optional.empty();
+          }
+          return Optional.of(dxl);
+        });
 
     exportSingleton(
         elements,
@@ -72,17 +87,7 @@ final class DesignElementIO {
           return Optional.of(exporter.exportDocument(opt.get().getDocument()));
         });
 
-    exportSingleton(
-        elements,
-        "sharedactions",
-        () -> {
-          Optional<SharedActions> opt = db.getDesign().getSharedActions();
-          if (opt.isEmpty()) {
-            return Optional.empty();
-          }
-          trackUnid(exportedUnids, opt.get().getDocument());
-          return Optional.of(exporter.exportDocument(opt.get().getDocument()));
-        });
+    exportSharedActions(elements, db, exporter, exportedUnids);
 
     exportSingleton(
         elements,
@@ -140,9 +145,63 @@ final class DesignElementIO {
   }
 
   /**
-   * Import one element. Returns result object with success/type/name/log.
+   * Delete one bulk/residual design note by UNID and/or name. Used by {@code PUT /designdxl} when
+   * an element has {@code "delete": true}.
    */
-  static JsonObject importOne(DxlImporter importer, Database db, String type, String dxl)
+  static JsonObject deleteOne(Database db, String type, String name, String unid)
+      throws Exception {
+    String t = DesignBulkTypes.normalize(type);
+    if (!DesignBulkTypes.isKnown(t)) {
+      throw new KeepExceptionWrongDataRequest("Unknown design element type: " + type);
+    }
+    int deleted = 0;
+    if (unid != null && !unid.isBlank()) {
+      Optional<Document> doc = db.getDocumentByUNID(unid.trim());
+      if (doc.isEmpty()) {
+        throw new KeepExceptionWrongDataRequest("Design note not found for unid: " + unid);
+      }
+      doc.get().delete();
+      deleted = 1;
+    } else if (name != null && !name.isBlank()) {
+      // Delete all notes with this title (clears DXL replace duplicates)
+      while (true) {
+        Optional<BulkOnlyNotes.Entry> entry = BulkOnlyNotes.find(db, t, name);
+        if (entry.isEmpty()) {
+          entry = BulkOnlyNotes.find(db, "", name);
+        }
+        if (entry.isEmpty()) {
+          break;
+        }
+        entry.get().document().delete();
+        deleted++;
+        if (deleted > 50) {
+          break;
+        }
+      }
+      if (deleted == 0) {
+        throw new KeepExceptionWrongDataRequest(t + " not found: " + name);
+      }
+    } else {
+      throw new KeepExceptionWrongDataRequest("name or unid is required to delete");
+    }
+    JsonObject result =
+        new JsonObject().put("success", true).put("type", t).put("deleted", deleted);
+    if (name != null && !name.isBlank()) {
+      result.put("name", name);
+    }
+    if (unid != null && !unid.isBlank()) {
+      result.put("unid", unid.trim());
+    }
+    return result;
+  }
+
+  /**
+   * Import one element. Returns result object with success/type/name/log.
+   *
+   * @param session unused (call-site compatibility); may be null
+   */
+  static JsonObject importOne(
+      DxlImporter importer, Database db, String type, String dxl, KeepJnxSession session)
       throws Exception {
     String t = DesignBulkTypes.normalize(type);
     if (!DesignBulkTypes.isKnown(t)) {
@@ -157,6 +216,11 @@ final class DesignElementIO {
     String signWarning = null;
 
     switch (t) {
+      case "acl" -> {
+        DesignDxl.requireRootOnly(dxl, "acl");
+        log = DxlDesignPatch.importAcl(importer, dxl, db);
+        DesignAcl.ensureDomainManagers(db);
+      }
       case "applicationproperties" -> {
         String root = DesignDxl.requireRootOnlyReturningLocalName(dxl, "note", "database");
         if ("database".equalsIgnoreCase(root)) {
@@ -196,15 +260,16 @@ final class DesignElementIO {
         signWarning = safeSign(el);
       }
       case "sharedactions" -> {
-        DesignDxl.requireRootOnly(dxl, "sharedactions");
+        name = DesignDxl.requireSharedActionsName(dxl);
         log = DxlDesignPatch.importDesign(importer, dxl, db);
+        final String sharedActionsName = name;
         SharedActions el =
-            db.getDesign()
-                .getSharedActions()
+            SharedActionsNotes.find(db, sharedActionsName)
                 .orElseThrow(
                     () ->
                         new KeepExceptionServer(
-                            "SharedActions missing after DXL import; cannot sign"));
+                            "SharedActions %s missing after DXL import; cannot sign",
+                            sharedActionsName));
         signWarning = safeSign(el);
       }
       case "databasescript" -> {
@@ -391,15 +456,50 @@ final class DesignElementIO {
             signNamed(
                 db.getDesign().getCompositeComponent(name), "CompositeComponent", name);
       }
+      case "dataconnection" -> {
+        String requestedDc =
+            DesignDxl.requireDesignName(
+                dxl, "dataconnection", "note", "fileresource");
+        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        BulkOnlyNotes.Entry entry =
+            BulkOnlyNotes.find(db, "dataconnection", requestedDc)
+                .orElseThrow(
+                    () ->
+                        new KeepExceptionServer(
+                            "dataconnection %s missing after DXL import; cannot sign",
+                            requestedDc));
+        name = entry.name();
+        final String resolvedName = name;
+        Optional<DesignElement> elOpt = BulkOnlyNotes.asDesignElement(db, entry.document());
+        if (elOpt.isPresent()) {
+          signWarning = safeSign(elOpt.get());
+        } else {
+          try {
+            entry.document().sign();
+          } catch (Exception e) {
+            String message = e.getMessage() == null ? e.toString() : e.getMessage();
+            String lower = message.toLowerCase(Locale.ROOT);
+            if (lower.contains("signature")
+                || lower.contains("0x2dc")
+                || lower.contains("2dc")) {
+              signWarning = message;
+            } else {
+              throw new KeepExceptionServer(
+                  "dataconnection %s sign failed: %s", resolvedName, message);
+            }
+          }
+        }
+      }
       case "navigator",
-          "dataconnection",
           "jar",
+          "applet",
+          "javasource",
           "xspproperties",
           "xpagesresource",
           "designnote" -> {
         String requested =
             DesignDxl.requireDesignName(
-                dxl, "note", "fileresource", "navigator", "webservice", "agent");
+                dxl, "note", "fileresource", "navigator", "webservice", "agent", "appletresource");
         log = DxlDesignPatch.importDesign(importer, dxl, db);
         final String bulkType = t;
         BulkOnlyNotes.Entry entry =
@@ -477,6 +577,32 @@ final class DesignElementIO {
       return;
     }
     elements.add(new JsonObject().put("type", type).put("dxl", dxl.get()));
+  }
+
+  private static void exportSharedActions(
+      JsonArray elements, Database db, DxlExporter exporter, Set<String> exportedUnids)
+      throws Exception {
+    List<SharedActions> list = SharedActionsNotes.list(db);
+    // Also export notes that lack a resolvable name (rare) so they are not lost.
+    List<SharedActions> unnamed =
+        SharedActionsNotes.stream(db)
+            .filter(el -> SharedActionsNotes.nameOf(el) == null)
+            .toList();
+    for (SharedActions el : list) {
+      trackUnid(exportedUnids, el.getDocument());
+      elements.add(
+          new JsonObject()
+              .put("type", "sharedactions")
+              .put("name", SharedActionsNotes.nameOf(el))
+              .put("dxl", exporter.exportDocument(el.getDocument())));
+    }
+    for (SharedActions el : unnamed) {
+      trackUnid(exportedUnids, el.getDocument());
+      elements.add(
+          new JsonObject()
+              .put("type", "sharedactions")
+              .put("dxl", exporter.exportDocument(el.getDocument())));
+    }
   }
 
   private static void exportNamed(

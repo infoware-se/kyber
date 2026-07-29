@@ -17,14 +17,15 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * Resolves starter DXL: if configured NSF is present, use the first element of that type by
- * alphabetical name; else classpath {@code /defaults/{type}.dxl}.
+ * Resolves starter DXL: if configured NSF is present, prefer names starting with {@code Default-};
+ * else first alphabetical of that type; else classpath {@code /defaults/{type}.dxl}.
  *
  * <p>Kinded types:
  *
  * <ul>
  *   <li>{@code scriptlibrary} — kind lotusscript|javascript|ssjs|java
  *   <li>{@code agent} — kind lotusscript|formula|simpleaction|java
+ *   <li>{@code javasource} — kind class|interface|enum (Code &gt; Java)
  * </ul>
  */
 final class DesignDefaults {
@@ -48,6 +49,8 @@ final class DesignDefaults {
     "frameset",
     "image",
     "jar",
+    "applet",
+    "javasource",
     "navigator",
     "outline",
     "page",
@@ -226,7 +229,7 @@ final class DesignDefaults {
   }
 
   private static boolean isKindedType(String type) {
-    return "scriptlibrary".equals(type) || "agent".equals(type);
+    return "scriptlibrary".equals(type) || "agent".equals(type) || "javasource".equals(type);
   }
 
   private static String[] kindsFor(String type) {
@@ -235,6 +238,9 @@ final class DesignDefaults {
     }
     if ("agent".equals(type)) {
       return AgentKinds.ALL;
+    }
+    if ("javasource".equals(type)) {
+      return JavaSourceKinds.ALL;
     }
     return null;
   }
@@ -247,6 +253,9 @@ final class DesignDefaults {
     if ("agent".equals(type)) {
       return AgentKinds.normalize(kind);
     }
+    if ("javasource".equals(type)) {
+      return JavaSourceKinds.normalize(kind);
+    }
     throw new KeepExceptionWrongDataRequest("type does not support kind: " + type);
   }
 
@@ -258,6 +267,9 @@ final class DesignDefaults {
     if ("agent".equals(type)) {
       return AgentKinds.embeddedSuffix(kind);
     }
+    if ("javasource".equals(type)) {
+      return JavaSourceKinds.embeddedSuffix(kind);
+    }
     return "";
   }
 
@@ -267,6 +279,9 @@ final class DesignDefaults {
     }
     if ("agent".equals(type)) {
       return AgentKinds.detect(dxl);
+    }
+    if ("javasource".equals(type)) {
+      return JavaSourceKinds.detect(dxl);
     }
     return null;
   }
@@ -278,6 +293,9 @@ final class DesignDefaults {
     if ("agent".equals(type)) {
       return AgentKinds.detectOrDefault(dxl);
     }
+    if ("javasource".equals(type)) {
+      return JavaSourceKinds.detectOrDefault(dxl);
+    }
     return null;
   }
 
@@ -285,16 +303,37 @@ final class DesignDefaults {
       throws KeepExceptionWrongDataRequest {
     if ("scriptlibrary".equals(type)) {
       return switch (ScriptLibraryKinds.normalize(kind)) {
-        case ScriptLibraryKinds.JAVASCRIPT -> "DefaultClientJs";
-        case ScriptLibraryKinds.SSJS -> "DefaultSsjs";
-        case ScriptLibraryKinds.JAVA -> "DefaultJava";
-        default -> "DefaultLotusScript";
+        case ScriptLibraryKinds.JAVASCRIPT -> "Default-ClientJs";
+        case ScriptLibraryKinds.SSJS -> "Default-Ssjs";
+        case ScriptLibraryKinds.JAVA -> "Default-Java";
+        default -> "Default-LotusScript";
       };
     }
     if ("agent".equals(type)) {
       return AgentKinds.defaultName(kind);
     }
+    if ("javasource".equals(type)) {
+      return JavaSourceKinds.defaultName(kind);
+    }
+    if ("sharedactions".equals(type)) {
+      return "Default-SharedActions";
+    }
     return "Default";
+  }
+
+  private static final String DEFAULT_NAME_PREFIX = "Default-";
+
+  private static boolean isDefaultNamed(String name) {
+    if (name == null || name.isBlank()) {
+      return false;
+    }
+    if (name.regionMatches(true, 0, DEFAULT_NAME_PREFIX, 0, DEFAULT_NAME_PREFIX.length())) {
+      return true;
+    }
+    // Code > Java / Jars: se/infoware/keep/DefaultHello.java, Default-Jar.jar
+    int slash = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'));
+    String base = slash >= 0 ? name.substring(slash + 1) : name;
+    return base.regionMatches(true, 0, "Default", 0, "Default".length());
   }
 
   private static Optional<JsonObject> fromNsf(
@@ -326,11 +365,18 @@ final class DesignDefaults {
       if (DesignBulkTypes.isSingleton(type) || matches.size() == 1) {
         return Optional.of(copyWithSource(matches.get(0), "nsf", resolvedKind));
       }
-      matches.sort(
+      List<JsonObject> preferred = new ArrayList<>();
+      for (JsonObject el : matches) {
+        if (isDefaultNamed(el.getString("name", ""))) {
+          preferred.add(el);
+        }
+      }
+      List<JsonObject> pick = preferred.isEmpty() ? matches : preferred;
+      pick.sort(
           Comparator.comparing(
               el -> el.getString("name", ""),
               String.CASE_INSENSITIVE_ORDER.thenComparing(Comparator.naturalOrder())));
-      return Optional.of(copyWithSource(matches.get(0), "nsf", resolvedKind));
+      return Optional.of(copyWithSource(pick.get(0), "nsf", resolvedKind));
     } catch (Exception e) {
       return Optional.empty();
     }

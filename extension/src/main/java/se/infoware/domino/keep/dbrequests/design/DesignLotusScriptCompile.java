@@ -45,10 +45,8 @@ final class DesignLotusScriptCompile {
         .ifPresent(
             el -> compileOne(el, "databasescript", null, compiled, skipped, errors, done));
 
-    db.getDesign()
-        .getSharedActions()
-        .ifPresent(
-            el -> compileOne(el, "sharedactions", null, compiled, skipped, errors, done));
+    SharedActionsNotes.stream(db)
+        .forEach(el -> compileOne(el, "sharedactions", SharedActionsNotes.nameOf(el), compiled, skipped, errors, done));
 
     compileStream(db.getDesign().getAgents(), "agent", compiled, skipped, errors, done);
     compileStream(db.getDesign().getForms(), "form", compiled, skipped, errors, done);

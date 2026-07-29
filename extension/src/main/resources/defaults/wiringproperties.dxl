@@ -1,7 +1,16 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5'>
-<item name='$TITLE'><text>DefaultWiring.wsdl</text></item>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258E4300212830'>
+<noteinfo noteid='34e' unid='13C75417CCE18171C1258E43004391B3' sequence='2'>
+<created><datetime dst='true'>20260729T141802,11+02</datetime></created>
+<modified><datetime dst='true'>20260729T141802,13+02</datetime></modified>
+<revised><datetime dst='true'>20260729T141802,12+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T141802,12+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T141802,11+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<item name='$TITLE'><text>Default-Wiring.wsdl</text></item>
 <item name='$FileModDT' sign='true'><datetime dst='true'>20070530T220416,00-04</datetime></item>
 <item name='$Flags'><text>34567C:Q</text></item>
 <item name='$PublicAccess' sign='true'><text>1</text></item>
@@ -256,3 +265,4 @@ AFb/ggAUACYAIgARAAAAAAAAAAAAU2V0U2Vjb25kYXJ5RGF0ZUxpc3RzZXRzZWNvbmRhcnlkYXRl
 bGlzdGFjdGlvbi5kZXNjcmlwdGlvbnNldHNlY29uZGFyeWRhdGVsaXN0YWN0aW9uLmNhcHRpb25T
 ZWNvbmRhcnlEYXRlTGlzdHU=
 </rawitemdata></item></note>
+

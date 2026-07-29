@@ -157,11 +157,22 @@ final class BulkOnlyNotes {
       return "dataconnection";
     }
     if (flags.indexOf(FLAG_JAVA_RESOURCE) >= 0) {
+      // Resources > Applets (shared Java / applet resource). Code > Jars use "34567Cg~,".
+      return "applet";
+    }
+    // Code > Jars (Designer "Import Jar"): $Flags like "34567Cg~,"
+    if (lower.endsWith(".jar") && flags.indexOf(',') >= 0) {
       return "jar";
+    }
+    // Code > Java (class/interface/enum): $Flags like "34567Cg~["
+    if (lower.endsWith(".java") && flags.indexOf('[') >= 0) {
+      return "javasource";
     }
     if (lower.startsWith("web-inf/")
         || lower.startsWith(".settings/")
         || lower.startsWith("icons/")
+        || lower.startsWith("local/")
+        || lower.startsWith("lib/")
         || lower.endsWith(".properties")
         || lower.endsWith(".xsp-config")
         || XPAGES_PROJECT_FILES.contains(lower)) {

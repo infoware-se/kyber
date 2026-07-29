@@ -1,23 +1,49 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE agent SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<agent name='DefaultJavaAgent' xmlns='http://www.lotus.com/dxl' version='14.5'
- publicaccess='false' designerversion='8.5.3'>
+<agent name='Default-JavaAgent' xmlns='http://www.lotus.com/dxl' version='14.5'
+ maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3' publicaccess='false'
+ designerversion='8.5.3'>
+<noteinfo noteid='33a' unid='76D3782B33309B09C1258E430043917A' sequence='7'>
+<created><datetime dst='true'>20260729T141801,54+02</datetime></created>
+<modified><datetime dst='true'>20260729T150657,46+02</datetime></modified>
+<revised><datetime dst='true'>20260729T150657,45+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T150657,45+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T141801,58+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<designchange><datetime dst='true'>20260729T150657,39+02</datetime></designchange>
 <trigger type='actionsmenu'/>
-<documentset type='selected'/>
-<code event='action'><javaproject class='JavaAgent.class' codepath=''>
-<java name='JavaAgent.java'>import lotus.domino.*;
+<documentset type='selected'/><code event='action'><javaproject class='JavaAgent.class'
+ codepath='C:\Domino\Data'><java name='JavaAgent.java'>import lotus.domino.*;
 
 public class JavaAgent extends AgentBase {
 	public void NotesMain() {
 		try {
 			Session session = getSession();
-			AgentContext agentContext = session.getAgentContext();
-			System.out.println("Hello World");
+			System.out.println("Hello World from " + session.getUserName());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-}
-</java>
-</javaproject></code>
-</agent>
+}</java><javaresource name='JavaAgent.class'>
+yv66vgAAAEEAPQoAAgADBwAEDAAFAAYBABZsb3R1cy9kb21pbm8vQWdlbnRCYXNlAQAGPGluaXQ+
+AQADKClWCgAIAAkHAAoMAAsADAEACUphdmFBZ2VudAEACmdldFNlc3Npb24BABgoKUxsb3R1cy9k
+b21pbm8vU2Vzc2lvbjsJAA4ADwcAEAwAEQASAQAQamF2YS9sYW5nL1N5c3RlbQEAA291dAEAFUxq
+YXZhL2lvL1ByaW50U3RyZWFtOwsAFAAVBwAWDAAXABgBABRsb3R1cy9kb21pbm8vU2Vzc2lvbgEA
+C2dldFVzZXJOYW1lAQAUKClMamF2YS9sYW5nL1N0cmluZzsSAAAAGgwAGwAcAQAXbWFrZUNvbmNh
+dFdpdGhDb25zdGFudHMBACYoTGphdmEvbGFuZy9TdHJpbmc7KUxqYXZhL2xhbmcvU3RyaW5nOwoA
+HgAfBwAgDAAhACIBABNqYXZhL2lvL1ByaW50U3RyZWFtAQAHcHJpbnRsbgEAFShMamF2YS9sYW5n
+L1N0cmluZzspVgcAJAEAE2phdmEvbGFuZy9FeGNlcHRpb24KACMAJgwAJwAGAQAPcHJpbnRTdGFj
+a1RyYWNlAQAEQ29kZQEAD0xpbmVOdW1iZXJUYWJsZQEACU5vdGVzTWFpbgEADVN0YWNrTWFwVGFi
+bGUBAApTb3VyY2VGaWxlAQAOSmF2YUFnZW50LmphdmEBABBCb290c3RyYXBNZXRob2RzCAAwAQAS
+SGVsbG8gV29ybGQgZnJvbSABDwYAMgoAMwA0BwA1DAAbADYBACRqYXZhL2xhbmcvaW52b2tlL1N0
+cmluZ0NvbmNhdEZhY3RvcnkBAJgoTGphdmEvbGFuZy9pbnZva2UvTWV0aG9kSGFuZGxlcyRMb29r
+dXA7TGphdmEvbGFuZy9TdHJpbmc7TGphdmEvbGFuZy9pbnZva2UvTWV0aG9kVHlwZTtMamF2YS9s
+YW5nL1N0cmluZztbTGphdmEvbGFuZy9PYmplY3Q7KUxqYXZhL2xhbmcvaW52b2tlL0NhbGxTaXRl
+OwEADElubmVyQ2xhc3NlcwcAOQEAJWphdmEvbGFuZy9pbnZva2UvTWV0aG9kSGFuZGxlcyRMb29r
+dXAHADsBAB5qYXZhL2xhbmcvaW52b2tlL01ldGhvZEhhbmRsZXMBAAZMb29rdXAAIQAIAAIAAAAA
+AAIAAQAFAAYAAQAoAAAAHQABAAEAAAAFKrcAAbEAAAABACkAAAAGAAEAAAACAAEAKgAGAAEAKAAA
+AGAAAgACAAAAHyq2AAdMsgANK7kAEwEAugAZAAC2AB2nAAhMK7YAJbEAAQAAABYAGQAjAAIAKQAA
+ABoABgAAAAUABQAGABYACQAZAAcAGgAIAB4ACgArAAAABwACWQcAIwQAAwAsAAAAAgAtAC4AAAAI
+AAEAMQABAC8ANwAAAAoAAQA4ADoAPAAZ
+</javaresource></javaproject></code></agent>
+

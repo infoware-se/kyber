@@ -1,6 +1,22 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5'>
-<item name='$TITLE'><text>DefaultCompositeComponent</text></item>
-<item name='$Flags'><text>(+-*g_</text></item>
-</note>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258E4300212830'>
+<noteinfo noteid='43e' unid='22DA73CAC7959B35C1258E43004CFF17' sequence='2'>
+<created><datetime dst='true'>20260729T160100,39+02</datetime></created>
+<modified><datetime dst='true'>20260729T160100,41+02</datetime></modified>
+<revised><datetime dst='true'>20260729T160100,40+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T160100,40+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T160100,39+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<item name='$TITLE'><text>Default-CompositeComponent.component</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='$Flags'><text>345CgQ_</text></item>
+<item name='$FileSize' sign='true'><number>0</number></item>
+<item name='$FileData' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAAAAAAAAAQAAAAAAAAAAAAAAYAASAAAAAAAAAAAAAAAAAAAA
+</rawitemdata></item>
+<item name='$FileNames' sign='true'><text>Default-CompositeComponent.component</text></item></note>
+

@@ -1,12 +1,19 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE scriptlibrary SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<scriptlibrary name='DefaultClientJs' xmlns='http://www.lotus.com/dxl' version='14.5'
+<scriptlibrary name='Default-ClientJs' xmlns='http://www.lotus.com/dxl' version='14.5'
+ maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3 v4strict'
  designerversion='8.5.3'>
-<code event='library' for='web'><javascript>/**
- * Client JavaScript script library starter.
- */
-function hello() {
+<noteinfo noteid='312' unid='7DC4CD0604EBD4F1C1258E430043910B' sequence='88'>
+<created><datetime dst='true'>20260729T141800,43+02</datetime></created>
+<modified><datetime dst='true'>20260729T160910,96+02</datetime></modified>
+<revised><datetime dst='true'>20260729T160910,95+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T160910,95+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T141800,43+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby><code event='library'
+ for='web'><javascript>function hello() {
 	return 'hello';
 }
 </javascript></code>
-</scriptlibrary>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></scriptlibrary>
+

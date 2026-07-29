@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258E4300212830'>
+<noteinfo noteid='432' unid='BE10586BC5B48C77C1258E43004BED28' sequence='3'>
+<created><datetime dst='true'>20260729T154919,12+02</datetime></created>
+<modified><datetime dst='true'>20260729T155006,21+02</datetime></modified>
+<revised><datetime dst='true'>20260729T155006,20+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T155006,20+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T154919,12+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+<item name='$TITLE'><text>se/infoware/keep/DefaultHelloEnum.java</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='$Flags'><text>34567Cg~[</text></item>
+<item name='$FileSize' sign='true'><number>135</number></item>
+<item name='$FileData' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAACHAAAAAQAAAAAAAAAAAAAAYACZAAAAhwCIAAAAAAAAAAAAcGFja2FnZSBzZS5pbmZv
+d2FyZS5rZWVwOwoKLyoqIERlZmF1bHQgSmF2YSBlbnVtIGZvciBLZWVwIERlc2lnbiAoQ29kZSA+
+IEphdmEpLiAqLwpwdWJsaWMgZW51bSBEZWZhdWx0SGVsbG9FbnVtIHsKICBIRUxMTywKICBHT09E
+QllFCn0KAA==
+</rawitemdata></item>
+<item name='$FileNames' sign='true'><text>se/infoware/keep/DefaultHelloEnum.java</text></item></note>
+

@@ -19,23 +19,26 @@ public class CreateSharedActions extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String dxl = request.incoming.getString("dxl", "");
-    DesignDxl.requireRootOnly(dxl, TYPE);
+    String name = DesignDxl.requireSharedActionsName(dxl);
 
     Database db = request.db();
     DxlImporter importer = request.session().getDxlImporter();
     String log = DxlDesignPatch.importDesign(importer, dxl, db);
 
     SharedActions el =
-        db.getDesign()
-            .getSharedActions()
+        SharedActionsNotes.find(db, name)
             .orElseThrow(
                 () ->
                     new KeepExceptionServer(
-                        "SharedActions missing after DXL import; cannot sign"));
+                        "SharedActions %s missing after DXL import; cannot sign", name));
     el.sign();
     el.save();
 
     request.emit(
-        new JsonObject().put("success", true).put("type", TYPE).put("log", log));
+        new JsonObject()
+            .put("success", true)
+            .put("type", TYPE)
+            .put("name", name)
+            .put("log", log));
   }
 }

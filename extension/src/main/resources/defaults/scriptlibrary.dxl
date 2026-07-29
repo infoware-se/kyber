@@ -1,12 +1,19 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE scriptlibrary SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<scriptlibrary name='DefaultLotusScript' xmlns='http://www.lotus.com/dxl' version='14.5'
+<scriptlibrary name='Default-LotusScript' xmlns='http://www.lotus.com/dxl'
+ version='14.5' maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3 v4strict'
  designerversion='8.5.3'>
-<code event='options'><lotusscript>Option Public
+<noteinfo noteid='302' unid='8E8445F9860491EBC1258E43004390EE' sequence='87'>
+<created><datetime dst='true'>20260729T141800,14+02</datetime></created>
+<modified><datetime dst='true'>20260729T160911,05+02</datetime></modified>
+<revised><datetime dst='true'>20260729T160911,04+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T160911,04+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T141800,24+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby><code event='options'><lotusscript
+>Option Public
 Option Declare
-</lotusscript></code>
-<code event='Hello'><lotusscript>Function Hello As String
+</lotusscript></code><code event='Hello'><lotusscript>Function Hello As String
 	Hello = "Hello World"
-End Function
-</lotusscript></code>
-</scriptlibrary>
+End Function</lotusscript></code></scriptlibrary>
+

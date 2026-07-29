@@ -3,14 +3,14 @@
 <imageresource name='$DBIcon' xmlns='http://www.lotus.com/dxl' version='14.5'
  maintenanceversion='1.0' replicaid='C1258E4300212830' hide='design' publicaccess='false'
  designerversion='8.5.3' imagename='blank-icon.png'>
-<noteinfo noteid='13a' unid='609D97CE72F814E1C1258E4300212852' sequence='2'>
+<noteinfo noteid='13a' unid='609D97CE72F814E1C1258E4300212852' sequence='4'>
 <created><datetime dst='true'>20260729T080210,10+02</datetime></created>
-<modified><datetime dst='true'>20260729T080350,41+02</datetime></modified>
-<revised><datetime dst='true'>20260729T080350,40+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T080350,40+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260729T133847,61+02</datetime></modified>
+<revised><datetime dst='true'>20260729T133847,60+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T133847,60+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T080210,11+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Template Development/O=Domino</name><name>CN=Designer/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby><png>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby><png>
 iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fY51AABhRElEQVR4nO3dB3wcxdk/cJHQu3G3
 inuRCyaQhDQS8pIESCiBkAA2zQYDxjTbYFu600ly7733pmLZki3JtmRLluQiV7kDtsGYmjcJeZO8
 +b9pgKTn/zyzu3e7s7Nze9JJupPGn8/vs3un0+nK3tfPzM3OxMSY/sFvf/tNSEv7BttftuwKGDfu

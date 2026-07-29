@@ -2,27 +2,27 @@
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258E4300212830'>
-<noteinfo noteid='156' unid='C435208EBE8270D0C1258E43002142DA' sequence='2'>
-<created><datetime dst='true'>20260729T080318,02+02</datetime></created>
-<modified><datetime dst='true'>20260729T080318,04+02</datetime></modified>
-<revised><datetime dst='true'>20260729T080318,03+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T080318,03+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260729T080318,02+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+<noteinfo noteid='44e' unid='3097AE828AE26E41C1258E43004DB57B' sequence='2'>
+<created><datetime dst='true'>20260729T160847,31+02</datetime></created>
+<modified><datetime dst='true'>20260729T160847,37+02</datetime></modified>
+<revised><datetime dst='true'>20260729T160847,36+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T160847,36+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T160847,31+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
 <item name='$Flags'><text>~C4g</text></item>
 <item name='$TITLE'><text>.classpath</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
-<item name='$FileSize' sign='true'><number>329</number></item>
+<item name='$FileSize' sign='true'><number>330</number></item>
 <item name='$FileData' sign='true'>
 <rawitemdata type='1'>
-YQAYAAAAAABJAQAAAQAAAAAAAAAAAAAAYABbAQAASQFKAQAAAAAAAAAAPD94bWwgdmVyc2lvbj0i
+YQAYAAAAAABKAQAAAQAAAAAAAAAAAAAAYABcAQAASgFKAQAAAAAAAAAAPD94bWwgdmVyc2lvbj0i
 MS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPGNsYXNzcGF0aD4KICA8Y2xhc3NwYXRoZW50cnkga2lu
-ZD0ic3JjIiBwYXRoPSJMb2NhbCIvPgogIDxjbGFzc3BhdGhlbnRyeSBraW5kPSJjb24iIHBhdGg9
-Im9yZy5lY2xpcHNlLmpkdC5sYXVuY2hpbmcuSlJFX0NPTlRBSU5FUiIvPgogIDxjbGFzc3BhdGhl
-bnRyeSBraW5kPSJjb24iIHBhdGg9Im9yZy5lY2xpcHNlLnBkZS5jb3JlLnJlcXVpcmVkUGx1Z2lu
-cyIvPgogIDxjbGFzc3BhdGhlbnRyeSBraW5kPSJvdXRwdXQiIHBhdGg9IldlYkNvbnRlbnQvV0VC
-LUlORi9jbGFzc2VzIi8+CjwvY2xhc3NwYXRoPgoA
+ZD0ic3JjIiBwYXRoPSJMb2NhbC8iLz4KICA8Y2xhc3NwYXRoZW50cnkga2luZD0iY29uIiBwYXRo
+PSJvcmcuZWNsaXBzZS5qZHQubGF1bmNoaW5nLkpSRV9DT05UQUlORVIiLz4KICA8Y2xhc3NwYXRo
+ZW50cnkga2luZD0iY29uIiBwYXRoPSJvcmcuZWNsaXBzZS5wZGUuY29yZS5yZXF1aXJlZFBsdWdp
+bnMiLz4KICA8Y2xhc3NwYXRoZW50cnkga2luZD0ib3V0cHV0IiBwYXRoPSJXZWJDb250ZW50L1dF
+Qi1JTkYvY2xhc3NlcyIvPgo8L2NsYXNzcGF0aD4K
 </rawitemdata></item>
 <item name='$FileNames' sign='true'><text>.classpath</text></item></note>
 

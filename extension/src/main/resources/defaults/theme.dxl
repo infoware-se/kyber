@@ -2,15 +2,15 @@
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258E4300212830'>
-<noteinfo noteid='1d6' unid='F8B16795FBD751AAC1258E430024CDEE' sequence='2'>
+<noteinfo noteid='1d6' unid='F8B16795FBD751AAC1258E430024CDEE' sequence='6'>
 <created><datetime dst='true'>20260729T084200,14+02</datetime></created>
-<modified><datetime dst='true'>20260729T084200,16+02</datetime></modified>
-<revised><datetime dst='true'>20260729T084200,15+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T084200,15+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260729T141800,08+02</datetime></modified>
+<revised><datetime dst='true'>20260729T141800,07+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T141800,07+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T084200,14+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
-<item name='$TITLE'><text>Theme.theme</text></item>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<item name='$TITLE'><text>Default-Theme.theme</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
 <item name='$Flags'><text>34567Cg~`</text></item>
 <item name='$FileSize' sign='true'><number>900</number></item>
