@@ -40,7 +40,7 @@ All paths are under `/api/design-v1` and require `?nsfPath=`.
 | Method | Path | Purpose |
 |--------|------|---------|
 | GET | `/designdxl?nsfPath=` | Export all supported elements as `{ nsfPath, elements: [{ type, name?, dxl }] }` |
-| PUT | `/designdxl?nsfPath=` | Import that array; NSF must already exist; same import/sign as per-type `Create*` |
+| PUT | `/designdxl?nsfPath=` | Import that array; **create NSF if missing**; same import/sign as per-type `Create*` |
 
 Element `type` values match repo layout (`form`, `about`, `image`, â€¦). Bridge scripts in repo root [`tools/`](../tools/):
 

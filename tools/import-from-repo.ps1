@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
-  Import a design folder tree (from export-to-repo.ps1) into an existing NSF via bulk PUT.
-  The NSF must already exist.
+  Import a design folder tree (from export-to-repo.ps1) into an NSF via bulk PUT.
+  Creates the NSF if it does not exist.
 
 .PARAMETER RestUrl
   Domino REST base URL, e.g. https://host:8880
@@ -121,5 +121,5 @@ $uri = "$RestUrl/api/design-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfP
 Write-Host "PUT $uri ($($elements.Count) elements)"
 $result = Invoke-Drapi -Method PUT -Uri $uri -Headers $headers -Body $bodyJson -ContentType "application/json; charset=utf-8"
 
-Write-Host ("imported={0} failed={1} nsfPath={2}" -f $result.imported, $result.failed, $result.nsfPath)
+Write-Host ("imported={0} created={1} nsfPath={2}" -f $result.imported, $result.created, $result.nsfPath)
 $result | ConvertTo-Json -Depth 4 | Write-Output

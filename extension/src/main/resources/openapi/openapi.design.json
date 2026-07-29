@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "KEEP Domino REST API design",
-    "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. The target NSF must already exist; this API never creates or deletes databases.",
-    "version": "0.17.3"
+    "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (only bulk import); per-type CRUD requires an existing database. This API never deletes databases.",
+    "version": "0.17.4"
   },
   "servers": [
     {
@@ -105,11 +105,11 @@
     },
     "/designdxl": {
       "summary": "Bulk export or import all supported design elements as CRUD-identical DXL",
-      "description": "GET exports every supported design element. PUT imports an elements array (same DXL as per-type CRUD). The target NSF must already exist.",
+      "description": "GET exports every supported design element. PUT imports an elements array (same DXL as per-type CRUD). Missing NSF is created on PUT only. PUT remaps connection via KeepConfig.nsf internally.",
       "parameters": [
         {
           "name": "nsfPath",
-          "description": "Target Domino database filepath (must already exist)",
+          "description": "Target Domino database filepath (created on PUT if missing)",
           "schema": { "type": "string" },
           "in": "query",
           "required": true
@@ -157,7 +157,7 @@
         "tags": ["keep-design"],
         "operationId": "importDesignDxl",
         "summary": "Bulk import design DXL",
-        "description": "Import elements with REPLACE_ELSE_CREATE, sign after each import, then compile LotusScript (fixes Notes 'use list module' errors). Fails if the NSF does not exist.",
+        "description": "Import elements with REPLACE_ELSE_CREATE, sign after each import, then compile LotusScript (fixes Notes 'use list module' errors). Creates the NSF when missing.",
         "x-keep-version": 1,
         "security": [{ "jwt": [] }],
         "requestBody": {
@@ -194,6 +194,7 @@
                   "type": "object",
                   "properties": {
                     "success": { "type": "boolean" },
+                    "created": { "type": "boolean" },
                     "nsfPath": { "type": "string" },
                     "imported": { "type": "integer" },
                     "results": { "type": "array", "items": { "type": "object" } }
