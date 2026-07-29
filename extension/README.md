@@ -35,8 +35,6 @@ Manage database **design elements** via Domino REST API. Target database is sele
 
 All paths are under `/api/design-v1` and require `?nsfPath=`.
 
-## Bulk design DXL (git sync)
-
 ## Bulk export/import (`design-handler`)
 
 | Method | Path | Purpose |
