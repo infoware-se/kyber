@@ -112,6 +112,7 @@ final class DesignElementIO {
     exportNamed(elements, "form", db.getDesign().getForms(), exporter, exportedUnids);
     exportNamed(elements, "page", db.getDesign().getPages(), exporter, exportedUnids);
     exportNamed(elements, "outline", db.getDesign().getOutlines(), exporter, exportedUnids);
+    exportNamedSafe(elements, "navigator", db.getDesign().getNavigators(), exporter, exportedUnids);
     // JNX FramesetImpl can throw on missing frameset version (Optional.empty); skip bad
     // notes so bulk GET continues — residual notes may still appear as designnote.
     exportNamedSafe(elements, "frameset", db.getDesign().getFramesets(), exporter, exportedUnids);
@@ -490,13 +491,12 @@ final class DesignElementIO {
           }
         }
       }
-      case "navigator",
-          "jar",
-          "applet",
-          "javasource",
-          "xspproperties",
-          "xpagesresource",
-          "designnote" -> {
+      case "navigator" -> {
+        name = DesignDxl.requireDesignName(dxl, "navigator", "note");
+        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        signWarning = signNamed(db.getDesign().getNavigator(name), "Navigator", name);
+      }
+      case "jar", "applet", "javasource", "xspproperties", "xpagesresource", "designnote" -> {
         String requested =
             DesignDxl.requireDesignName(
                 dxl, "note", "fileresource", "navigator", "webservice", "agent", "appletresource");

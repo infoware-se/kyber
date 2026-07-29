@@ -5,7 +5,6 @@ import com.hcl.domino.data.Document;
 import com.hcl.domino.data.DocumentClass;
 import com.hcl.domino.data.IDTable;
 import com.hcl.domino.design.DesignElement;
-import com.hcl.domino.design.Navigator;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -50,23 +49,6 @@ final class BulkOnlyNotes {
     Set<String> seen =
         alreadyExportedUnids == null ? new HashSet<>() : new HashSet<>(alreadyExportedUnids);
     List<Entry> out = new ArrayList<>();
-
-    try {
-      for (Navigator nav : db.getDesign().getNavigators().toList()) {
-        String title = nav.getTitle();
-        if (title == null || title.isBlank()) {
-          continue;
-        }
-        Document doc = nav.getDocument();
-        String unid = unidOf(doc);
-        if (unid != null && !seen.add(unid)) {
-          continue;
-        }
-        out.add(new Entry("navigator", title.trim(), doc));
-      }
-    } catch (Exception ignored) {
-      // some NSF builds throw on navigator enumeration
-    }
 
     for (Document doc : designDocuments(db)) {
       String unid = unidOf(doc);

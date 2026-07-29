@@ -1,11 +1,22 @@
 package se.infoware.domino.keep.dbrequests.design;
 
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
  * Domino Designer Code &gt; Java kinds: class, interface, enum ({@code $Flags} like {@code
@@ -101,6 +112,80 @@ final class JavaSourceKinds {
   static String detectOrDefault(String dxl) {
     String d = detect(dxl);
     return d == null ? CLASS : d;
+  }
+
+  /** Set {@code $TITLE} / {@code $FileNames} on a javasource {@code <note>} DXL. */
+  static String withName(String dxl, String name) throws KeepExceptionWrongDataRequest {
+    if (name == null || name.isBlank()) {
+      throw new KeepExceptionWrongDataRequest("name is required");
+    }
+    String wanted = name.trim();
+    try {
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setNamespaceAware(true);
+      factory.setValidating(false);
+      factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+      factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+      factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+      factory.setExpandEntityReferences(false);
+      Document doc =
+          factory.newDocumentBuilder().parse(new InputSource(new StringReader(dxl)));
+      Element root = doc.getDocumentElement();
+      if (root == null) {
+        throw new KeepExceptionWrongDataRequest("invalid design DXL: missing root element");
+      }
+      NodeList items = root.getElementsByTagNameNS("*", "item");
+      if (items.getLength() == 0) {
+        items = root.getElementsByTagName("item");
+      }
+      for (int i = 0; i < items.getLength(); i++) {
+        if (!(items.item(i) instanceof Element item)) {
+          continue;
+        }
+        String itemName = item.getAttribute("name");
+        if (!"$TITLE".equalsIgnoreCase(itemName)
+            && !"TITLE".equalsIgnoreCase(itemName)
+            && !"$FileNames".equalsIgnoreCase(itemName)
+            && !"FileNames".equalsIgnoreCase(itemName)) {
+          continue;
+        }
+        NodeList texts = item.getElementsByTagNameNS("*", "text");
+        if (texts.getLength() == 0) {
+          texts = item.getElementsByTagName("text");
+        }
+        if (texts.getLength() > 0) {
+          texts.item(0).setTextContent(wanted);
+        }
+      }
+
+      var transformer = TransformerFactory.newInstance().newTransformer();
+      transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+      transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+      transformer.setOutputProperty(OutputKeys.INDENT, "no");
+      StringWriter sw = new StringWriter();
+      transformer.transform(new DOMSource(doc), new StreamResult(sw));
+      String out = sw.toString();
+      if (!out.toLowerCase(Locale.ROOT).contains("<!doctype")
+          && dxl.toLowerCase(Locale.ROOT).contains("<!doctype")) {
+        int xmlEnd = out.indexOf("?>");
+        String doctype = "<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n";
+        if (xmlEnd >= 0) {
+          out =
+              out.substring(0, xmlEnd + 2)
+                  + "\n"
+                  + doctype
+                  + out.substring(xmlEnd + 2).stripLeading();
+        } else {
+          out = doctype + out;
+        }
+      }
+      return out;
+    } catch (KeepExceptionWrongDataRequest e) {
+      throw e;
+    } catch (Exception e) {
+      String message = e.getMessage() == null ? e.toString() : e.getMessage();
+      throw new KeepExceptionWrongDataRequest("cannot set javasource name: " + message);
+    }
   }
 
   private static String filePayload(String dxl) {

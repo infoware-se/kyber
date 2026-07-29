@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>se.infoware.domino</groupId>
     <artifactId>keep-design</artifactId>
-    <version>0.19.20</version>
+    <version>0.19.21</version>
     <packaging>jar</packaging>
     <name>KEEP Domino REST API design</name>
 

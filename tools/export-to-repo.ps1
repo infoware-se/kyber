@@ -148,12 +148,17 @@ $script:RepoDirByType = [ordered]@{
   webserviceconsumer    = "webserviceconsumers"
   dataconnection        = "dataconnections"
   jar                   = "jars"
+  applet                = "applets"
+  javasource            = "javasources"
+  xpagesresource        = "xpagesresources"
   designnote            = "designnotes"
   customcontrol         = "customcontrols"
   xpage                 = "xpages"
   wiringproperties      = "wiringproperties"
   compositeapplication  = "compositeapplications"
   compositecomponent    = "compositecomponents"
+  applicationproperties = "note"
+  xspproperties         = "note"
 }
 
 function Get-ExportDir([string]$Type, [string]$Doctype) {

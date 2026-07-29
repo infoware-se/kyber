@@ -67,7 +67,7 @@ design/
 
 After PUT, the API compiles LotusScript (script libraries first) and returns a `lotusscript` summary. Notes â€œError processing use list moduleâ€ after a restore usually means code was not compiled; re-import with 0.12+ or run Designer **Recompile All LotusScript**. Some complex libraries (e.g. DDM) can still report syntax errors after DXL round-trip â€” open those in Designer if needed.
 
-**Bulk-only types** (no list/get/put/delete endpoints; only in `/designdxl`): `navigator`, `dataconnection`, `jar`, `applet`, `javasource`, `xpagesresource` (incl. `WEB-INF/` except `xsp.properties`, i18n `*.properties`, `.settings/`, `icons/`, `Local/`), `wiringproperties`, `compositeapplication`, `compositecomponent`, and catch-all `designnote` for any other remaining design note (UNID-deduped after typed exporters). Starters: `GET /defaults/{type}` for all of these except `designnote`.
+**Bulk-only types** (no list/get/put/delete endpoints; only in `/designdxl`): `xpagesresource` (incl. `WEB-INF/` except `xsp.properties`, i18n `*.properties`, `.settings/`, `icons/`, `Local/`), and catch-all `designnote` for any other remaining design note (UNID-deduped after typed exporters). Starters: `GET /defaults/{type}` for `xpagesresource` (not `designnote`).
 
 **Blank NSF baseline** (reference DXL, not starters): [`resources/defaults/blank/`](src/main/resources/defaults/blank/) — `acl.dxl`, `applicationproperties.dxl`, `image-DBIcon.dxl`, `view-default.dxl`, plus `manifest.json` from a Domino blank database.
 
@@ -102,29 +102,26 @@ Mapped to the Designer outline. â€œInâ€ = typed DXL CRUD; â€œBulkâ
 | Resources | Using Document | `/using` (singleton) |
 | XPages | XPages | `/xpages` |
 | Custom Controls | Custom Controls | `/customcontrols` (`.xsp` notes without XPage `K` flag; not Composite Components) |
-| (XPages project) | Other `WEB-INF/` notes | **Bulk only** â€” type `xpagesresource` |
-| Shared Elements | Navigators | **Bulk only** â€” type `navigator` |
+| (XPages project) | Other `WEB-INF/` notes | **Bulk only** — type `xpagesresource` |
+| Shared Elements | Navigators | `/navigators` |
 | Code | Web Service Providers | `/webservices` + `GET /defaults/webservice` |
 | Code | Web Service Consumers | `/webserviceconsumers` + `GET /defaults/webserviceconsumer` |
-| Data | Data Connections | **Bulk only** â€” type `dataconnection` |
-| Code | Jars (design Java resources) | **Bulk only** — type `jar` |
-| Composite Applications | Wiring Properties | **Bulk only** — type `wiringproperties` |
-| Composite Applications | Applications | **Bulk only** — type `compositeapplication` |
-| Composite Applications | Components | **Bulk only** — type `compositecomponent` |
+| Code | Java (class/interface/enum) | `/javasources` — kinds `class` \| `interface` \| `enum` |
+| Code | Jars | `/jars` |
+| Data | Data Connections | `/dataconnections` |
+| Resources | Applets | `/applets` |
+| Composite Applications | Wiring Properties | `/wiringproperties` |
+| Composite Applications | Applications | `/compositeapplications` |
+| Composite Applications | Components | `/compositecomponents` |
 | Database | ACL | `/acl` (singleton; also in bulk) |
 
-Singletons have no list/`{name}` path â€” only `GET` / `PUT` / `DELETE` on the collection path (ACL has no DELETE).
+Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the collection path (ACL has no DELETE).
 
-### Not included
-
-| Designer section | Element | Reason |
-|------------------|---------|--------|
 ### Not included (CRUD or bulk)
 
 | Designer section | Element | Reason |
 |------------------|---------|--------|
-| Resources | Applets | No first-class design-note type (often embedded in form/page DXL) |
-| Code | Java (separate node) | Same notes as Java **script libraries** → use `/scriptlibraries` |
+| (residual) | Untitled / unclassified design notes | Catch-all bulk type `designnote` only |
 
 ### KEEP ACL (endpoint access)
 
