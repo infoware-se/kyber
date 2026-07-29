@@ -3,7 +3,7 @@
   "info": {
     "title": "KEEP Domino REST API design",
     "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (only bulk import); per-type CRUD requires an existing database. This API never deletes databases.",
-    "version": "0.17.4"
+    "version": "0.17.5"
   },
   "servers": [
     {
@@ -13,7 +13,11 @@
   "tags": [
     {
       "name": "keep-design",
-      "description": "KEEP database design element management (pages, outlines, framesets, forms, views, folders, subforms, fields, columns, images, files, stylesheets, themes, about, using, agents, scriptlibraries, webservices, webserviceconsumers, sharedactions, databasescript, xpages, customcontrols, wiringproperties, compositeapplications, compositecomponents, bulk designdxl)"
+      "description": "KEEP database design element CRUD (pages, outlines, framesets, forms, views, folders, subforms, fields, columns, images, files, stylesheets, themes, about, using, agents, scriptlibraries, webservices, webserviceconsumers, sharedactions, databasescript, xpages, customcontrols, wiringproperties, compositeapplications, compositecomponents)"
+    },
+    {
+      "name": "design-handler",
+      "description": "Bulk design DXL export (GET /designdxl) and import (PUT /designdxl)"
     }
   ],
   "paths": {
@@ -116,7 +120,7 @@
         }
       ],
       "get": {
-        "tags": ["keep-design"],
+        "tags": ["design-handler"],
         "operationId": "getDesignDxl",
         "summary": "Bulk export design DXL",
         "description": "Returns { nsfPath, elements: [{ type, name?, dxl }] } for all supported design types.",
@@ -154,7 +158,7 @@
         }
       },
       "put": {
-        "tags": ["keep-design"],
+        "tags": ["design-handler"],
         "operationId": "importDesignDxl",
         "summary": "Bulk import design DXL",
         "description": "Import elements with REPLACE_ELSE_CREATE, sign after each import, then compile LotusScript (fixes Notes 'use list module' errors). Creates the NSF when missing.",

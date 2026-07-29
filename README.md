@@ -6,9 +6,9 @@ KEEP extension for Domino REST API: manage database **design elements** via `nsf
 |--|--|
 | **JAR** | `keep-design-*.jar` |
 | **API** | `/api/design-v1` |
-| **Swagger** | tag **`keep-design`** |
+| **Swagger** | tags **`keep-design`** (CRUD), **`design-handler`** (bulk GET/PUT `/designdxl`) |
 | **Defaults NSF** | `keepdesign.nsf` (property `keep.design.defaultNsf`) |
-| **Version** | 0.17.4 |
+| **Version** | 0.17.5 |
 
 Full endpoint tables and Designer coverage: **[extension/README.md](extension/README.md)**.
 
