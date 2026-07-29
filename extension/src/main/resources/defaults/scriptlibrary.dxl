@@ -3,17 +3,18 @@
 <scriptlibrary name='Default-LotusScript' xmlns='http://www.lotus.com/dxl'
  version='14.5' maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3 v4strict'
  designerversion='8.5.3'>
-<noteinfo noteid='302' unid='8E8445F9860491EBC1258E43004390EE' sequence='89'>
+<noteinfo noteid='302' unid='8E8445F9860491EBC1258E43004390EE' sequence='91'>
 <created><datetime dst='true'>20260729T141800,14+02</datetime></created>
-<modified><datetime dst='true'>20260729T170618,92+02</datetime></modified>
-<revised><datetime dst='true'>20260729T170618,91+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T170618,91+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260729T170900,30+02</datetime></modified>
+<revised><datetime dst='true'>20260729T170900,29+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T170900,29+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T141800,24+02</datetime></addedtofile></noteinfo>
 <updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Domino/O=Infoware</name></wassignedby><code event='options'><lotusscript
 >Option Public
 Option Declare
-</lotusscript></code><code event='FormatTitle'><lotusscript>Function Hello(Optional name As String = "World") As String
+</lotusscript></code><code event='FormatTitle'><lotusscript>Function Hello(name As String) As String
+	If name = "" Then name = "World"
 	Hello = "Hello, " &amp; name &amp; "!"
 End Function
 

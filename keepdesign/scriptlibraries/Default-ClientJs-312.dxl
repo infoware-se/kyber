@@ -3,11 +3,11 @@
 <scriptlibrary name='Default-ClientJs' xmlns='http://www.lotus.com/dxl' version='14.5'
  maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3 v4strict'
  designerversion='8.5.3'>
-<noteinfo noteid='312' unid='7DC4CD0604EBD4F1C1258E430043910B' sequence='90'>
+<noteinfo noteid='312' unid='7DC4CD0604EBD4F1C1258E430043910B' sequence='92'>
 <created><datetime dst='true'>20260729T141800,43+02</datetime></created>
-<modified><datetime dst='true'>20260729T170619,07+02</datetime></modified>
-<revised><datetime dst='true'>20260729T170619,06+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T170619,06+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260729T170825,38+02</datetime></modified>
+<revised><datetime dst='true'>20260729T170825,37+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T170825,37+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T141800,43+02</datetime></addedtofile></noteinfo>
 <updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Domino/O=Infoware</name></wassignedby><code event='library'

@@ -3,15 +3,15 @@
 <agent name='Default-LotusScriptAgent' xmlns='http://www.lotus.com/dxl' version='14.5'
  maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3' publicaccess='false'
  designerversion='8.5.3'>
-<noteinfo noteid='322' unid='7FC76C47741D82EBC1258E4300439172' sequence='89'>
+<noteinfo noteid='322' unid='7FC76C47741D82EBC1258E4300439172' sequence='91'>
 <created><datetime dst='true'>20260729T141801,46+02</datetime></created>
-<modified><datetime dst='true'>20260729T170618,76+02</datetime></modified>
-<revised><datetime dst='true'>20260729T170618,75+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T170618,75+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260729T170825,80+02</datetime></modified>
+<revised><datetime dst='true'>20260729T170825,79+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T170825,79+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T141801,46+02</datetime></addedtofile></noteinfo>
 <updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
-<designchange><datetime dst='true'>20260729T170618,74+02</datetime></designchange>
+<designchange><datetime dst='true'>20260729T170825,78+02</datetime></designchange>
 <trigger type='actionsmenu'/>
 <documentset type='selected'/><code event='options'><lotusscript>Option Public
 Option Declare

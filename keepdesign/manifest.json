@@ -1,5 +1,5 @@
 {
-    "exportedAt":  "2026-07-29T15:06:36.7947663Z",
+    "exportedAt":  "2026-07-29T15:09:01.2837255Z",
     "layout":  "api-type",
     "nsfPath":  "keepdesign.nsf",
     "elements":  [
@@ -237,22 +237,6 @@
                          "noteid":  "46e"
                      },
                      {
-                         "path":  "customcontrols/Default-CustomControl.xsp-47a.dxl",
-                         "type":  "customcontrol",
-                         "unid":  "0F71F1BFF9E26F71C1258E4300527352",
-                         "name":  "Default-CustomControl.xsp",
-                         "doctype":  "note",
-                         "noteid":  "47a"
-                     },
-                     {
-                         "path":  "customcontrols/Default-CustomControl.xsp-486.dxl",
-                         "type":  "customcontrol",
-                         "unid":  "D95370120D506F1FC1258E4300529AF9",
-                         "name":  "Default-CustomControl.xsp",
-                         "doctype":  "note",
-                         "noteid":  "486"
-                     },
-                     {
                          "path":  "webservices/Default-WebService-346.dxl",
                          "type":  "webservice",
                          "unid":  "3554B55BF1070C97C1258E4300439188",
@@ -277,22 +261,6 @@
                          "noteid":  "46a"
                      },
                      {
-                         "path":  "xpages/Default-XPage.xsp-476.dxl",
-                         "type":  "xpage",
-                         "unid":  "FF54D864CF1391C5C1258E4300527341",
-                         "name":  "Default-XPage.xsp",
-                         "doctype":  "note",
-                         "noteid":  "476"
-                     },
-                     {
-                         "path":  "xpages/Default-XPage.xsp-482.dxl",
-                         "type":  "xpage",
-                         "unid":  "A7C09564274EE287C1258E4300529ADA",
-                         "name":  "Default-XPage.xsp",
-                         "doctype":  "note",
-                         "noteid":  "482"
-                     },
-                     {
                          "path":  "wiringproperties/Default-Wiring.wsdl-34e.dxl",
                          "type":  "wiringproperties",
                          "unid":  "13C75417CCE18171C1258E43004391B3",
@@ -315,22 +283,6 @@
                          "name":  "Default-CompositeComponent.component",
                          "doctype":  "note",
                          "noteid":  "472"
-                     },
-                     {
-                         "path":  "compositecomponents/Default-CompositeComponent.component-47e.dxl",
-                         "type":  "compositecomponent",
-                         "unid":  "62C41EFB275B077DC1258E430052736B",
-                         "name":  "Default-CompositeComponent.component",
-                         "doctype":  "note",
-                         "noteid":  "47e"
-                     },
-                     {
-                         "path":  "compositecomponents/Default-CompositeComponent.component-48a.dxl",
-                         "type":  "compositecomponent",
-                         "unid":  "0F5CF386873136E8C1258E4300529B17",
-                         "name":  "Default-CompositeComponent.component",
-                         "doctype":  "note",
-                         "noteid":  "48a"
                      },
                      {
                          "path":  "applets/Default-Applet-44a.dxl",
@@ -469,5 +421,5 @@
                          "noteid":  "152"
                      }
                  ],
-    "elementCount":  59
+    "elementCount":  53
 }

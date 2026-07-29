@@ -3,11 +3,11 @@
 <form name='Default-Form' xmlns='http://www.lotus.com/dxl' version='14.5'
  maintenanceversion='1.0' replicaid='C1258E4300212830' publicaccess='false'
  designerversion='8.5.3' renderpassthrough='true'>
-<noteinfo noteid='172' unid='DCB248E28C544CD8C1258E4300217D8D' sequence='117'>
+<noteinfo noteid='172' unid='DCB248E28C544CD8C1258E4300217D8D' sequence='119'>
 <created><datetime dst='true'>20260729T080548,29+02</datetime></created>
-<modified><datetime dst='true'>20260729T170034,13+02</datetime></modified>
-<revised><datetime dst='true'>20260729T170034,12+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T170034,12+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260729T170825,85+02</datetime></modified>
+<revised><datetime dst='true'>20260729T170825,84+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T170825,84+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T080548,60+02</datetime></addedtofile></noteinfo>
 <updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
@@ -17,5 +17,6 @@
 <par def='1'>Subject: <field type='text' kind='editable' name='Subject'/></par>
 <par def='1'>Status: <field type='keyword' kind='editable' name='Status'><keywords
  ui='dialoglist'/></field></par>
-<par def='1'>Notes: <field type='text' kind='editable' name='Notes'/></par></richtext></body></form>
+<par def='1'>Notes: <field type='text' kind='editable' name='Notes'/></par></richtext></body>
+<item name='$$ScriptName' summary='false' sign='true'><text>Default-Form</text></item></form>
 
