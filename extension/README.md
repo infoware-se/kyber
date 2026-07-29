@@ -64,7 +64,7 @@ design/
 
 After PUT, the API compiles LotusScript (script libraries first) and returns a `lotusscript` summary. Notes â€œError processing use list moduleâ€ after a restore usually means code was not compiled; re-import with 0.12+ or run Designer **Recompile All LotusScript**. Some complex libraries (e.g. DDM) can still report syntax errors after DXL round-trip â€” open those in Designer if needed.
 
-**Bulk-only types** (no list/get/put/delete endpoints; only in `/designdxl`): `navigator`, `dataconnection`, `jar`, `xspproperties`, `xpagesresource` (incl. `WEB-INF/`, i18n `*.properties`, `.settings/`, `icons/`), `wiringproperties`, `compositeapplication`, `compositecomponent`, and catch-all `designnote` for any other remaining design note (UNID-deduped after typed exporters).
+**Bulk-only types** (no list/get/put/delete endpoints; only in `/designdxl`): `navigator`, `dataconnection`, `jar`, `xspproperties`, `xpagesresource` (incl. `WEB-INF/`, i18n `*.properties`, `.settings/`, `icons/`), `wiringproperties`, `compositeapplication`, `compositecomponent`, and catch-all `designnote` for any other remaining design note (UNID-deduped after typed exporters). Starters: `GET /defaults/{type}` for all of these except `designnote`.
 
 ## Coverage (Domino Designer)
 
@@ -98,8 +98,8 @@ Mapped to the Designer outline. â€œInâ€ = typed DXL CRUD; â€œBulkâ
 | Application Configuration | Xsp Properties | **Bulk only** â€” type `xspproperties` (`WEB-INF/xsp.properties`) |
 | (XPages project) | Other `WEB-INF/` notes | **Bulk only** â€” type `xpagesresource` |
 | Shared Elements | Navigators | **Bulk only** â€” type `navigator` |
-| Code | Web Service Providers | `/webservices` (bulk type `webservice`) |
-| Code | Web Service Consumers | `/webserviceconsumers` (bulk type `webserviceconsumer`; not listed under `/scriptlibraries`) |
+| Code | Web Service Providers | `/webservices` + `GET /defaults/webservice` |
+| Code | Web Service Consumers | `/webserviceconsumers` + `GET /defaults/webserviceconsumer` |
 | Data | Data Connections | **Bulk only** â€” type `dataconnection` |
 | Code | Jars (design Java resources) | **Bulk only** — type `jar` |
 | Composite Applications | Wiring Properties | **Bulk only** — type `wiringproperties` |

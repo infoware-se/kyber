@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5'>
+<item name='$Flags'><text>34Q</text></item>
+<item name='$FlagsExt'><text>W</text></item>
+<item name='$TITLE'><text>DefaultWebServiceConsumer</text></item>
+<item name='$ScriptLib' summary='false' sign='true'><text>Option Public
+Option Declare
+</text></item>
+</note>

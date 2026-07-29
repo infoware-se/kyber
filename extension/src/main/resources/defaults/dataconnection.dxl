@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5'>
+<item name='$TITLE'><text>DefaultDataConnection</text></item>
+<item name='$Flags'><text>~C4gk</text></item>
+<item name='$FlagsExt'><text/></item>
+</note>
