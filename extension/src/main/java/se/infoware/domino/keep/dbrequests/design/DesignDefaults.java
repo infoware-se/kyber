@@ -20,8 +20,12 @@ import java.util.Set;
  * Resolves starter DXL: if configured NSF is present, use the first element of that type by
  * alphabetical name; else classpath {@code /defaults/{type}.dxl}.
  *
- * <p>Script libraries support {@code kind}=lotusscript|javascript|ssjs|java (embedded files {@code
- * scriptlibrary.dxl} / {@code scriptlibrary-*.dxl}).
+ * <p>Kinded types:
+ *
+ * <ul>
+ *   <li>{@code scriptlibrary} — kind lotusscript|javascript|ssjs|java
+ *   <li>{@code agent} — kind lotusscript|formula|simpleaction|java
+ * </ul>
  */
 final class DesignDefaults {
 
@@ -29,7 +33,6 @@ final class DesignDefaults {
   private static final String PROP_NSF = "keep.design.defaultNsf";
   private static final String FALLBACK_NSF = "keepdesign.nsf";
 
-  /** Types with embedded starters in the JAR. */
   private static final String[] EMBEDDED_TYPES = {
     "about",
     "agent",
@@ -115,9 +118,9 @@ final class DesignDefaults {
   static Optional<String> classpathDxl(String type, String kind) {
     String key = DesignBulkTypes.normalize(type);
     String resource = "/defaults/" + key + ".dxl";
-    if ("scriptlibrary".equals(key) && kind != null && !kind.isBlank()) {
+    if (kind != null && !kind.isBlank() && isKindedType(key)) {
       try {
-        String suffix = ScriptLibraryKinds.embeddedSuffix(kind);
+        String suffix = embeddedSuffix(key, kind);
         if (!suffix.isEmpty()) {
           resource = "/defaults/" + key + suffix + ".dxl";
         }
@@ -141,27 +144,24 @@ final class DesignDefaults {
   }
 
   /**
-   * Resolve one starter. For {@code scriptlibrary}, {@code kind} selects language (default
-   * lotusscript). Prefers first NSF element of matching type/kind; else JAR.
+   * Resolve one starter. For kinded types, {@code kind} selects the language/action variant.
+   * Prefers first NSF element of matching type/kind; else JAR.
    */
   static JsonObject resolveOne(KeepJnxSession session, String type, String kind)
       throws KeepExceptionWrongDataRequest {
     String key = normalizeType(type);
-    String scriptKind =
-        "scriptlibrary".equals(key)
-            ? ScriptLibraryKinds.normalize(kind)
-            : null;
+    String resolvedKind = isKindedType(key) ? normalizeKind(key, kind) : null;
 
-    Optional<JsonObject> fromNsf = fromNsf(session, key, scriptKind);
+    Optional<JsonObject> fromNsf = fromNsf(session, key, resolvedKind);
     if (fromNsf.isPresent()) {
       return fromNsf.get();
     }
-    Optional<String> embedded = classpathDxl(key, scriptKind);
+    Optional<String> embedded = classpathDxl(key, resolvedKind);
     if (embedded.isEmpty()) {
       throw new KeepExceptionWrongDataRequest(
           "No default DXL for type '"
               + key
-              + (scriptKind != null ? "' kind '" + scriptKind : "")
+              + (resolvedKind != null ? "' kind '" + resolvedKind : "")
               + "' (not in "
               + defaultNsfPath()
               + " and not embedded)");
@@ -172,9 +172,9 @@ final class DesignDefaults {
             .put("name", "Default")
             .put("dxl", embedded.get())
             .put("source", "embedded");
-    if (scriptKind != null) {
-      out.put("kind", scriptKind);
-      out.put("name", defaultNameForKind(scriptKind));
+    if (resolvedKind != null) {
+      out.put("kind", resolvedKind);
+      out.put("name", defaultNameFor(key, resolvedKind));
     }
     return out;
   }
@@ -199,8 +199,9 @@ final class DesignDefaults {
 
     JsonArray out = new JsonArray();
     for (String t : types) {
-      if ("scriptlibrary".equals(t)) {
-        for (String kind : ScriptLibraryKinds.ALL) {
+      String[] kinds = kindsFor(t);
+      if (kinds != null) {
+        for (String kind : kinds) {
           try {
             out.add(resolveOne(session, t, kind));
           } catch (KeepExceptionWrongDataRequest ignored) {
@@ -218,17 +219,80 @@ final class DesignDefaults {
     return out;
   }
 
-  private static String defaultNameForKind(String kind) {
-    return switch (kind) {
-      case ScriptLibraryKinds.JAVASCRIPT -> "DefaultClientJs";
-      case ScriptLibraryKinds.SSJS -> "DefaultSsjs";
-      case ScriptLibraryKinds.JAVA -> "DefaultJava";
-      default -> "DefaultLotusScript";
-    };
+  private static boolean isKindedType(String type) {
+    return "scriptlibrary".equals(type) || "agent".equals(type);
+  }
+
+  private static String[] kindsFor(String type) {
+    if ("scriptlibrary".equals(type)) {
+      return ScriptLibraryKinds.ALL;
+    }
+    if ("agent".equals(type)) {
+      return AgentKinds.ALL;
+    }
+    return null;
+  }
+
+  private static String normalizeKind(String type, String kind)
+      throws KeepExceptionWrongDataRequest {
+    if ("scriptlibrary".equals(type)) {
+      return ScriptLibraryKinds.normalize(kind);
+    }
+    if ("agent".equals(type)) {
+      return AgentKinds.normalize(kind);
+    }
+    throw new KeepExceptionWrongDataRequest("type does not support kind: " + type);
+  }
+
+  private static String embeddedSuffix(String type, String kind)
+      throws KeepExceptionWrongDataRequest {
+    if ("scriptlibrary".equals(type)) {
+      return ScriptLibraryKinds.embeddedSuffix(kind);
+    }
+    if ("agent".equals(type)) {
+      return AgentKinds.embeddedSuffix(kind);
+    }
+    return "";
+  }
+
+  private static String detectKind(String type, String dxl) {
+    if ("scriptlibrary".equals(type)) {
+      return ScriptLibraryKinds.detect(dxl);
+    }
+    if ("agent".equals(type)) {
+      return AgentKinds.detect(dxl);
+    }
+    return null;
+  }
+
+  private static String detectOrDefault(String type, String dxl) {
+    if ("scriptlibrary".equals(type)) {
+      return ScriptLibraryKinds.detectOrDefault(dxl);
+    }
+    if ("agent".equals(type)) {
+      return AgentKinds.detectOrDefault(dxl);
+    }
+    return null;
+  }
+
+  private static String defaultNameFor(String type, String kind)
+      throws KeepExceptionWrongDataRequest {
+    if ("scriptlibrary".equals(type)) {
+      return switch (ScriptLibraryKinds.normalize(kind)) {
+        case ScriptLibraryKinds.JAVASCRIPT -> "DefaultClientJs";
+        case ScriptLibraryKinds.SSJS -> "DefaultSsjs";
+        case ScriptLibraryKinds.JAVA -> "DefaultJava";
+        default -> "DefaultLotusScript";
+      };
+    }
+    if ("agent".equals(type)) {
+      return AgentKinds.defaultName(kind);
+    }
+    return "Default";
   }
 
   private static Optional<JsonObject> fromNsf(
-      KeepJnxSession session, String type, String scriptKind) {
+      KeepJnxSession session, String type, String resolvedKind) {
     Optional<Database> dbOpt = tryOpenDefaultsDb(session);
     if (dbOpt.isEmpty()) {
       return Optional.empty();
@@ -242,9 +306,9 @@ final class DesignDefaults {
         if (!type.equals(t)) {
           continue;
         }
-        if (scriptKind != null) {
-          String detected = ScriptLibraryKinds.detect(el.getString("dxl", ""));
-          if (detected == null || !scriptKind.equals(detected)) {
+        if (resolvedKind != null) {
+          String detected = detectKind(type, el.getString("dxl", ""));
+          if (detected == null || !resolvedKind.equals(detected)) {
             continue;
           }
         }
@@ -254,21 +318,22 @@ final class DesignDefaults {
         return Optional.empty();
       }
       if (DesignBulkTypes.isSingleton(type) || matches.size() == 1) {
-        return Optional.of(copyWithSource(matches.get(0), "nsf", scriptKind));
+        return Optional.of(copyWithSource(matches.get(0), "nsf", resolvedKind));
       }
       matches.sort(
           Comparator.comparing(
               el -> el.getString("name", ""),
               String.CASE_INSENSITIVE_ORDER.thenComparing(Comparator.naturalOrder())));
-      return Optional.of(copyWithSource(matches.get(0), "nsf", scriptKind));
+      return Optional.of(copyWithSource(matches.get(0), "nsf", resolvedKind));
     } catch (Exception e) {
       return Optional.empty();
     }
   }
 
-  private static JsonObject copyWithSource(JsonObject el, String source, String scriptKind) {
+  private static JsonObject copyWithSource(JsonObject el, String source, String resolvedKind) {
     JsonObject out = new JsonObject();
-    out.put("type", DesignBulkTypes.normalize(el.getString("type", "")));
+    String type = DesignBulkTypes.normalize(el.getString("type", ""));
+    out.put("type", type);
     String name = el.getString("name");
     if (name != null && !name.isBlank()) {
       out.put("name", name);
@@ -276,12 +341,12 @@ final class DesignDefaults {
     String dxl = el.getString("dxl", "");
     out.put("dxl", dxl);
     out.put("source", source);
-    if ("scriptlibrary".equals(out.getString("type"))) {
+    if (isKindedType(type)) {
       out.put(
           "kind",
-          scriptKind != null && !scriptKind.isBlank()
-              ? scriptKind
-              : ScriptLibraryKinds.detectOrDefault(dxl));
+          resolvedKind != null && !resolvedKind.isBlank()
+              ? resolvedKind
+              : detectOrDefault(type, dxl));
     }
     return out;
   }

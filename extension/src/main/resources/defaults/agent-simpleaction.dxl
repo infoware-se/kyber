@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE agent SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<agent name='DefaultSimpleAgent' xmlns='http://www.lotus.com/dxl' version='14.5'
+ publicaccess='false' designerversion='8.5.3'>
+<trigger type='actionsmenu'/>
+<documentset type='selected'/>
+<code event='action'><simpleaction action='modifyfield' field='Subject' value='Hello'/></code>
+</agent>

@@ -3,7 +3,7 @@
     "info":  {
                  "title":  "Infoware Domino REST API design",
                  "description":  "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (only bulk import); per-type CRUD requires an existing database. This API never deletes databases.",
-                 "version":  "0.18.9"
+                 "version":  "0.18.10"
              },
     "servers":  [
                     {
@@ -23,7 +23,7 @@
     "paths":  {
                   "/defaults":  {
                                     "summary":  "Starter design DXL from keepdesign.nsf or embedded JAR defaults",
-                                    "description":  "Resolves starter DXL per type: if keep.design.defaultNsf has matching elements, use first by name; else classpath /defaults/{type}.dxl. Script libraries emit four entries (kind=lotusscript|javascript|ssjs|java).",
+                                    "description":  "Starter DXL per type. Script libraries and agents emit one entry per kind.",
                                     "get":  {
                                                 "tags":  [
                                                              "design-handler"
@@ -110,16 +110,17 @@
                                                               },
                                                               {
                                                                   "name":  "kind",
-                                                                  "description":  "Script library language when type=scriptlibrary: lotusscript|javascript|ssjs|java (aliases: ls, js, server). Ignored for other types.",
+                                                                  "description":  "Language/action kind when type=scriptlibrary (lotusscript|javascript|ssjs|java) or type=agent (lotusscript|formula|simpleaction|java). Ignored for other types.",
                                                                   "schema":  {
                                                                                  "type":  "string",
                                                                                  "enum":  [
                                                                                               "lotusscript",
                                                                                               "javascript",
                                                                                               "ssjs",
-                                                                                              "java"
-                                                                                          ],
-                                                                                 "default":  "lotusscript"
+                                                                                              "java",
+                                                                                              "formula",
+                                                                                              "simpleaction"
+                                                                                          ]
                                                                              },
                                                                   "in":  "query",
                                                                   "required":  false
@@ -131,7 +132,7 @@
                                                                 ],
                                                        "operationId":  "getDefault",
                                                        "summary":  "Get starter design DXL for a type",
-                                                       "description":  "Returns { defaultNsf, type, name, dxl, source, kind? }. For scriptlibrary, pass kind= to select LotusScript, client JS, SSJS, or Java starter.",
+                                                       "description":  "Returns starter DXL. For scriptlibrary/agent, pass kind= to select the variant.",
                                                        "x-keep-version":  1,
                                                        "security":  [
                                                                         {
@@ -4085,7 +4086,7 @@
                                   },
                   "/agents":  {
                                   "summary":  "Create or replace a Agent",
-                                  "description":  "Create or replace a Domino Agent from raw DXL",
+                                  "description":  "Create/replace a Domino Agent from raw DXL, or with empty body from starter via kind+name.",
                                   "parameters":  [
                                                      {
                                                          "name":  "nsfPath",
@@ -4095,6 +4096,30 @@
                                                                     },
                                                          "in":  "query",
                                                          "required":  true
+                                                     },
+                                                     {
+                                                         "name":  "kind",
+                                                         "description":  "Agent kind. Required when body is empty: lotusscript|formula|simpleaction|java.",
+                                                         "schema":  {
+                                                                        "type":  "string",
+                                                                        "enum":  [
+                                                                                     "lotusscript",
+                                                                                     "formula",
+                                                                                     "simpleaction",
+                                                                                     "java"
+                                                                                 ]
+                                                                    },
+                                                         "in":  "query",
+                                                         "required":  false
+                                                     },
+                                                     {
+                                                         "name":  "name",
+                                                         "description":  "Agent name. Required when body is empty.",
+                                                         "schema":  {
+                                                                        "type":  "string"
+                                                                    },
+                                                         "in":  "query",
+                                                         "required":  false
                                                      }
                                                  ],
                                   "put":  {
@@ -4102,8 +4127,8 @@
                                                            "design-element"
                                                        ],
                                               "operationId":  "createAgent",
-                                              "summary":  "Create or replace a Agent from DXL",
-                                              "description":  "Upload DXL with root \u003cagent\u003e. Uses REPLACE_ELSE_CREATE and signs after import.",
+                                              "summary":  "Create or replace an Agent from DXL or starter kind",
+                                              "description":  "With text/xml body: import raw agent DXL. With empty body: require kind + name, load starter, set name, import/sign.",
                                               "x-keep-version":  1,
                                               "security":  [
                                                                {
@@ -4113,8 +4138,8 @@
                                                                }
                                                            ],
                                               "requestBody":  {
-                                                                  "required":  true,
-                                                                  "description":  "Agent DXL (text/xml)",
+                                                                  "required":  false,
+                                                                  "description":  "Agent DXL (text/xml). Omit or leave empty to create from kind+name starter.",
                                                                   "content":  {
                                                                                   "text/xml":  {
                                                                                                    "schema":  {

@@ -83,7 +83,7 @@ Mapped to the Designer outline. â€œInâ€ = typed DXL CRUD; â€œBulkâ
 | Shared Elements | Fields | `/sharedfields` |
 | Shared Elements | Columns | `/sharedcolumns` |
 | Shared Elements | Outlines | `/outlines` |
-| Code | Agents | `/agents` |
+| Code | Agents | `/agents` — kinds `lotusscript` \| `formula` \| `simpleaction` \| `java` |
 | Code | Shared Actions | `/sharedactions` (singleton) |
 | Code | Script Libraries | `/scriptlibraries` — kinds `lotusscript` \| `javascript` \| `ssjs` \| `java` (defaults + empty-body create) |
 | Code | Database Script | `/databasescript` (singleton) |
@@ -261,10 +261,14 @@ Singletons have no list/`{name}` path â€” only `GET` / `PUT` / `DELETE` on 
 
 ### Agents
 
+Kinds: `lotusscript` (default), `formula`, `simpleaction`, `java`.
+
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/agentnames?nsfPath=` |
-| PUT | `/api/design-v1/agents?nsfPath=` (`text/xml` agent DXL) |
+| PUT | `/api/design-v1/agents?nsfPath=` (`text/xml` agent DXL of any kind) |
+| PUT | `/api/design-v1/agents?nsfPath=&kind=&name=` (empty body → create from starter) |
+| GET | `/api/design-v1/defaults/agent?kind=` |
 | GET | `/api/design-v1/agents/{name}?nsfPath=` |
 | DELETE | `/api/design-v1/agents/{name}?nsfPath=` |
 

@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE agent SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<agent name='DefaultFormulaAgent' xmlns='http://www.lotus.com/dxl' version='14.5'
+ publicaccess='false' designerversion='8.5.3'>
+<trigger type='actionsmenu'/>
+<documentset type='selected'/>
+<code event='action'><simpleaction action='runformula'><formula>SELECT @All;
+@Prompt([Ok]; "Hello"; "Hello World")
+</formula></simpleaction></code>
+</agent>
