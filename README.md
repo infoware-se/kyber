@@ -1,4 +1,4 @@
-﻿# domino-keep-design
+# domino-keep-design
 
 KEEP extension for Domino REST API: manage database **design elements** via `nsfPath` using typed DXL CRUD.
 
@@ -8,7 +8,7 @@ KEEP extension for Domino REST API: manage database **design elements** via `nsf
 | **API** | `/api/design-v1` |
 | **Swagger** | tag **`keep-design`** |
 | **Defaults NSF** | `keepdesign.nsf` (property `keep.design.defaultNsf`) |
-| **Version** | 0.17.2 |
+| **Version** | 0.17.3 |
 
 Full endpoint tables and Designer coverage: **[extension/README.md](extension/README.md)**.
 
@@ -20,7 +20,7 @@ Full endpoint tables and Designer coverage: **[extension/README.md](extension/RE
 
 **Bulk only:** Navigators, Data Connections, Jars, Xsp Properties, XPages project notes (`WEB-INF/`, i18n `*.properties`, `.settings/`, …), plus catch-all **`designnote`** for any remaining design note not covered by a typed exporter.
 
-**Bulk + git:** `GET`/`PUT /api/design-v1/designdxl` exports/imports all CRUD + bulk-only + residual design notes. PUT **creates the NSF if missing**. Bridge scripts: [`tools/export-to-repo.ps1`](tools/export-to-repo.ps1), [`tools/import-from-repo.ps1`](tools/import-from-repo.ps1).
+**Bulk + git:** `GET`/`PUT /api/design-v1/designdxl` exports/imports all CRUD + bulk-only + residual design notes. Target NSF **must already exist** (API never creates or deletes databases). Bridge scripts: [`tools/export-to-repo.ps1`](tools/export-to-repo.ps1), [`tools/import-from-repo.ps1`](tools/import-from-repo.ps1).
 
 **Out of first-class typing:** Applets (usually embedded in form/page DXL). Designer **Icon** / Application Properties (no dedicated CRUD; may still appear in bulk `/designdxl`).
 

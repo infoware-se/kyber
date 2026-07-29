@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "KEEP Domino REST API design",
-    "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL (PUT creates NSF if missing).",
-    "version": "0.17.2"
+    "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. The target NSF must already exist; this API never creates or deletes databases.",
+    "version": "0.17.3"
   },
   "servers": [
     {
@@ -105,11 +105,11 @@
     },
     "/designdxl": {
       "summary": "Bulk export or import all supported design elements as CRUD-identical DXL",
-      "description": "GET exports every supported design element. PUT imports an elements array (same DXL as per-type CRUD). Missing NSF is created. PUT remaps connection via KeepConfig.nsf internally.",
+      "description": "GET exports every supported design element. PUT imports an elements array (same DXL as per-type CRUD). The target NSF must already exist.",
       "parameters": [
         {
           "name": "nsfPath",
-          "description": "Target Domino database filepath (created on PUT if missing)",
+          "description": "Target Domino database filepath (must already exist)",
           "schema": { "type": "string" },
           "in": "query",
           "required": true
@@ -157,7 +157,7 @@
         "tags": ["keep-design"],
         "operationId": "importDesignDxl",
         "summary": "Bulk import design DXL",
-        "description": "Import elements with REPLACE_ELSE_CREATE, sign after each import, then compile LotusScript (fixes Notes 'use list module' errors). Creates the NSF when missing.",
+        "description": "Import elements with REPLACE_ELSE_CREATE, sign after each import, then compile LotusScript (fixes Notes 'use list module' errors). Fails if the NSF does not exist.",
         "x-keep-version": 1,
         "security": [{ "jwt": [] }],
         "requestBody": {
@@ -194,7 +194,6 @@
                   "type": "object",
                   "properties": {
                     "success": { "type": "boolean" },
-                    "created": { "type": "boolean" },
                     "nsfPath": { "type": "string" },
                     "imported": { "type": "integer" },
                     "results": { "type": "array", "items": { "type": "object" } }
