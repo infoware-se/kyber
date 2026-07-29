@@ -28,19 +28,32 @@ final class DesignDefaults {
 
   /** Types with embedded starters in the JAR. */
   private static final String[] EMBEDDED_TYPES = {
-    "view",
+    "about",
+    "agent",
+    "applicationproperties",
+    "customcontrol",
+    "databasescript",
+    "fileresource",
     "folder",
     "form",
-    "page",
-    "outline",
     "frameset",
-    "subform",
-    "agent",
-    "sharedfield",
+    "image",
+    "navigator",
+    "outline",
+    "page",
+    "scriptlibrary",
+    "sharedactions",
     "sharedcolumn",
+    "sharedfield",
     "stylesheet",
-    "about",
-    "using"
+    "subform",
+    "theme",
+    "using",
+    "view",
+    "webservice",
+    "xpage",
+    "xpagesresource",
+    "xspproperties"
   };
 
   private DesignDefaults() {}

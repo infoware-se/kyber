@@ -1,7 +1,19 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE helpaboutdocument SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<helpaboutdocument xmlns='http://www.lotus.com/dxl' version='14.5'>
+<helpaboutdocument xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258E4300212830' publicaccess='false' designerversion='8.5.3'
+ default='true' renderpassthrough='true'>
+<noteinfo noteid='1ce' unid='24215A2038A19B9DC1258E430024B995' sequence='2'>
+<created><datetime dst='true'>20260729T084108,05+02</datetime></created>
+<modified><datetime dst='true'>20260729T084137,85+02</datetime></modified>
+<revised><datetime dst='true'>20260729T084137,84+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T084137,84+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T084108,22+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
 <body><richtext>
-<pardef id='1'/><par def='1'><run><font size='12pt' style='bold'/>About</run></par>
-</richtext></body>
-</helpaboutdocument>
+<pardef id='1'/>
+<par def='1'/>
+<par def='1'>About Document</par></richtext></body>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></helpaboutdocument>
+

@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE fileresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<fileresource name='Fileresource.txt' xmlns='http://www.lotus.com/dxl' version='14.5'
+ maintenanceversion='1.0' replicaid='C1258E4300212830' publicaccess='false'
+ designerversion='8.5.3' mimetype='text/plain' charset='UTF-8'>
+<noteinfo noteid='1e2' unid='66A9BC0F49DF1B4EC1258E430024F8B9' sequence='3'>
+<created><datetime dst='true'>20260729T084349,69+02</datetime></created>
+<modified><datetime dst='true'>20260729T084415,94+02</datetime></modified>
+<revised><datetime dst='true'>20260729T084415,93+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260729T084415,93+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260729T084349,71+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby><filedata>
+SGVsbG8gV29ybGQ=
+</filedata></fileresource>
+
