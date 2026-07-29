@@ -3,7 +3,7 @@
   "info": {
     "title": "KEEP Domino REST API design",
     "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (only bulk import); per-type CRUD requires an existing database. This API never deletes databases.",
-    "version": "0.17.8"
+    "version": "0.17.9"
   },
   "servers": [
     {
@@ -17,7 +17,7 @@
     },
     {
       "name": "design-handler",
-      "description": "Bulk export/import of design elements as typed DXL (GET/PUT /designdxl). PUT creates the NSF if missing (bulk-only)."
+      "description": "Starter DXL defaults (GET /defaults, GET /defaults/{type}) and bulk export/import of design elements as typed DXL (GET/PUT /designdxl). PUT creates the NSF if missing (bulk-only)."
     }
   ],
   "paths": {
