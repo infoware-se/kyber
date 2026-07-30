@@ -24,7 +24,9 @@ public class GetImageNames extends AsyncDominoJNXJson {
         .forEach(
             el -> {
               String title = el.getTitle();
-              if (title != null && !title.isBlank()) {
+              if (title != null
+                  && !title.isBlank()
+                  && !DesignElementLookup.isDbIconName(title)) {
                 names.add(title);
               }
             });

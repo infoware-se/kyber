@@ -15,10 +15,24 @@ import java.io.IOException;
  */
 final class DxlDesignPatch {
 
+  enum Mode {
+    /** Create only ({@link DXLImportOption#CREATE}). */
+    CREATE,
+    /** Replace existing only ({@link DXLImportOption#REPLACE_ELSE_IGNORE}). */
+    REPLACE,
+    /** Create or replace ({@link DXLImportOption#REPLACE_ELSE_CREATE}) — legacy upsert. */
+    UPSERT
+  }
+
   private DxlDesignPatch() {}
 
   static String importDesign(DxlImporter importer, String dxl, Database db) throws IOException {
-    configureCommon(importer);
+    return importDesign(importer, dxl, db, Mode.UPSERT);
+  }
+
+  static String importDesign(DxlImporter importer, String dxl, Database db, Mode mode)
+      throws IOException {
+    configureCommon(importer, designOption(mode));
     importer.setReplaceDbProperties(false);
     importer.importDxl(dxl, db);
     return importer.getResultLog();
@@ -29,7 +43,12 @@ final class DxlDesignPatch {
    */
   static String importWithDbProperties(DxlImporter importer, String dxl, Database db)
       throws IOException {
-    configureCommon(importer);
+    return importWithDbProperties(importer, dxl, db, Mode.UPSERT);
+  }
+
+  static String importWithDbProperties(
+      DxlImporter importer, String dxl, Database db, Mode mode) throws IOException {
+    configureCommon(importer, designOption(mode));
     importer.setReplaceDbProperties(true);
     importer.importDxl(dxl, db);
     return importer.getResultLog();
@@ -51,9 +70,20 @@ final class DxlDesignPatch {
     return importer.getResultLog();
   }
 
-  private static void configureCommon(DxlImporter importer) {
+  private static DXLImportOption designOption(Mode mode) {
+    if (mode == null) {
+      return DXLImportOption.REPLACE_ELSE_CREATE;
+    }
+    return switch (mode) {
+      case CREATE -> DXLImportOption.CREATE;
+      case REPLACE -> DXLImportOption.REPLACE_ELSE_IGNORE;
+      case UPSERT -> DXLImportOption.REPLACE_ELSE_CREATE;
+    };
+  }
+
+  private static void configureCommon(DxlImporter importer, DXLImportOption designOption) {
     importer.setExitOnFirstFatalError(false);
-    importer.setDesignImportOption(DXLImportOption.REPLACE_ELSE_CREATE);
+    importer.setDesignImportOption(designOption);
     importer.setDocumentsImportOption(DXLImportOption.IGNORE);
     importer.setACLImportOption(DXLImportOption.IGNORE);
     importer.setUnknownTokenLogOption(DXLLogOption.WARNING);

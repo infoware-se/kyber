@@ -204,12 +204,26 @@ final class DesignElementIO {
   static JsonObject importOne(
       DxlImporter importer, Database db, String type, String dxl, KeepJnxSession session)
       throws Exception {
+    return importOne(importer, db, type, dxl, session, DxlDesignPatch.Mode.UPSERT);
+  }
+
+  static JsonObject importOne(
+      DxlImporter importer,
+      Database db,
+      String type,
+      String dxl,
+      KeepJnxSession session,
+      DxlDesignPatch.Mode mode)
+      throws Exception {
     String t = DesignBulkTypes.normalize(type);
-    if (!DesignBulkTypes.isKnown(t)) {
+    if (!DesignBulkTypes.isKnown(t) && !"dbicon".equals(t)) {
       throw new KeepExceptionWrongDataRequest("Unknown design element type: " + type);
     }
     if (dxl == null || dxl.isBlank()) {
       throw new KeepExceptionWrongDataRequest("dxl is required for type " + t);
+    }
+    if (mode == null) {
+      mode = DxlDesignPatch.Mode.UPSERT;
     }
 
     String name = null;
@@ -225,9 +239,9 @@ final class DesignElementIO {
       case "applicationproperties" -> {
         String root = DesignDxl.requireRootOnlyReturningLocalName(dxl, "note", "database");
         if ("database".equalsIgnoreCase(root)) {
-          log = DxlDesignPatch.importWithDbProperties(importer, dxl, db);
+          log = DxlDesignPatch.importWithDbProperties(importer, dxl, db, mode);
         } else {
-          log = DxlDesignPatch.importDesign(importer, dxl, db);
+          log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         }
         DbProperties props = db.getDesign().getDatabaseProperties();
         if (props == null || props.getDocument() == null) {
@@ -238,7 +252,7 @@ final class DesignElementIO {
       }
       case "about" -> {
         DesignDxl.requireRootOnly(dxl, "helpaboutdocument");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         AboutDocument el =
             db.getDesign()
                 .getAboutDocument()
@@ -250,7 +264,7 @@ final class DesignElementIO {
       }
       case "using" -> {
         DesignDxl.requireRootOnly(dxl, "helpusingdocument");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         UsingDocument el =
             db.getDesign()
                 .getUsingDocument()
@@ -262,7 +276,7 @@ final class DesignElementIO {
       }
       case "sharedactions" -> {
         name = DesignDxl.requireSharedActionsName(dxl);
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         final String sharedActionsName = name;
         SharedActions el =
             SharedActionsNotes.find(db, sharedActionsName)
@@ -275,7 +289,7 @@ final class DesignElementIO {
       }
       case "databasescript" -> {
         DesignDxl.requireRootOnly(dxl, "databasescript");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         DatabaseScriptLibrary el =
             db.getDesign()
                 .getDatabaseScriptLibrary()
@@ -287,62 +301,62 @@ final class DesignElementIO {
       }
       case "image" -> {
         name = DesignDxl.requireRootName(dxl, "imageresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getImageResource(name), "ImageResource", name);
       }
       case "fileresource" -> {
         name = DesignDxl.requireRootName(dxl, "fileresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getFileResource(name), "FileResource", name);
       }
       case "stylesheet" -> {
         name = DesignDxl.requireRootName(dxl, "stylesheetresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getStyleSheet(name), "StyleSheet", name);
       }
       case "theme" -> {
         name = DesignDxl.requireDesignName(dxl, "theme", "note");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getTheme(name), "Theme", name);
       }
       case "scriptlibrary" -> {
         name = DesignDxl.requireRootName(dxl, "scriptlibrary");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getScriptLibrary(name), "ScriptLibrary", name);
       }
       case "sharedfield" -> {
         name = DesignDxl.requireRootName(dxl, "sharedfield");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getSharedField(name), "SharedField", name);
       }
       case "sharedcolumn" -> {
         name = DesignDxl.requireRootName(dxl, "sharedcolumn");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getSharedColumn(name), "SharedColumn", name);
       }
       case "subform" -> {
         name = DesignDxl.requireRootName(dxl, "subform");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getSubform(name), "Subform", name);
       }
       case "form" -> {
         name = DesignDxl.requireRootName(dxl, "form");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getForm(name), "Form", name);
       }
       case "page" -> {
         name = DesignDxl.requireRootName(dxl, "page");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getPage(name), "Page", name);
       }
       case "outline" -> {
         name = DesignDxl.requireRootName(dxl, "outline");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getOutline(name), "Outline", name);
       }
       case "frameset" -> {
         name = DesignDxl.requireRootName(dxl, "frameset");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         try {
           signWarning = signNamed(db.getDesign().getFrameset(name), "Frameset", name);
         } catch (RuntimeException e) {
@@ -352,22 +366,22 @@ final class DesignElementIO {
       }
       case "view" -> {
         name = DesignDxl.requireRootName(dxl, "view");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getView(name), "View", name);
       }
       case "folder" -> {
         name = DesignDxl.requireRootName(dxl, "folder");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getFolder(name), "Folder", name);
       }
       case "agent" -> {
         name = DesignDxl.requireRootName(dxl, "agent");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getAgent(name), "Agent", name);
       }
       case "customcontrol" -> {
         String requested = DesignDxl.requireDesignName(dxl, "note", "fileresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         CustomControls.Entry entry =
             CustomControls.find(db, requested)
                 .orElseThrow(
@@ -389,7 +403,7 @@ final class DesignElementIO {
         String requested =
             DesignDxl.requireDesignName(
                 dxl, "note", "fileresource", "webservice", "agent");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         WebServices.Entry entry =
             WebServices.find(db, WebServices.Kind.PROVIDER, requested)
                 .orElseThrow(
@@ -412,7 +426,7 @@ final class DesignElementIO {
         String requested =
             DesignDxl.requireDesignName(
                 dxl, "note", "fileresource", "scriptlibrary", "webservice");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         WebServices.Entry entry =
             WebServices.find(db, WebServices.Kind.CONSUMER, requested)
                 .orElseThrow(
@@ -433,26 +447,26 @@ final class DesignElementIO {
       }
       case "xpage" -> {
         name = DesignDxl.requireDesignName(dxl, "note", "fileresource", "xpage");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getXPage(name), "XPage", name);
       }
       case "wiringproperties" -> {
         name = DesignDxl.requireDesignName(dxl, "note", "fileresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning =
             signNamed(
                 db.getDesign().getWiringPropertiesElement(name), "WiringProperties", name);
       }
       case "compositeapplication" -> {
         name = DesignDxl.requireDesignName(dxl, "note", "fileresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning =
             signNamed(
                 db.getDesign().getCompositeApplication(name), "CompositeApplication", name);
       }
       case "compositecomponent" -> {
         name = DesignDxl.requireDesignName(dxl, "note", "fileresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning =
             signNamed(
                 db.getDesign().getCompositeComponent(name), "CompositeComponent", name);
@@ -461,7 +475,7 @@ final class DesignElementIO {
         String requestedDc =
             DesignDxl.requireDesignName(
                 dxl, "dataconnection", "note", "fileresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         BulkOnlyNotes.Entry entry =
             BulkOnlyNotes.find(db, "dataconnection", requestedDc)
                 .orElseThrow(
@@ -493,14 +507,14 @@ final class DesignElementIO {
       }
       case "navigator" -> {
         name = DesignDxl.requireDesignName(dxl, "navigator", "note");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getNavigator(name), "Navigator", name);
       }
       case "jar", "applet", "javasource", "xspproperties", "xpagesresource", "designnote" -> {
         String requested =
             DesignDxl.requireDesignName(
                 dxl, "note", "fileresource", "navigator", "webservice", "agent", "appletresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db);
+        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         final String bulkType = t;
         BulkOnlyNotes.Entry entry =
             BulkOnlyNotes.find(db, bulkType, requested)

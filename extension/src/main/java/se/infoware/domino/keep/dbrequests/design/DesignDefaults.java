@@ -42,6 +42,7 @@ final class DesignDefaults {
     "compositeapplication",
     "compositecomponent",
     "databasescript",
+    "dbicon",
     "dataconnection",
     "fileresource",
     "folder",

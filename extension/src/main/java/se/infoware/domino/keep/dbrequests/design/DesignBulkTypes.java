@@ -29,6 +29,7 @@ final class DesignBulkTypes {
     dirs.put("using", "");
     dirs.put("sharedactions", "sharedactions");
     dirs.put("databasescript", "");
+    dirs.put("dbicon", "");
     dirs.put("image", "images");
     dirs.put("fileresource", "fileresources");
     dirs.put("stylesheet", "stylesheets");
@@ -70,6 +71,7 @@ final class DesignBulkTypes {
           "using",
           "sharedactions",
           "databasescript",
+          "dbicon",
           "image",
           "fileresource",
           "jar",
@@ -115,7 +117,8 @@ final class DesignBulkTypes {
           "about",
           "using",
           "databasescript",
-          "xspproperties");
+          "xspproperties",
+          "dbicon");
 
   private DesignBulkTypes() {}
 

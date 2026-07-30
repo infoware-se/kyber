@@ -5,7 +5,7 @@ import com.hcl.domino.design.DatabaseScriptLibrary;
 import com.hcl.domino.dxl.DxlExporter;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -20,7 +20,7 @@ public class GetDatabaseScript extends AsyncDominoJNXJson {
     Database db = request.db();
     Optional<DatabaseScriptLibrary> opt = db.getDesign().getDatabaseScriptLibrary();
     if (opt.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("DatabaseScript not found");
+      throw new KeepExceptionNotFound("DatabaseScript not found");
     }
     DatabaseScriptLibrary el = opt.get();
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();

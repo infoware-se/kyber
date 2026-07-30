@@ -2,36 +2,19 @@
 
 **Custom KEEP extension â€” KEEP, not HCL.**
 
-Manage database **design elements** via Domino REST API. Target database is selected with query param **`nsfPath`**. Create/update uses raw **typed DXL** (`text/xml`), similar to Setup `PUT /api/setup-v1/dxl` but scoped per element type (rejects wrong root elements). Forms and views are included so you do not need Setupâ€™s simplified JSON create for those.
+Manage database **design elements** via Domino REST API. Target database is selected with query param **`nsfPath`**. **Create** is `POST` (empty body → starter DXL; **409** if exists). **Update** is `PUT /{type}/{name}` or `PUT` on singleton paths (**404** if missing). Collection `PUT` upsert remains for named types but is **deprecated**. Responses include exported `dxl` after write.
 
 ## Supported types
 
-| Type | List | Create/replace | Get | Delete | DXL root |
-|------|------|----------------|-----|--------|----------|
-| Page | `GET /pagenames` | `PUT /pages` | `GET /pages/{name}` | `DELETE /pages/{name}` | `<page name="â€¦">` |
-| Outline | `GET /outlinenames` | `PUT /outlines` | `GET /outlines/{name}` | `DELETE /outlines/{name}` | `<outline name="â€¦">` |
-| Frameset | `GET /framesetnames` | `PUT /framesets` | `GET /framesets/{name}` | `DELETE /framesets/{name}` | `<frameset name="â€¦">` |
-| Form | `GET /formnames` | `PUT /forms` | `GET /forms/{name}` | `DELETE /forms/{name}` | `<form name="â€¦">` |
-| View | `GET /viewnames` | `PUT /views` | `GET /views/{name}` | `DELETE /views/{name}` | `<view name="â€¦">` |
-| Folder | `GET /foldernames` | `PUT /folders` | `GET /folders/{name}` | `DELETE /folders/{name}` | `<folder name="â€¦">` |
-| Subform | `GET /subformnames` | `PUT /subforms` | `GET /subforms/{name}` | `DELETE /subforms/{name}` | `<subform name="â€¦">` |
-| Shared field | `GET /sharedfieldnames` | `PUT /sharedfields` | `GET /sharedfields/{name}` | `DELETE /sharedfields/{name}` | `<sharedfield name="â€¦">` |
-| Shared column | `GET /sharedcolumnnames` | `PUT /sharedcolumns` | `GET /sharedcolumns/{name}` | `DELETE /sharedcolumns/{name}` | `<sharedcolumn name="â€¦">` |
-| Image | `GET /imagenames` | `PUT /images` | `GET /images/{name}` | `DELETE /images/{name}` | `<imageresource name="â€¦">` |
-| File | `GET /fileresourcenames` | `PUT /fileresources` | `GET /fileresources/{name}` | `DELETE /fileresources/{name}` | `<fileresource name="â€¦">` |
-| Style sheet | `GET /stylesheetnames` | `PUT /stylesheets` | `GET /stylesheets/{name}` | `DELETE /stylesheets/{name}` | `<stylesheetresource name="â€¦">` |
-| Theme | `GET /themenames` | `PUT /themes` | `GET /themes/{name}` | `DELETE /themes/{name}` | `<theme>` / note-form |
-| About Document | â€” | `PUT /about` | `GET /about` | `DELETE /about` | `<helpaboutdocument>` |
-| Using Document | â€” | `PUT /using` | `GET /using` | `DELETE /using` | `<helpusingdocument>` |
-| ACL | — | `PUT /acl` (Manager) | `GET /acl` | — | `<acl>` |
-| Agent | `GET /agentnames` | `PUT /agents` | `GET /agents/{name}` | `DELETE /agents/{name}` | `<agent name="â€¦">` |
-| Script library | `GET /scriptlibrarynames` | `PUT /scriptlibraries` | `GET /scriptlibraries/{name}` | `DELETE /scriptlibraries/{name}` | `<scriptlibrary name="â€¦">` |
-| Shared Actions | `GET /sharedactionnames` | `PUT /sharedactions` | `GET /sharedactions/{name}` | `DELETE /sharedactions/{name}` | `<sharedactions name="â€¦">` |
-| Database Script | â€” | `PUT /databasescript` | `GET /databasescript` | `DELETE /databasescript` | `<databasescript>` |
-| Application Properties | â€” | `PUT /applicationproperties` | `GET /applicationproperties` | â€” (no delete) | `<note class="icon">` / `<database>` |
-| Xsp Properties | â€” | `PUT /xspproperties` | `GET /xspproperties` | â€” (no delete) | `<note>` (`WEB-INF/xsp.properties`) |
-| XPage | `GET /xpagenames` | `PUT /xpages` | `GET /xpages/{name}` | `DELETE /xpages/{name}` | `<note>` / `<fileresource>` |
-| Custom Control | `GET /customcontrolnames` | `PUT /customcontrols` | `GET /customcontrols/{name}` | `DELETE /customcontrols/{name}` | `<note>` / `<fileresource>` |
+| Type | List | Create | Update | Get | Delete |
+|------|------|--------|--------|-----|--------|
+| Named (form, view, page, …) | `GET /{type}names` | `POST /{types}?name=` | `PUT /{types}/{name}` | `GET /{types}/{name}` | `DELETE /{types}/{name}` |
+| About / Using / Database Script | — | `POST /about` etc. | `PUT /about` etc. | `GET` | `DELETE` |
+| Xsp Properties | — | `POST /xspproperties` | `PUT /xspproperties` | `GET` | `DELETE` |
+| DB icon (`$DBIcon`) | — | `POST /dbicon` | `PUT /dbicon` | `GET /dbicon` | `DELETE /dbicon` |
+| Application Properties / ACL | — | — | `PUT` | `GET` | ACL: — / App props: — |
+
+`$DBIcon` is excluded from `/imagenames` — use `/dbicon`. Kinded types (`agent`, `scriptlibrary`, `javasource`) take `?kind=` + `?name=` on empty-body `POST`.
 
 All paths are under `/api/design-v1` and require `?nsfPath=`.
 

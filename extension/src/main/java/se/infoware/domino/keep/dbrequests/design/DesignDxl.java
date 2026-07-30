@@ -2,10 +2,15 @@ package se.infoware.domino.keep.dbrequests.design;
 
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -79,6 +84,74 @@ final class DesignDxl {
     }
     throw new KeepExceptionWrongDataRequest(
         "sharedactions DXL requires a non-empty name attribute, $TITLE, or $$ScriptName item");
+  }
+
+  /**
+   * Rewrite root {@code name} attribute and sync {@code $TITLE} / {@code $$ScriptName} text items
+   * when present. Used when applying starter DXL to a caller-chosen name.
+   */
+  static String withName(String dxl, String name, String... expectedRoots)
+      throws KeepExceptionWrongDataRequest {
+    if (name == null || name.isBlank()) {
+      throw new KeepExceptionWrongDataRequest("name is required");
+    }
+    String wanted = name.trim();
+    Element root = parseAndRequireRoot(dxl, expectedRoots);
+    Document doc = root.getOwnerDocument();
+    root.setAttribute("name", wanted);
+    setItemText(root, "$TITLE", wanted);
+    setItemText(root, "$$ScriptName", wanted);
+    try {
+      var transformer = TransformerFactory.newInstance().newTransformer();
+      transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+      transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+      transformer.setOutputProperty(OutputKeys.INDENT, "no");
+      StringWriter sw = new StringWriter();
+      transformer.transform(new DOMSource(doc), new StreamResult(sw));
+      String out = sw.toString();
+      if (!out.toLowerCase(Locale.ROOT).contains("<!doctype")
+          && dxl.toLowerCase(Locale.ROOT).contains("<!doctype")) {
+        String local = root.getLocalName() != null ? root.getLocalName() : root.getTagName();
+        String doctype =
+            "<!DOCTYPE " + local + " SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n";
+        int xmlEnd = out.indexOf("?>");
+        if (xmlEnd >= 0) {
+          out =
+              out.substring(0, xmlEnd + 2)
+                  + "\n"
+                  + doctype
+                  + out.substring(xmlEnd + 2).stripLeading();
+        } else {
+          out = doctype + out;
+        }
+      }
+      return out;
+    } catch (Exception e) {
+      String message = e.getMessage() == null ? e.toString() : e.getMessage();
+      throw new KeepExceptionWrongDataRequest("cannot set design name: " + message);
+    }
+  }
+
+  private static void setItemText(Element root, String itemName, String value) {
+    NodeList items = root.getElementsByTagNameNS("*", "item");
+    if (items.getLength() == 0) {
+      items = root.getElementsByTagName("item");
+    }
+    for (int i = 0; i < items.getLength(); i++) {
+      if (!(items.item(i) instanceof Element item)) {
+        continue;
+      }
+      if (!itemName.equalsIgnoreCase(item.getAttribute("name"))) {
+        continue;
+      }
+      NodeList texts = item.getElementsByTagNameNS("*", "text");
+      if (texts.getLength() == 0) {
+        texts = item.getElementsByTagName("text");
+      }
+      if (texts.getLength() > 0) {
+        texts.item(0).setTextContent(value);
+      }
+    }
   }
 
   private static String designNameFromRoot(Element root) {
