@@ -3,17 +3,19 @@
 <helpaboutdocument xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258E4300212830' publicaccess='false' designerversion='8.5.3'
  default='true' renderpassthrough='true'>
-<noteinfo noteid='1ce' unid='24215A2038A19B9DC1258E430024B995' sequence='6'>
+<noteinfo noteid='1ce' unid='24215A2038A19B9DC1258E430024B995' sequence='9'>
 <created><datetime dst='true'>20260729T084108,05+02</datetime></created>
-<modified><datetime dst='true'>20260729T170552,33+02</datetime></modified>
-<revised><datetime dst='true'>20260729T170552,32+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T170552,32+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260730T153028,27+02</datetime></modified>
+<revised><datetime dst='true'>20260730T153028,26+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260730T153028,26+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T084108,22+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
 <body><richtext>
 <pardef id='1'/>
-<par def='1'>Keep Design - About</par>
-<par def='1'>Starter NSF for Domino REST API design-element DXL examples (Default-* elements).</par>
-<par def='1'>Use GET /defaults/{type} or typed CRUD under /api/design-v1.</par></richtext></body></helpaboutdocument>
+<par def='1'><run><font size='14pt' style='bold'/>Keep Design</run></par>
+<par def='1'>Starter NSF for Domino REST API design-element DXL (Default-* elements).</par>
+<par def='1'>Includes forms, views, agents, script libraries (LotusScript / Java / JS / SSJS), XPages, and shared resources.</par>
+<par def='1'>API: GET/PUT under /api/design-v1 ΓÇö typed CRUD, bulk /designdxl, and /defaults/{type}.</par></richtext></body>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></helpaboutdocument>
 

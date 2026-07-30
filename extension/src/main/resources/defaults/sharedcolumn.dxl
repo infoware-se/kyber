@@ -1,18 +1,18 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE sharedcolumn SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <sharedcolumn name='Default-SharedColumn' xmlns='http://www.lotus.com/dxl'
- version='14.5' maintenanceversion='1.0' replicaid='C1258E4300212830' noreplace='true'
- designerversion='8.5.3'>
-<noteinfo noteid='192' unid='032ECB8E536657F5C1258E4300227906' sequence='113'>
+ version='14.5' maintenanceversion='1.0' replicaid='C1258E4300212830' designerversion='8.5.3'>
+<noteinfo noteid='192' unid='032ECB8E536657F5C1258E4300227906' sequence='121'>
 <created><datetime dst='true'>20260729T081632,06+02</datetime></created>
-<modified><datetime dst='true'>20260729T170553,36+02</datetime></modified>
-<revised><datetime dst='true'>20260729T170553,35+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T170553,35+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260730T151905,36+02</datetime></modified>
+<revised><datetime dst='true'>20260730T151905,35+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260730T151905,35+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T081632,16+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino/O=Infoware</name><name>CN=Domino Administrator/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
-<column hidedetailrows='false' itemname='$0' width='12' resizable='true' separatemultiplevalues='false'
- sortnoaccent='true' sortnocase='true' showaslinks='false'><columnheader title='Created'><font
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+<column sort='descending' hidedetailrows='false' itemname='$SharedCreated'
+ width='14' resizable='true' separatemultiplevalues='false' sortnoaccent='false'
+ sortnocase='true' showaslinks='false'><columnheader title='Created'><font
  size='9pt' style='bold'/></columnheader><code event='value'><formula>@Created</formula></code></column>
 <item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></sharedcolumn>
 

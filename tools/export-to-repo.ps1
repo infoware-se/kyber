@@ -16,13 +16,20 @@
 
 .PARAMETER SkipTypes
   API types to omit from export (default: none)
+
+.PARAMETER ReadableJava
+  Strip compiled <javaresource> (.class Base64) from DXL and write sibling .java
+  files extracted from <java name='...'>. Applies to Java script libraries, agents,
+  and applets. Source stays in DXL; Domino recompiles on import.
+  On by default. Pass -ReadableJava:`$false to keep binary .class in DXL.
 #>
 param(
   [Parameter(Mandatory = $true)][string]$RestUrl,
   [Parameter(Mandatory = $true)][string]$NsfPath,
   [string]$OutDir = ".\design",
   [string]$Token = "",
-  [string[]]$SkipTypes = @()
+  [string[]]$SkipTypes = @(),
+  [bool]$ReadableJava = $true
 )
 
 $ErrorActionPreference = "Stop"
@@ -236,6 +243,25 @@ foreach ($el in $payload.elements) {
   }
   $paths = Get-UniqueRelPath -OutDir $OutDir -Dir $dir -BaseName $base
 
+  $javaSidecars = @()
+  if ($ReadableJava -and $dxl -match '<java\b') {
+    $javaMatches = [regex]::Matches($dxl, "(?s)<java\s+name='([^']+\.java)'>(.*?)</java>")
+    foreach ($m in $javaMatches) {
+      $javaName = Sanitize-Name $m.Groups[1].Value
+      $javaSrc = $m.Groups[2].Value
+      $javaFull = Join-Path (Split-Path $paths.Full -Parent) $javaName
+      if (Test-Path $javaFull) {
+        $stem = [IO.Path]::GetFileNameWithoutExtension($javaName)
+        $suffix = if ($noteId) { Sanitize-Name $noteId } else { Sanitize-Name $base }
+        $javaName = "$stem-$suffix.java"
+        $javaFull = Join-Path (Split-Path $paths.Full -Parent) $javaName
+      }
+      [System.IO.File]::WriteAllText($javaFull, $javaSrc.TrimEnd() + "`n", [System.Text.UTF8Encoding]::new($false))
+      $javaSidecars += (Join-Path $dir $javaName).Replace('\', '/')
+    }
+    $dxl = [regex]::Replace($dxl, "(?s)<javaresource\b[^>]*>.*?</javaresource>", "")
+  }
+
   [System.IO.File]::WriteAllText($paths.Full, $dxl, [System.Text.UTF8Encoding]::new($false))
 
   $entry = @{
@@ -243,6 +269,7 @@ foreach ($el in $payload.elements) {
     doctype = $doctype
     path = $paths.Rel
   }
+  if ($javaSidecars.Count -gt 0) { $entry.javaSources = $javaSidecars }
   if ($name) { $entry.name = $name }
   if ($noteId) { $entry.noteid = $noteId }
   if ($unid) { $entry.unid = $unid }

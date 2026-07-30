@@ -3,27 +3,42 @@
 <scriptlibrary name='Default-ClientJs' xmlns='http://www.lotus.com/dxl' version='14.5'
  maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3 v4strict'
  designerversion='8.5.3'>
-<noteinfo noteid='312' unid='7DC4CD0604EBD4F1C1258E430043910B' sequence='90'>
+<noteinfo noteid='312' unid='7DC4CD0604EBD4F1C1258E430043910B' sequence='99'>
 <created><datetime dst='true'>20260729T141800,43+02</datetime></created>
-<modified><datetime dst='true'>20260729T170619,07+02</datetime></modified>
-<revised><datetime dst='true'>20260729T170619,06+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T170619,06+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260730T152255,06+02</datetime></modified>
+<revised><datetime dst='true'>20260730T152255,05+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260730T152255,05+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T141800,43+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby><code event='library'
+<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby><code event='library'
  for='web'><javascript>/**
  * Client JS starter (Default-ClientJs)
+ * Browser-side helpers for forms / pages.
  */
-function hello(name) {
-	name = name || 'World';
-	return 'Hello, ' + name + '!';
+
+function hello(who) {
+	who = who || 'World';
+	return 'Hello, ' + who + '!';
 }
 
-function setStatus(msg) {
-	if (typeof window !== 'undefined' &amp;&amp; window.status !== undefined) {
-		window.status = msg;
+function formatTitle(title) {
+	if (!title || String(title).replace(/^\s+|\s+$/g, '') === '') {
+		return '(untitled)';
+	}
+	return String(title).replace(/^\s+|\s+$/g, '');
+}
+
+/** Log a message to the browser console. */
+function logMessage(msg) {
+	if (typeof console !== 'undefined' &amp;&amp; console.log) {
+		console.log('Default-ClientJs:', msg);
 	}
 	return msg;
 }
-</javascript></code></scriptlibrary>
+
+function qs(sel) {
+	return (typeof document !== 'undefined') ? document.querySelector(sel) : null;
+}
+</javascript></code>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></scriptlibrary>
 

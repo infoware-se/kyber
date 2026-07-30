@@ -48,6 +48,8 @@ Element `type` values match repo layout (`form`, `about`, `image`, â€¦). Bri
 
 ```powershell
 .\tools\export-to-repo.ps1 -RestUrl https://host:8880 -NsfPath test/app.nsf -OutDir .\design
+# Java in script libraries, agents, applets: strips <javaresource> Base64 and writes sibling .java (default).
+# Keep compiled class in DXL: -ReadableJava:$false
 .\tools\import-from-repo.ps1 -RestUrl https://host:8880 -NsfPath test/restored.nsf -InDir .\design
 ```
 

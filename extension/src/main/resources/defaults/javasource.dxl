@@ -2,22 +2,55 @@
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258E4300212830'>
-<noteinfo noteid='42e' unid='71C6D8BFC573343AC1258E43004BB2C5' sequence='3'>
-<created><datetime dst='true'>20260729T154649,65+02</datetime></created>
-<modified><datetime dst='true'>20260729T154650,04+02</datetime></modified>
-<revised><datetime dst='true'>20260729T154650,03+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T154650,03+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260729T154649,65+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<noteinfo noteid='51a' unid='2CFB3FC5F7D0E7DFC1258E4400477BD0' sequence='4'>
+<created><datetime dst='true'>20260730T150047,52+02</datetime></created>
+<modified><datetime dst='true'>20260730T151948,90+02</datetime></modified>
+<revised><datetime dst='true'>20260730T151948,89+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260730T151948,89+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260730T150047,52+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
 <item name='$Flags'><text>34567Cg~[</text></item>
 <item name='$TITLE'><text>se/infoware/keep/DefaultHello.java</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
-<item name='$FileSize' sign='true'><number>63</number></item>
+<item name='$FileSize' sign='true'><number>468</number></item>
 <item name='$FileData' sign='true'>
 <rawitemdata type='1'>
-YQAYAAAAAAA/AAAAAQAAAAAAAAAAAAAAYABRAAAAPwBAAAAAAAAAAAAAcGFja2FnZSBzZS5pbmZv
-d2FyZS5rZWVwOw0KDQpwdWJsaWMgY2xhc3MgRGVmYXVsdEhlbGxvIHsNCg0KfQ0KAA==
+YQAYAAAAAADUAQAAAQAAAAAAAAAAAAAAYADmAQAA1AHUAQAAAAAAAAAAcGFja2FnZSBzZS5pbmZv
+d2FyZS5rZWVwOw0KDQovKioNCiAqIERlZmF1bHQgSmF2YSBjbGFzcyBmb3IgS2VlcCBEZXNpZ24g
+KENvZGUgPiBKYXZhKS4NCiAqIEV4YW1wbGUgY2xhc3Mgd2l0aCBzdGF0aWMgaGVscGVycy4NCiAq
+Lw0KcHVibGljIGNsYXNzIERlZmF1bHRIZWxsbyB7DQoNCglwdWJsaWMgc3RhdGljIFN0cmluZyBo
+ZWxsbyhTdHJpbmcgd2hvKSB7DQoJCWlmICh3aG8gPT0gbnVsbCB8fCB3aG8uaXNFbXB0eSgpKSB7
+DQoJCQl3aG8gPSAiV29ybGQiOw0KCQl9DQoJCXJldHVybiAiSGVsbG8sICIgKyB3aG8gKyAiISI7
+DQoJfQ0KDQoJcHVibGljIHN0YXRpYyBTdHJpbmcgZm9ybWF0VGl0bGUoU3RyaW5nIHRpdGxlKSB7
+DQoJCWlmICh0aXRsZSA9PSBudWxsIHx8IHRpdGxlLnRyaW0oKS5pc0VtcHR5KCkpIHsNCgkJCXJl
+dHVybiAiKHVudGl0bGVkKSI7DQoJCX0NCgkJcmV0dXJuIHRpdGxlLnRyaW0oKTsNCgl9DQp9
 </rawitemdata></item>
-<item name='$FileNames' sign='true'><text>se/infoware/keep/DefaultHello.java</text></item></note>
+<item name='$FileNames' sign='true'><text>se/infoware/keep/DefaultHello.java</text></item>
+<item name='$ClassIndexItem'><text>WEB-INF/classes/se/infoware/keep/DefaultHello.class</text></item>
+<item name='$ClassSize0' sign='true'><number>1129</number></item>
+<item name='$ClassData0' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAABpBAAAAQAAAAAAAAAAAAAAYAB7BAAAaQRqBAAAAAAAAAAAyv66vgAAAD0ANwcAAgEA
+HXNlL2luZm93YXJlL2tlZXAvRGVmYXVsdEhlbGxvBwAEAQAQamF2YS9sYW5nL09iamVjdAEABjxp
+bml0PgEAAygpVgEABENvZGUKAAMACQwABQAGAQAPTGluZU51bWJlclRhYmxlAQASTG9jYWxWYXJp
+YWJsZVRhYmxlAQAEdGhpcwEAH0xzZS9pbmZvd2FyZS9rZWVwL0RlZmF1bHRIZWxsbzsBAAVoZWxs
+bwEAJihMamF2YS9sYW5nL1N0cmluZzspTGphdmEvbGFuZy9TdHJpbmc7CgARABMHABIBABBqYXZh
+L2xhbmcvU3RyaW5nDAAUABUBAAdpc0VtcHR5AQADKClaCAAXAQAFV29ybGQSAAAAGQwAGgAPAQAX
+bWFrZUNvbmNhdFdpdGhDb25zdGFudHMBAAN3aG8BABJMamF2YS9sYW5nL1N0cmluZzsBAA1TdGFj
+a01hcFRhYmxlAQALZm9ybWF0VGl0bGUKABEAIAwAIQAiAQAEdHJpbQEAFCgpTGphdmEvbGFuZy9T
+dHJpbmc7CAAkAQAKKHVudGl0bGVkKQEABXRpdGxlAQAKU291cmNlRmlsZQEAEURlZmF1bHRIZWxs
+by5qYXZhAQAQQm9vdHN0cmFwTWV0aG9kcwoAKgAsBwArAQAkamF2YS9sYW5nL2ludm9rZS9TdHJp
+bmdDb25jYXRGYWN0b3J5DAAaAC0BAJgoTGphdmEvbGFuZy9pbnZva2UvTWV0aG9kSGFuZGxlcyRM
+b29rdXA7TGphdmEvbGFuZy9TdHJpbmc7TGphdmEvbGFuZy9pbnZva2UvTWV0aG9kVHlwZTtMamF2
+YS9sYW5nL1N0cmluZztbTGphdmEvbGFuZy9PYmplY3Q7KUxqYXZhL2xhbmcvaW52b2tlL0NhbGxT
+aXRlOw8GACkIADABAAlIZWxsbywgASEBAAxJbm5lckNsYXNzZXMHADMBACVqYXZhL2xhbmcvaW52
+b2tlL01ldGhvZEhhbmRsZXMkTG9va3VwBwA1AQAeamF2YS9sYW5nL2ludm9rZS9NZXRob2RIYW5k
+bGVzAQAGTG9va3VwACEAAQADAAAAAAADAAEABQAGAAEABwAAAC8AAQABAAAABSq3AAixAAAAAgAK
+AAAABgABAAAABwALAAAADAABAAAABQAMAA0AAAAJAA4ADwABAAcAAABRAAIAAQAAABUqxgAKKrYA
+EJkABhIWSyq6ABgAALAAAAADAAoAAAAOAAMAAAAKAAsACwAOAA0ACwAAAAwAAQAAABUAGwAcAAAA
+HQAAAAQAAgsCAAkAHgAPAAEABwAAAFIAAQABAAAAFirGAA0qtgAftgAQmQAGEiOwKrYAH7AAAAAD
+AAoAAAAOAAMAAAARAA4AEgARABQACwAAAAwAAQAAABYAJQAcAAAAHQAAAAQAAg4CAAMAJgAAAAIA
+JwAoAAAACAABAC4AAQAvADEAAAAKAAEAMgA0ADYAGQA=
+</rawitemdata></item></note>
 

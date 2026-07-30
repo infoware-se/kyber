@@ -2,14 +2,14 @@
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258E4300212830'>
-<noteinfo noteid='472' unid='07A054F26AB79D59C1258E4300520780' sequence='2'>
+<noteinfo noteid='472' unid='07A054F26AB79D59C1258E4300520780' sequence='3'>
 <created><datetime dst='true'>20260729T165558,72+02</datetime></created>
-<modified><datetime dst='true'>20260729T170216,57+02</datetime></modified>
-<revised><datetime dst='true'>20260729T170216,56+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T170216,56+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260730T153048,80+02</datetime></modified>
+<revised><datetime dst='true'>20260730T153048,79+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260730T153048,79+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T165558,72+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
 <item name='$TITLE'><text>Default-CompositeComponent.component</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
 <item name='$Flags'><text>345CgQ_</text></item>

@@ -1,53 +1,30 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE folder SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <folder name='Default-Folder' xmlns='http://www.lotus.com/dxl' version='14.5'
- maintenanceversion='1.0' replicaid='C1258E4300212830' showinmenu='false'
- noreplace='true' publicaccess='false' designerversion='8.5.3' unreadmarks='none'
- onopengoto='lastopened' onrefresh='displayindicator' headers='beveled' opencollapsed='false'
- showresponsehierarchy='true' showmargin='true' shrinkrows='false' extendlastcolumn='false'
- showhierarchies='false' unreadcolor='black' rowlinecount='1' headerlinecount='1'
- rowspacing='1' bgcolor='white' totalscolor='black' headerbgcolor='white'
- boldunreadrows='false' evaluateactions='false' allownewdocuments='false'
+ maintenanceversion='1.0' replicaid='C1258E4300212830' showinmenu='true' publicaccess='false'
+ designerversion='8.5.3' unreadmarks='none' onopengoto='top' onrefresh='displayindicator'
+ headers='beveled' opencollapsed='false' showresponsehierarchy='false' showmargin='true'
+ shrinkrows='false' extendlastcolumn='false' showhierarchies='false' unreadcolor='black'
+ rowlinecount='1' headerlinecount='1' rowspacing='1' bgcolor='white' totalscolor='black'
+ headerbgcolor='white' boldunreadrows='false' evaluateactions='false' allownewdocuments='false'
  allowcustomizations='false' hidemarginborder='false' marginwidth='0px' marginbgcolor='white'
- uniquekeys='false' formatnoteid='DEEEAE2BF6A26632C1258E430021283C'>
-<noteinfo noteid='17a' unid='FF0A90FF94E3E9F3C1258E4300220A4B' sequence='111'>
+ uniquekeys='false'>
+<noteinfo noteid='17a' unid='FF0A90FF94E3E9F3C1258E4300220A4B' sequence='121'>
 <created><datetime dst='true'>20260729T081148,59+02</datetime></created>
-<modified><datetime dst='true'>20260729T170553,78+02</datetime></modified>
-<revised><datetime dst='true'>20260729T170553,77+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T170553,77+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260730T151842,09+02</datetime></modified>
+<revised><datetime dst='true'>20260730T151842,08+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260730T151842,08+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T081148,63+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino/O=Infoware</name><name>CN=Domino Administrator/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
-<actionbar bgcolor='#f0f0f0' bordercolor='black'>
-<actionbuttonstyle bgcolor='#f0f0f0'/><font size='9pt' color='system'/><border
- style='solid' width='0px 0px 1px'/>
-<action title='Categori_ze' showinbar='false' systemcommand='categorize'/>
-<action title='_Edit Document' showinbar='false' systemcommand='edit'/>
-<action title='_Send Document' showinbar='false' systemcommand='send'/>
-<action title='_Forward' showinbar='false' systemcommand='forward'/>
-<action title='_Move To Folder...' showinbar='false' systemcommand='movetofolder'/>
-<action title='_Remove From Folder' showinbar='false' systemcommand='removefromfolder'/>
-<action title='_Read' showinbar='false' systemcommand='markread'/>
-<action title='_Unread' showinbar='false' systemcommand='markunread'/>
-<action title='_Open in New Window' showinbar='false' systemcommand='openinnewwindow'/>
-<action title='_Print...' showinbar='false' systemcommand='print'/>
-<action title='_Delete' showinbar='false' systemcommand='delete'/>
-<action title='_Document Properties' showinbar='false' systemcommand='properties'/>
-<action title='C_ut' showinbar='false' systemcommand='cut'/>
-<action title='_Copy' showinbar='false' systemcommand='copy'/>
-<action title='Copy as Document _Link' showinbar='false' systemcommand='copyasdoclink'/>
-<action title='Copy as _Table' showinbar='false' systemcommand='copyastable'/>
-<action title='P_aste' showinbar='false' systemcommand='paste'/>
-<action title='_Open' showinbar='false' systemcommand='open'/>
-<action title='Bookmark' showinbar='false' systemcommand='bookmark'/></actionbar>
-<column hidedetailrows='false' itemname='$0' width='10' resizable='true' separatemultiplevalues='false'
- sortnoaccent='false' sortnocase='true' showaslinks='false'><columnheader
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+<column hidedetailrows='false' itemname='Subject' width='30' resizable='true'
+ separatemultiplevalues='false' sortnoaccent='false' sortnocase='false' showaslinks='true'><columnheader
+ title='Subject'><font size='9pt' style='bold'/></columnheader><code event='value'><formula
+>@If(Subject = ""; "(untitled)"; Subject)</formula></code></column>
+<column hidedetailrows='false' itemname='$Created' width='14' resizable='true'
+ separatemultiplevalues='false' sortnoaccent='false' sortnocase='false' showaslinks='false'><columnheader
  title='Created'><font size='9pt' style='bold'/></columnheader><code event='value'><formula
 >@Created</formula></code></column>
-<column hidedetailrows='false' itemname='Field1' width='10' resizable='true'
- separatemultiplevalues='false' sortnoaccent='true' sortnocase='true' showaslinks='false'><columnheader
- title='Column1'><font size='9pt' style='bold'/></columnheader></column>
-<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item>
 <item name='$Name' sign='true'><text>Default-Folder</text></item>
 <item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></folder>
 
