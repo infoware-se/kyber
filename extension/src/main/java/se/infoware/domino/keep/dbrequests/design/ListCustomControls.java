@@ -10,7 +10,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
-/** List — GET /customcontrolnames?nsfPath= */
+/** List names — GET collection path (e.g. /agents)?nsfPath= */
 @MinimumAcl(AclLevel.READER)
 public class ListCustomControls extends AsyncDominoJNXJson {
 

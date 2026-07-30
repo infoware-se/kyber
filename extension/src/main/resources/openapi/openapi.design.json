@@ -3,7 +3,7 @@
   "info": {
     "title": "Infoware Domino REST API design",
     "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (only bulk import); per-type CRUD requires an existing database. This API never deletes databases.",
-    "version": "0.20.2"
+    "version": "0.21.0"
   },
   "servers": [
     {
@@ -364,65 +364,9 @@
         }
       }
     },
-    "/pagenames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listPages",
-        "summary": "List in the database",
-        "description": "Returns the titles of design pages in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Pages": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/pages": {
       "summary": "Create or replace a page",
-      "description": "Create or replace a Domino page from raw page DXL",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -434,73 +378,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertPage",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /pages/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL with a root <page name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the page after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "Page DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimalPage": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE page SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<page name='HelloPage' xmlns='http://www.lotus.com/dxl' version='14.5' publicaccess='false' designerversion='8.5.3'>\n<body><richtext>\n<pardef id='1'/>\n<par def='1'><run><font size='12pt'/>Hello</run></par>\n</richtext></body>\n<item name='$$ScriptName' summary='false' sign='true'><text>HelloPage</text></item>\n</page>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "page"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -592,6 +469,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listPages",
+        "summary": "List in the database",
+        "description": "Returns the titles of design pages in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Pages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/pages/{name}": {
@@ -774,65 +694,9 @@
         }
       }
     },
-    "/outlinenames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listOutlines",
-        "summary": "List in the database",
-        "description": "Returns the titles of design outlines in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Outlines": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/outlines": {
       "summary": "Create or replace an outline",
-      "description": "Create or replace a Domino outline from raw outline DXL",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -844,73 +708,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertOutline",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /outlines/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL with a root <outline name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the outline after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "Outline DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimalOutline": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE outline SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<outline name='HelloOutline' alias='HelloOutline' xmlns='http://www.lotus.com/dxl' version='14.5' publicaccess='false' designerversion='8.5.3'>\n<outlineentry label='Home' alias='Home' type='namedelementlink' targetframe='Content'><namedelementlink type='page' name='HelloPage'/></outlineentry>\n</outline>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "outline"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -1002,6 +799,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listOutlines",
+        "summary": "List in the database",
+        "description": "Returns the titles of design outlines in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Outlines": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/outlines/{name}": {
@@ -1184,65 +1024,9 @@
         }
       }
     },
-    "/framesetnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listFramesets",
-        "summary": "List in the database",
-        "description": "Returns the titles of design framesets in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Framesets": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/framesets": {
       "summary": "Create or replace a frameset",
-      "description": "Create or replace a Domino frameset from raw frameset DXL",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -1254,73 +1038,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertFrameset",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /framesets/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL with a root <frameset name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the frameset after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "Frameset DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimalFrameset": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE frameset SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<frameset name='HelloFrameset' alias='HelloFrameset' xmlns='http://www.lotus.com/dxl' version='14.5' publicaccess='false' designerversion='8.5.3' columns='220px 1' spacing='1px'>\n<frame name='Nav' targetframe='Content'><namedelementlink type='page' name='HelloPage'/></frame>\n<frame name='Content'><namedelementlink type='page' name='HelloPage'/></frame>\n</frameset>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "frameset"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -1412,6 +1129,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listFramesets",
+        "summary": "List in the database",
+        "description": "Returns the titles of design framesets in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Framesets": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/framesets/{name}": {
@@ -1594,65 +1354,9 @@
         }
       }
     },
-    "/formnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listForms",
-        "summary": "List in the database",
-        "description": "Returns the titles of design forms in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Forms": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/forms": {
       "summary": "Create or replace a form",
-      "description": "Create or replace a Domino form from raw form DXL",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -1664,73 +1368,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertForm",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /forms/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL with a root <form name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the form after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "Form DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimalForm": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE form SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<form name='HelloForm' xmlns='http://www.lotus.com/dxl' version='14.5' publicaccess='false' designerversion='8.5.3' renderpassthrough='true'>\n<body><richtext>\n<pardef id='1'/>\n<par def='1'><field type='text' kind='editable' name='Subject'/></par>\n</richtext></body>\n<item name='$$ScriptName' summary='false' sign='true'><text>HelloForm</text></item>\n</form>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "form"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -1822,6 +1459,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listForms",
+        "summary": "List in the database",
+        "description": "Returns the titles of design forms in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Forms": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/forms/{name}": {
@@ -2004,65 +1684,9 @@
         }
       }
     },
-    "/viewnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listViews",
-        "summary": "List in the database",
-        "description": "Returns the titles of design views in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Views": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/views": {
       "summary": "Create or replace a view",
-      "description": "Create or replace a Domino view from raw view DXL",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -2074,73 +1698,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertView",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /views/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL with a root <view name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the view after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "View DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimalView": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE view SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<view name='HelloView' xmlns='http://www.lotus.com/dxl' version='14.5' showinmenu='true' publicaccess='false' designerversion='8.5.3' unreadmarks='standard' onopengoto='lastopened' onrefresh='displayindicator' headers='simple' bgcolor='white' altrowcolor='#f0f3f7' headerbgcolor='#d6e2f0' marginbgcolor='white' unreadcolor='maroon' rowspacing='1.25' extendlastcolumn='true' showmargin='true'>\n<code event='selection'><formula>SELECT Form = \"HelloForm\"</formula></code>\n<column itemname='Subject' width='20' resizable='true'><columnheader title='Subject'><font size='9pt'/></columnheader></column>\n</view>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "view"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -2232,6 +1789,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listViews",
+        "summary": "List in the database",
+        "description": "Returns the titles of design views in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Views": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/views/{name}": {
@@ -2414,65 +2014,9 @@
         }
       }
     },
-    "/foldernames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listFolders",
-        "summary": "List in the database",
-        "description": "Returns the titles of design folders in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Folders": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/folders": {
       "summary": "Create or replace a folder",
-      "description": "Create or replace a Domino folder from raw folder DXL",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -2484,73 +2028,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertFolder",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /folders/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL with a root <folder name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the folder after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "Folder DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimalFolder": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE folder SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<folder name='HelloFolder' xmlns='http://www.lotus.com/dxl' version='14.5' showinmenu='true' publicaccess='false' designerversion='8.5.3' unreadmarks='none' onopengoto='lastopened' onrefresh='displayindicator'>\n<column itemname='Subject' width='20' resizable='true'>\n<columnheader title='Subject'><font size='9pt'/></columnheader></column>\n</folder>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "folder"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -2642,6 +2119,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listFolders",
+        "summary": "List in the database",
+        "description": "Returns the titles of design folders in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Folders": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/folders/{name}": {
@@ -2824,65 +2344,9 @@
         }
       }
     },
-    "/subformnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listSubforms",
-        "summary": "List in the database",
-        "description": "Returns the titles of design subforms in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Subforms": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/subforms": {
       "summary": "Create or replace a subform",
-      "description": "Create or replace a Domino subform from raw DXL",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -2894,73 +2358,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertSubform",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /subforms/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL with root <subform>. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "Subform DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimal": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE subform SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<subform name='HelloSubform' xmlns='http://www.lotus.com/dxl' version='14.5' publicaccess='false' designerversion='8.5.3'>\n<body><richtext><pardef id='1'/><par def='1'><field type='text' kind='editable' name='SharedInfo'/></par></richtext></body>\n</subform>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "subform"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -3052,6 +2449,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listSubforms",
+        "summary": "List in the database",
+        "description": "Returns the titles of design subforms in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Subforms": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/subforms/{name}": {
@@ -3233,65 +2673,9 @@
         }
       }
     },
-    "/sharedfieldnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listSharedFields",
-        "summary": "List in the database",
-        "description": "Returns the titles of design sharedfields in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Fields": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/sharedfields": {
       "summary": "Create or replace a sharedfield",
-      "description": "Create or replace a Domino sharedfield from raw DXL",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -3303,73 +2687,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertSharedField",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /sharedfields/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL with root <sharedfield>. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "SharedField DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimal": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE sharedfield SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<sharedfield name='HelloField' xmlns='http://www.lotus.com/dxl' version='14.5' publicaccess='false' designerversion='8.5.3'>\n<field type='text' kind='editable' name='HelloField'/>\n</sharedfield>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "sharedfield"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -3461,6 +2778,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listSharedFields",
+        "summary": "List in the database",
+        "description": "Returns the titles of design sharedfields in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Fields": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/sharedfields/{name}": {
@@ -3642,65 +3002,9 @@
         }
       }
     },
-    "/sharedcolumnnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listSharedColumns",
-        "summary": "List in the database",
-        "description": "Returns the titles of design sharedcolumns in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Columns": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/sharedcolumns": {
       "summary": "Create or replace a sharedcolumn",
-      "description": "Create or replace a Domino sharedcolumn from raw DXL",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -3712,73 +3016,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertSharedColumn",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /sharedcolumns/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL with root <sharedcolumn>. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "SharedColumn DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimal": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE sharedcolumn SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<sharedcolumn name='HelloColumn' xmlns='http://www.lotus.com/dxl' version='14.5' publicaccess='false' designerversion='8.5.3'>\n<column itemname='Subject' width='20' resizable='true'><columnheader title='Subject'><font size='9pt'/></columnheader></column>\n</sharedcolumn>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "sharedcolumn"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -3870,6 +3107,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listSharedColumns",
+        "summary": "List in the database",
+        "description": "Returns the titles of design sharedcolumns in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Columns": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/sharedcolumns/{name}": {
@@ -4051,65 +3331,9 @@
         }
       }
     },
-    "/imagenames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listImages",
-        "summary": "List in the database",
-        "description": "Returns the titles of design images in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Images": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/images": {
       "summary": "Create or replace a Image",
-      "description": "Create or replace a Domino Image from raw DXL",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -4121,73 +3345,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertImage",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /images/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL with root <imageresource>. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "Image DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimal": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE imageresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<imageresource name='Hello.gif' xmlns='http://www.lotus.com/dxl' version='14.5'/>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "imageresource"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -4279,6 +3436,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listImages",
+        "summary": "List in the database",
+        "description": "Returns the titles of design images in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Images": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/images/{name}": {
@@ -4460,65 +3660,9 @@
         }
       }
     },
-    "/fileresourcenames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listFileResources",
-        "summary": "List in the database",
-        "description": "Returns the titles of design fileresources in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Files": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/fileresources": {
       "summary": "Create or replace a FileResource",
-      "description": "Create or replace a Domino FileResource from raw DXL",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -4530,73 +3674,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertFileResource",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /fileresources/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL with root <fileresource>. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "FileResource DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimal": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE fileresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<fileresource name='hello.txt' xmlns='http://www.lotus.com/dxl' version='14.5' publicaccess='false' designerversion='8.5.3'>\n<filedata>aGVsbG8=</filedata>\n</fileresource>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "fileresource"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -4688,6 +3765,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listFileResources",
+        "summary": "List in the database",
+        "description": "Returns the titles of design fileresources in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Files": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/fileresources/{name}": {
@@ -4869,65 +3989,9 @@
         }
       }
     },
-    "/stylesheetnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listStyleSheets",
-        "summary": "List in the database",
-        "description": "Returns the titles of design stylesheets in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "StyleSheets": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/stylesheets": {
       "summary": "Create or replace a StyleSheet",
-      "description": "Create or replace a Domino StyleSheet from raw DXL",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -4939,73 +4003,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertStyleSheet",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /stylesheets/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL with root <stylesheetresource>. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "StyleSheet DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimal": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE stylesheetresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<stylesheetresource name='hello.css' xmlns='http://www.lotus.com/dxl' version='14.5' publicaccess='false' designerversion='8.5.3'>\n<filedata>Ym9keSB7fQ==</filedata>\n</stylesheetresource>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "stylesheetresource"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -5097,6 +4094,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listStyleSheets",
+        "summary": "List in the database",
+        "description": "Returns the titles of design stylesheets in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "StyleSheets": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/stylesheets/{name}": {
@@ -5278,65 +4318,9 @@
         }
       }
     },
-    "/themenames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listThemes",
-        "summary": "List in the database",
-        "description": "Returns the titles of design themes in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Themes": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/themes": {
       "summary": "Create or replace a Theme",
-      "description": "Create or replace a Domino Theme from raw DXL",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -5348,73 +4332,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertTheme",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /themes/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL with root <theme>. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "Theme DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimal": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<note xmlns='http://www.lotus.com/dxl' version='14.5' class='form'>\n<item name='`$TITLE'><text>HelloTheme</text></item>\n</note>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "theme"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -5506,6 +4423,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listThemes",
+        "summary": "List in the database",
+        "description": "Returns the titles of design themes in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Themes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/themes/{name}": {
@@ -6302,65 +5262,9 @@
         ]
       }
     },
-    "/agentnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listAgents",
-        "summary": "List in the database",
-        "description": "Returns the titles of design agents in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Agents": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/agents": {
       "summary": "Create or replace a Agent",
-      "description": "Create/replace a Domino Agent from raw DXL, or with empty body from starter via kind+name.",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -6396,73 +5300,6 @@
           "required": false
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertAgent",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /agents/{name} to update",
-        "description": "[DEPRECATED upsert] With text/xml body: import raw agent DXL. With empty body: require kind + name, load starter, set name, import/sign.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "description": "Agent DXL (text/xml). Omit or leave empty to create from kind+name starter.",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimal": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE agent SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<agent name='IwsHelloAgent' xmlns='http://www.lotus.com/dxl' version='14.5'>\n<trigger type='actionsmenu'/><documentset type='selected'/>\n<code event='action'><formula>SELECT @All</formula></code>\n</agent>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "agent"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -6569,6 +5406,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listAgents",
+        "summary": "List in the database",
+        "description": "Returns the titles of design agents in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Agents": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/agents/{name}": {
@@ -6750,65 +5630,9 @@
         }
       }
     },
-    "/scriptlibrarynames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listScriptLibraries",
-        "summary": "List in the database",
-        "description": "Returns the titles of design scriptlibraries in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ScriptLibraries": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/scriptlibraries": {
       "summary": "Create or replace a ScriptLibrary",
-      "description": "Create/replace a Domino ScriptLibrary from raw DXL, or with empty body from starter via kind+name.",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -6844,73 +5668,6 @@
           "required": false
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertScriptLibrary",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /scriptlibraries/{name} to update",
-        "description": "[DEPRECATED upsert] With text/xml body: import raw scriptlibrary DXL (LotusScript, client JS, SSJS, or Java). With empty body: require kind + name query params, load starter for kind, set name, import/sign.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "description": "ScriptLibrary DXL (text/xml). Omit or leave empty to create from kind+name starter.",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimal": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE scriptlibrary SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<scriptlibrary name='IwsHelloLib' xmlns='http://www.lotus.com/dxl' version='14.5'>\n<code event='options'><lotusscript>Option Public\n</lotusscript></code>\n</scriptlibrary>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "scriptlibrary"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -7017,6 +5774,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listScriptLibraries",
+        "summary": "List in the database",
+        "description": "Returns the titles of design scriptlibraries in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ScriptLibraries": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/scriptlibraries/{name}": {
@@ -7198,65 +5998,9 @@
         }
       }
     },
-    "/sharedactionnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listSharedActions",
-        "summary": "List in the database",
-        "description": "Returns the names of Shared Actions design notes ($TITLE or $ScriptName).",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "SharedActions": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/sharedactions": {
       "summary": "Create or replace a Shared Actions note",
-      "description": "Create or replace a Domino Shared Actions design note from raw DXL",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -7268,73 +6012,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertSharedActions",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /sharedactions/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL with root <sharedactions>. Name from name attribute, $TITLE, or $ScriptName. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "SharedActions DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimal": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE sharedactions SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<sharedactions name='Default-SharedActions' xmlns='http://www.lotus.com/dxl' version='14.5'>\n<item name='$TITLE'><text>Default-SharedActions</text></item>\n</sharedactions>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "sharedactions"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -7426,6 +6103,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listSharedActions",
+        "summary": "List in the database",
+        "description": "Returns the names of Shared Actions design notes ($TITLE or $ScriptName).",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "SharedActions": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/sharedactions/{name}": {
@@ -8202,65 +6922,9 @@
         ]
       }
     },
-    "/xpagenames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listXPages",
-        "summary": "List in the database",
-        "description": "Returns the titles of XPages in the database. Custom Controls are listed separately via /customcontrolnames.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "XPages": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/xpages": {
       "summary": "Create or replace an XPage",
-      "description": "Create or replace a Domino XPage from raw DXL (typically note or fileresource export)",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -8272,73 +6936,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertXPage",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /xpages/{name} to update",
-        "description": "[DEPRECATED upsert] Upload Designer-exported XPage DXL. Uses REPLACE_ELSE_CREATE and signs after import. Custom Controls use /customcontrols.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "XPage DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimal": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<note xmlns='http://www.lotus.com/dxl' version='14.5' class='form'>\n<item name='`$TITLE'><text>Hello.xsp</text></item>\n</note>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "xpage"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -8430,6 +7027,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listXPages",
+        "summary": "List in the database",
+        "description": "Returns the titles of XPages in the database. Custom Controls are listed separately via /customcontrolnames.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "XPages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/xpages/{name}": {
@@ -8611,65 +7251,9 @@
         }
       }
     },
-    "/customcontrolnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listCustomControls",
-        "summary": "List",
-        "description": "Returns $TITLE values of XPages Custom Controls (.xsp notes without the XPage K flag). Not the same as Composite Components.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "CustomControls": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/customcontrols": {
       "summary": "Create or replace a Custom Control",
-      "description": "Create or replace a Domino XPages Custom Control from raw DXL (typically note export with $Flags=gC~4;)",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -8681,68 +7265,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertCustomControl",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /customcontrols/{name} to update",
-        "description": "[DEPRECATED upsert] Upload Designer-exported Custom Control DXL. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "Custom Control DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "customcontrol"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -8829,6 +7351,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listCustomControls",
+        "summary": "List",
+        "description": "Returns $TITLE values of XPages Custom Controls (.xsp notes without the XPage K flag). Not the same as Composite Components.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "CustomControls": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/customcontrols/{name}": {
@@ -9005,65 +7570,9 @@
         }
       }
     },
-    "/webservicenames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listWebServices",
-        "summary": "List",
-        "description": "Returns $TITLE of design notes whose $Flags contain the Web Service Provider flag '{'.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "WebServices": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/webservices": {
       "summary": "Create or replace a Web Service Provider",
-      "description": "Create or replace a Domino Web Service Provider from raw DXL (note export with $Flags containing '{')",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -9075,68 +7584,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertWebService",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /webservices/{name} to update",
-        "description": "[DEPRECATED upsert] Upload Designer-exported Web Service Provider DXL. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "Web Service Provider DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "webservice"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -9223,6 +7670,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listWebServices",
+        "summary": "List",
+        "description": "Returns $TITLE of design notes whose $Flags contain the Web Service Provider flag '{'.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "WebServices": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/webservices/{name}": {
@@ -9399,65 +7889,9 @@
         }
       }
     },
-    "/webserviceconsumernames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listWebServiceConsumers",
-        "summary": "List",
-        "description": "Returns $TITLE of script-library notes whose $FlagsExt contains W (WEBSERVICELIB). Listed separately from /scriptlibrarynames.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "WebServiceConsumers": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/webserviceconsumers": {
       "summary": "Create or replace a Web Service Consumer",
-      "description": "Create or replace a Domino Web Service Consumer from raw DXL (note/scriptlibrary export with $FlagsExt=W)",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -9469,68 +7903,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertWebServiceConsumer",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /webserviceconsumers/{name} to update",
-        "description": "[DEPRECATED upsert] Upload Designer-exported Web Service Consumer DXL. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "description": "Web Service Consumer DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "webserviceconsumer"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -9617,6 +7989,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listWebServiceConsumers",
+        "summary": "List",
+        "description": "Returns $TITLE of script-library notes whose $FlagsExt contains W (WEBSERVICELIB). Listed separately from /scriptlibrarynames.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "WebServiceConsumers": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/webserviceconsumers/{name}": {
@@ -9793,65 +8208,9 @@
         }
       }
     },
-    "/navigatornames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listNavigators",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Navigators": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/navigators": {
       "summary": "Create or replace a Navigator from DXL",
-      "description": "Upload DXL for navigator. Uses REPLACE_ELSE_CREATE and signs after import.",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -9863,68 +8222,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertNavigator",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /navigators/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL for navigator. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "description": "Raw DXL (text/xml). Optional for kinded types when kind+name provided.",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "navigator"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -10011,6 +8308,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listNavigators",
+        "summary": "List in the database",
+        "description": "Returns the titles of these design elements in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Navigators": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/navigators/{name}": {
@@ -10187,65 +8527,9 @@
         }
       }
     },
-    "/dataconnectionnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listDataConnections",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "DataConnections": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/dataconnections": {
       "summary": "Create or replace a DataConnection from DXL",
-      "description": "Upload DXL for dataconnection. Uses REPLACE_ELSE_CREATE and signs after import.",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -10257,68 +8541,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertDataConnection",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /dataconnections/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL for dataconnection. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "description": "Raw DXL (text/xml). Optional for kinded types when kind+name provided.",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "dataconnection"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -10405,6 +8627,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listDataConnections",
+        "summary": "List in the database",
+        "description": "Returns the titles of these design elements in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "DataConnections": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/dataconnections/{name}": {
@@ -10581,65 +8846,9 @@
         }
       }
     },
-    "/jarnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listJars",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Jars": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/jars": {
       "summary": "Create or replace a Jar from DXL",
-      "description": "Upload DXL for jar. Uses REPLACE_ELSE_CREATE and signs after import.",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -10651,68 +8860,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertJar",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /jars/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL for jar. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "description": "Raw DXL (text/xml). Optional for kinded types when kind+name provided.",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "jar"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -10799,6 +8946,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listJars",
+        "summary": "List in the database",
+        "description": "Returns the titles of these design elements in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Jars": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/jars/{name}": {
@@ -10975,65 +9165,9 @@
         }
       }
     },
-    "/appletnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listApplets",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "Applets": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/applets": {
       "summary": "Create or replace a Applet from DXL",
-      "description": "Upload DXL for applet. Uses REPLACE_ELSE_CREATE and signs after import.",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -11045,68 +9179,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertApplet",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /applets/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL for applet. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "description": "Raw DXL (text/xml). Optional for kinded types when kind+name provided.",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "applet"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -11193,6 +9265,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listApplets",
+        "summary": "List in the database",
+        "description": "Returns the titles of these design elements in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Applets": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/applets/{name}": {
@@ -11369,65 +9484,9 @@
         }
       }
     },
-    "/javasourcenames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listJavaSources",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "JavaSources": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/javasources": {
       "summary": "Create or replace a JavaSource from DXL",
-      "description": "Upload DXL for javasource. Uses REPLACE_ELSE_CREATE and signs after import.",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -11462,68 +9521,6 @@
           "required": false
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertJavaSource",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /javasources/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL for javasource. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "description": "Raw DXL (text/xml). Optional for kinded types when kind+name provided.",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "javasource"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -11624,6 +9621,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listJavaSources",
+        "summary": "List in the database",
+        "description": "Returns the titles of these design elements in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "JavaSources": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/javasources/{name}": {
@@ -11800,65 +9840,9 @@
         }
       }
     },
-    "/wiringpropertiesnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listWiringProperties",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "WiringProperties": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/wiringproperties": {
       "summary": "Create or replace a WiringProperties from DXL",
-      "description": "Upload DXL for wiringproperties. Uses REPLACE_ELSE_CREATE and signs after import.",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -11870,68 +9854,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertWiringProperties",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /wiringproperties/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL for wiringproperties. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "description": "Raw DXL (text/xml). Optional for kinded types when kind+name provided.",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "wiringproperties"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -12018,6 +9940,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listWiringProperties",
+        "summary": "List in the database",
+        "description": "Returns the titles of these design elements in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "WiringProperties": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/wiringproperties/{name}": {
@@ -12194,65 +10159,9 @@
         }
       }
     },
-    "/compositeapplicationnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listCompositeApplications",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "CompositeApplications": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/compositeapplications": {
       "summary": "Create or replace a CompositeApplication from DXL",
-      "description": "Upload DXL for compositeapplication. Uses REPLACE_ELSE_CREATE and signs after import.",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -12264,68 +10173,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertCompositeApplication",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /compositeapplications/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL for compositeapplication. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "description": "Raw DXL (text/xml). Optional for kinded types when kind+name provided.",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "compositeapplication"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -12412,6 +10259,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listCompositeApplications",
+        "summary": "List in the database",
+        "description": "Returns the titles of these design elements in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "CompositeApplications": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/compositeapplications/{name}": {
@@ -12588,65 +10478,9 @@
         }
       }
     },
-    "/compositecomponentnames": {
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "get": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "listCompositeComponents",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "CompositeComponents": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/compositecomponents": {
       "summary": "Create or replace a CompositeComponent from DXL",
-      "description": "Upload DXL for compositecomponent. Uses REPLACE_ELSE_CREATE and signs after import.",
+      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -12658,68 +10492,6 @@
           "required": true
         }
       ],
-      "put": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "upsertCompositeComponent",
-        "summary": "Upsert (deprecated) — use POST to create and PUT /compositecomponents/{name} to update",
-        "description": "[DEPRECATED upsert] Upload DXL for compositecomponent. Uses REPLACE_ELSE_CREATE and signs after import.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "description": "Raw DXL (text/xml). Optional for kinded types when kind+name provided.",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "compositecomponent"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "deprecated": true
-      },
       "post": {
         "tags": [
           "design-element"
@@ -12806,6 +10578,49 @@
             "required": false
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listCompositeComponents",
+        "summary": "List in the database",
+        "description": "Returns the titles of these design elements in the database.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "CompositeComponents": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
       }
     },
     "/compositecomponents/{name}": {

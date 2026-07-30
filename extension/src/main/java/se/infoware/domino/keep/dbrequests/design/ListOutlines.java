@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** List — GET /outlinenames?nsfPath= */
+/** List names — GET collection path (e.g. /agents)?nsfPath= */
 @MinimumAcl(AclLevel.READER)
 public class ListOutlines extends AsyncDominoJNXJson {
 

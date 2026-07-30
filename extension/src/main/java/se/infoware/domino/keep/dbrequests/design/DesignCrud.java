@@ -11,7 +11,7 @@ import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import io.vertx.core.json.JsonObject;
 
 /**
- * Shared create / update / upsert orchestration for design CRUD endpoints.
+ * Shared create / update orchestration for design CRUD endpoints.
  *
  * <p>Create: 409 if exists. Update: 404 if missing. Both return exported {@code dxl} when possible.
  */
@@ -53,12 +53,6 @@ final class DesignCrud {
   static void updateNamed(
       DbRequestParameters<JsonObject> request, String type, String... dxlRoots) throws Exception {
     writeNamed(request, type, DxlDesignPatch.Mode.REPLACE, false, dxlRoots);
-  }
-
-  /** Named-type upsert (deprecated collection PUT). */
-  static void upsertNamed(
-      DbRequestParameters<JsonObject> request, String type, String... dxlRoots) throws Exception {
-    writeNamed(request, type, DxlDesignPatch.Mode.UPSERT, false, dxlRoots);
   }
 
   private static void writeNamed(
@@ -164,15 +158,6 @@ final class DesignCrud {
     writeKinded(request, type, kinds, DxlDesignPatch.Mode.REPLACE, false, dxlRoots);
   }
 
-  static void upsertKinded(
-      DbRequestParameters<JsonObject> request,
-      String type,
-      KindAdapter kinds,
-      String... dxlRoots)
-      throws Exception {
-    writeKinded(request, type, kinds, DxlDesignPatch.Mode.UPSERT, true, dxlRoots);
-  }
-
   private static void writeKinded(
       DbRequestParameters<JsonObject> request,
       String type,
@@ -259,16 +244,10 @@ final class DesignCrud {
     writeSingleton(request, type, DxlDesignPatch.Mode.CREATE, true, dxlRoots);
   }
 
-  /** Singleton update (PUT). DXL required unless empty→default disallowed. */
+  /** Singleton update (PUT). DXL required. */
   static void updateSingleton(
       DbRequestParameters<JsonObject> request, String type, String... dxlRoots) throws Exception {
     writeSingleton(request, type, DxlDesignPatch.Mode.REPLACE, false, dxlRoots);
-  }
-
-  /** Singleton upsert (deprecated PUT). */
-  static void upsertSingleton(
-      DbRequestParameters<JsonObject> request, String type, String... dxlRoots) throws Exception {
-    writeSingleton(request, type, DxlDesignPatch.Mode.UPSERT, false, dxlRoots);
   }
 
   private static void writeSingleton(
