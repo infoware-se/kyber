@@ -3,7 +3,7 @@
   "info": {
     "title": "Infoware Domino REST API design",
     "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (only bulk import); per-type CRUD requires an existing database. This API never deletes databases.",
-    "version": "0.20.0"
+    "version": "0.20.1"
   },
   "servers": [
     {
@@ -438,7 +438,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createPage",
+        "operationId": "upsertPage",
         "summary": "Upsert (deprecated) — use POST to create and PUT /pages/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL with a root <page name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the page after import.",
         "x-keep-version": 1,
@@ -505,7 +505,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postPage",
+        "operationId": "createPage",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -848,7 +848,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createOutline",
+        "operationId": "upsertOutline",
         "summary": "Upsert (deprecated) — use POST to create and PUT /outlines/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL with a root <outline name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the outline after import.",
         "x-keep-version": 1,
@@ -915,7 +915,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postOutline",
+        "operationId": "createOutline",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -1258,7 +1258,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createFrameset",
+        "operationId": "upsertFrameset",
         "summary": "Upsert (deprecated) — use POST to create and PUT /framesets/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL with a root <frameset name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the frameset after import.",
         "x-keep-version": 1,
@@ -1325,7 +1325,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postFrameset",
+        "operationId": "createFrameset",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -1668,7 +1668,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createForm",
+        "operationId": "upsertForm",
         "summary": "Upsert (deprecated) — use POST to create and PUT /forms/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL with a root <form name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the form after import.",
         "x-keep-version": 1,
@@ -1735,7 +1735,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postForm",
+        "operationId": "createForm",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -2078,7 +2078,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createView",
+        "operationId": "upsertView",
         "summary": "Upsert (deprecated) — use POST to create and PUT /views/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL with a root <view name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the view after import.",
         "x-keep-version": 1,
@@ -2145,7 +2145,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postView",
+        "operationId": "createView",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -2488,7 +2488,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createFolder",
+        "operationId": "upsertFolder",
         "summary": "Upsert (deprecated) — use POST to create and PUT /folders/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL with a root <folder name=\"...\"> element. Uses REPLACE_ELSE_CREATE and signs the folder after import.",
         "x-keep-version": 1,
@@ -2555,7 +2555,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postFolder",
+        "operationId": "createFolder",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -2898,7 +2898,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createSubform",
+        "operationId": "upsertSubform",
         "summary": "Upsert (deprecated) — use POST to create and PUT /subforms/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL with root <subform>. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -2965,7 +2965,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postSubform",
+        "operationId": "createSubform",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -3307,7 +3307,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createSharedField",
+        "operationId": "upsertSharedField",
         "summary": "Upsert (deprecated) — use POST to create and PUT /sharedfields/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL with root <sharedfield>. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -3374,7 +3374,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postSharedField",
+        "operationId": "createSharedField",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -3716,7 +3716,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createSharedColumn",
+        "operationId": "upsertSharedColumn",
         "summary": "Upsert (deprecated) — use POST to create and PUT /sharedcolumns/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL with root <sharedcolumn>. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -3783,7 +3783,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postSharedColumn",
+        "operationId": "createSharedColumn",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -4125,7 +4125,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createImage",
+        "operationId": "upsertImage",
         "summary": "Upsert (deprecated) — use POST to create and PUT /images/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL with root <imageresource>. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -4192,7 +4192,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postImage",
+        "operationId": "createImage",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -4534,7 +4534,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createFileResource",
+        "operationId": "upsertFileResource",
         "summary": "Upsert (deprecated) — use POST to create and PUT /fileresources/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL with root <fileresource>. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -4601,7 +4601,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postFileResource",
+        "operationId": "createFileResource",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -4943,7 +4943,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createStyleSheet",
+        "operationId": "upsertStyleSheet",
         "summary": "Upsert (deprecated) — use POST to create and PUT /stylesheets/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL with root <stylesheetresource>. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -5010,7 +5010,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postStyleSheet",
+        "operationId": "createStyleSheet",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -5352,7 +5352,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createTheme",
+        "operationId": "upsertTheme",
         "summary": "Upsert (deprecated) — use POST to create and PUT /themes/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL with root <theme>. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -5419,7 +5419,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postTheme",
+        "operationId": "createTheme",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -5976,7 +5976,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postAbout",
+        "operationId": "createAbout",
         "summary": "Create singleton only (409 if exists); empty body uses default",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -6225,7 +6225,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postUsing",
+        "operationId": "createUsing",
         "summary": "Create singleton only (409 if exists); empty body uses default",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -6400,7 +6400,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createAgent",
+        "operationId": "upsertAgent",
         "summary": "Upsert (deprecated) — use POST to create and PUT /agents/{name} to update",
         "description": "[DEPRECATED upsert] With text/xml body: import raw agent DXL. With empty body: require kind + name, load starter, set name, import/sign.",
         "x-keep-version": 1,
@@ -6467,7 +6467,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postAgent",
+        "operationId": "createAgent",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -6848,7 +6848,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createScriptLibrary",
+        "operationId": "upsertScriptLibrary",
         "summary": "Upsert (deprecated) — use POST to create and PUT /scriptlibraries/{name} to update",
         "description": "[DEPRECATED upsert] With text/xml body: import raw scriptlibrary DXL (LotusScript, client JS, SSJS, or Java). With empty body: require kind + name query params, load starter for kind, set name, import/sign.",
         "x-keep-version": 1,
@@ -6915,7 +6915,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postScriptLibrary",
+        "operationId": "createScriptLibrary",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -7272,7 +7272,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createSharedActions",
+        "operationId": "upsertSharedActions",
         "summary": "Upsert (deprecated) — use POST to create and PUT /sharedactions/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL with root <sharedactions>. Name from name attribute, $TITLE, or $ScriptName. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -7339,7 +7339,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postSharedActions",
+        "operationId": "createSharedActions",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -7857,7 +7857,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postXspProperties",
+        "operationId": "createXspProperties",
         "summary": "Create singleton only (409 if exists); empty body uses default",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -8125,7 +8125,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postDatabaseScript",
+        "operationId": "createDatabaseScript",
         "summary": "Create singleton only (409 if exists); empty body uses default",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -8276,7 +8276,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createXPage",
+        "operationId": "upsertXPage",
         "summary": "Upsert (deprecated) — use POST to create and PUT /xpages/{name} to update",
         "description": "[DEPRECATED upsert] Upload Designer-exported XPage DXL. Uses REPLACE_ELSE_CREATE and signs after import. Custom Controls use /customcontrols.",
         "x-keep-version": 1,
@@ -8343,7 +8343,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postXPage",
+        "operationId": "createXPage",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -8685,7 +8685,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createCustomControl",
+        "operationId": "upsertCustomControl",
         "summary": "Upsert (deprecated) — use POST to create and PUT /customcontrols/{name} to update",
         "description": "[DEPRECATED upsert] Upload Designer-exported Custom Control DXL. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -8747,7 +8747,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postCustomControl",
+        "operationId": "createCustomControl",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -9079,7 +9079,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createWebService",
+        "operationId": "upsertWebService",
         "summary": "Upsert (deprecated) — use POST to create and PUT /webservices/{name} to update",
         "description": "[DEPRECATED upsert] Upload Designer-exported Web Service Provider DXL. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -9141,7 +9141,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postWebService",
+        "operationId": "createWebService",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -9473,7 +9473,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createWebServiceConsumer",
+        "operationId": "upsertWebServiceConsumer",
         "summary": "Upsert (deprecated) — use POST to create and PUT /webserviceconsumers/{name} to update",
         "description": "[DEPRECATED upsert] Upload Designer-exported Web Service Consumer DXL. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -9535,7 +9535,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postWebServiceConsumer",
+        "operationId": "createWebServiceConsumer",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -9867,7 +9867,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createNavigator",
+        "operationId": "upsertNavigator",
         "summary": "Upsert (deprecated) — use POST to create and PUT /navigators/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL for navigator. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -9929,7 +9929,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postNavigator",
+        "operationId": "createNavigator",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -10261,7 +10261,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createDataConnection",
+        "operationId": "upsertDataConnection",
         "summary": "Upsert (deprecated) — use POST to create and PUT /dataconnections/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL for dataconnection. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -10323,7 +10323,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postDataConnection",
+        "operationId": "createDataConnection",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -10655,7 +10655,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createJar",
+        "operationId": "upsertJar",
         "summary": "Upsert (deprecated) — use POST to create and PUT /jars/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL for jar. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -10717,7 +10717,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postJar",
+        "operationId": "createJar",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -11049,7 +11049,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createApplet",
+        "operationId": "upsertApplet",
         "summary": "Upsert (deprecated) — use POST to create and PUT /applets/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL for applet. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -11111,7 +11111,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postApplet",
+        "operationId": "createApplet",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -11466,7 +11466,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createJavaSource",
+        "operationId": "upsertJavaSource",
         "summary": "Upsert (deprecated) — use POST to create and PUT /javasources/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL for javasource. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -11528,7 +11528,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postJavaSource",
+        "operationId": "createJavaSource",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -11874,7 +11874,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createWiringProperties",
+        "operationId": "upsertWiringProperties",
         "summary": "Upsert (deprecated) — use POST to create and PUT /wiringproperties/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL for wiringproperties. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -11936,7 +11936,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postWiringProperties",
+        "operationId": "createWiringProperties",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -12268,7 +12268,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createCompositeApplication",
+        "operationId": "upsertCompositeApplication",
         "summary": "Upsert (deprecated) — use POST to create and PUT /compositeapplications/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL for compositeapplication. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -12330,7 +12330,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postCompositeApplication",
+        "operationId": "createCompositeApplication",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -12662,7 +12662,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createCompositeComponent",
+        "operationId": "upsertCompositeComponent",
         "summary": "Upsert (deprecated) — use POST to create and PUT /compositecomponents/{name} to update",
         "description": "[DEPRECATED upsert] Upload DXL for compositecomponent. Uses REPLACE_ELSE_CREATE and signs after import.",
         "x-keep-version": 1,
@@ -12724,7 +12724,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postCompositeComponent",
+        "operationId": "createCompositeComponent",
         "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,
@@ -13154,7 +13154,7 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "postDbIcon",
+        "operationId": "createDbIcon",
         "summary": "Create database icon",
         "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
         "x-keep-version": 1,

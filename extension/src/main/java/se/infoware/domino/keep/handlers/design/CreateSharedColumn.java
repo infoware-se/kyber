@@ -1,4 +1,4 @@
 package se.infoware.domino.keep.handlers.design;
 
-/** HTTP handler for shared column DXL create/replace - PUT /sharedcolumns?nsfPath= */
+/** HTTP handler for create-only POST */
 public class CreateSharedColumn extends AbstractImportDxlHandler {}

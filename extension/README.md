@@ -16,6 +16,8 @@ Manage database **design elements** via Domino REST API. Target database is sele
 
 `$DBIcon` is excluded from `/imagenames` — use `/dbicon`. Kinded types (`agent`, `scriptlibrary`, `javasource`) take `?kind=` + `?name=` on empty-body `POST`.
 
+OpenAPI operationIds: `createX` (POST), `updateX` (PUT item/singleton), `upsertX` (deprecated collection PUT).
+
 All paths are under `/api/design-v1` and require `?nsfPath=`.
 
 ## Bulk export/import (`design-handler`)

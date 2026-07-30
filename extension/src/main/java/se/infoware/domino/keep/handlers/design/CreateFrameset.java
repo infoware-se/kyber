@@ -1,4 +1,4 @@
 package se.infoware.domino.keep.handlers.design;
 
-/** HTTP handler for frameset DXL create/replace - PUT /framesets?nsfPath= */
+/** HTTP handler for create-only POST */
 public class CreateFrameset extends AbstractImportDxlHandler {}

@@ -6,11 +6,11 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Update-only singleton (operationId createXspProperties kept for OpenAPI path remap to update). */
+/** Create-only singleton — POST /xspproperties */
 @MinimumAcl(AclLevel.DESIGNER)
 public class CreateXspProperties extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
-    DesignCrud.updateSingleton(request, "xspproperties", "note", "fileresource");
+    DesignCrud.createSingleton(request, "xspproperties", "note", "fileresource");
   }
 }

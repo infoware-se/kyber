@@ -6,11 +6,11 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Upsert (deprecated) — PUT /stylesheets?nsfPath= */
+/** Create-only — POST /stylesheets?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
 public class CreateStyleSheet extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
-    DesignCrud.upsertNamed(request, "stylesheet", "stylesheetresource");
+    DesignCrud.createNamed(request, "stylesheet", "stylesheetresource");
   }
 }

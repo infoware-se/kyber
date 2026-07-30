@@ -6,11 +6,11 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Upsert (deprecated) — PUT /agents?nsfPath= */
+/** Create-only — POST /agents?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
 public class CreateAgent extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
-    DesignCrud.upsertKinded(request, "agent", DesignCrud.AGENT, "agent");
+    DesignCrud.createKinded(request, "agent", DesignCrud.AGENT, "agent");
   }
 }

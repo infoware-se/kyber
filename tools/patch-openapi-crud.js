@@ -2,7 +2,7 @@ const fs = require("fs");
 const path =
   "c:/Git/drapi-iws-design/extension/src/main/resources/openapi/openapi.design.json";
 const doc = JSON.parse(fs.readFileSync(path, "utf8"));
-doc.info.version = "0.20.0";
+doc.info.version = "0.20.1";
 
 const skip = new Set(["/acl", "/applicationproperties"]);
 
@@ -18,7 +18,8 @@ for (const [p, node] of Object.entries(doc.paths)) {
 
   const createId = node.put.operationId;
   const suffix = createId.slice("create".length); // Form
-  const postId = "post" + suffix;
+  const createIdPost = "create" + suffix;
+  const upsertId = "upsert" + suffix;
   const updateId = "update" + suffix;
   const itemPath = p + "/{name}";
   const hasItem = !!doc.paths[itemPath];
@@ -35,7 +36,7 @@ for (const [p, node] of Object.entries(doc.paths)) {
 
   const post = clone(node.put);
   delete post.deprecated;
-  post.operationId = postId;
+  post.operationId = createIdPost;
   post.summary = hasItem
     ? "Create only (409 if exists); empty body uses default when name/kind provided"
     : "Create singleton only (409 if exists); empty body uses default";

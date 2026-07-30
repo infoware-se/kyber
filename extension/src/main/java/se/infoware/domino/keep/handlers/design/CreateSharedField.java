@@ -1,4 +1,4 @@
 package se.infoware.domino.keep.handlers.design;
 
-/** HTTP handler for shared field DXL create/replace - PUT /sharedfields?nsfPath= */
+/** HTTP handler for create-only POST */
 public class CreateSharedField extends AbstractImportDxlHandler {}

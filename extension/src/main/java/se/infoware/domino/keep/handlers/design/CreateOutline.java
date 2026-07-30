@@ -1,4 +1,4 @@
 package se.infoware.domino.keep.handlers.design;
 
-/** HTTP handler for outline DXL create/replace - PUT /outlines?nsfPath= */
+/** HTTP handler for create-only POST */
 public class CreateOutline extends AbstractImportDxlHandler {}

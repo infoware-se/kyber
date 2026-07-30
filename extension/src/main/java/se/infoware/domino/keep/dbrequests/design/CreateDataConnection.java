@@ -6,11 +6,11 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Upsert (deprecated) — PUT /dataconnections?nsfPath= */
+/** Create-only — POST /dataconnections?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
 public class CreateDataConnection extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
-    DesignCrud.upsertNamed(request, "dataconnection", "dataconnection", "note", "fileresource");
+    DesignCrud.createNamed(request, "dataconnection", "dataconnection", "note", "fileresource");
   }
 }

@@ -6,11 +6,11 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Upsert (deprecated) — PUT /navigators?nsfPath= */
+/** Create-only — POST /navigators?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
 public class CreateNavigator extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
-    DesignCrud.upsertNamed(request, "navigator", "navigator", "note");
+    DesignCrud.createNamed(request, "navigator", "navigator", "note");
   }
 }

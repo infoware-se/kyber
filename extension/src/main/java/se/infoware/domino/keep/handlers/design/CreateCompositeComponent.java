@@ -1,4 +1,4 @@
 package se.infoware.domino.keep.handlers.design;
 
-/** HTTP handler for compositecomponent DXL create/replace - PUT /compositecomponents?nsfPath= */
+/** HTTP handler for create-only POST */
 public class CreateCompositeComponent extends AbstractImportDxlHandler {}

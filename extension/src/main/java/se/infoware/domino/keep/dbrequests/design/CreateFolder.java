@@ -6,11 +6,11 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Upsert (deprecated) — PUT /folders?nsfPath= */
+/** Create-only — POST /folders?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
 public class CreateFolder extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
-    DesignCrud.upsertNamed(request, "folder", "folder");
+    DesignCrud.createNamed(request, "folder", "folder");
   }
 }

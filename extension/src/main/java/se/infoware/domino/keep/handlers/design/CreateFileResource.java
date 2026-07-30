@@ -1,4 +1,4 @@
 package se.infoware.domino.keep.handlers.design;
 
-/** HTTP handler for file resource DXL create/replace - PUT /fileresources?nsfPath= */
+/** HTTP handler for create-only POST */
 public class CreateFileResource extends AbstractImportDxlHandler {}

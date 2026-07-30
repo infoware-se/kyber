@@ -6,11 +6,11 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Upsert (deprecated) — PUT /compositecomponents?nsfPath= */
+/** Create-only — POST /compositecomponents?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
 public class CreateCompositeComponent extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
-    DesignCrud.upsertNamed(request, "compositecomponent", "note", "fileresource");
+    DesignCrud.createNamed(request, "compositecomponent", "note", "fileresource");
   }
 }

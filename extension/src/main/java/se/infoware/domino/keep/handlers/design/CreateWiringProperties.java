@@ -1,4 +1,4 @@
 package se.infoware.domino.keep.handlers.design;
 
-/** HTTP handler for wiringproperties DXL create/replace - PUT /wiringproperties?nsfPath= */
+/** HTTP handler for create-only POST */
 public class CreateWiringProperties extends AbstractImportDxlHandler {}

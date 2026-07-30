@@ -6,11 +6,11 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Update-only singleton (operationId createDatabaseScript kept for OpenAPI path remap to update). */
+/** Create-only singleton — POST /databasescript */
 @MinimumAcl(AclLevel.DESIGNER)
 public class CreateDatabaseScript extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
-    DesignCrud.updateSingleton(request, "databasescript", "databasescript");
+    DesignCrud.createSingleton(request, "databasescript", "databasescript");
   }
 }

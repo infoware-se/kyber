@@ -6,11 +6,11 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Upsert (deprecated) — PUT /fileresources?nsfPath= */
+/** Create-only — POST /fileresources?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
 public class CreateFileResource extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
-    DesignCrud.upsertNamed(request, "fileresource", "fileresource");
+    DesignCrud.createNamed(request, "fileresource", "fileresource");
   }
 }

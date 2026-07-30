@@ -6,11 +6,11 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Upsert (deprecated) — PUT /sharedcolumns?nsfPath= */
+/** Create-only — POST /sharedcolumns?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
 public class CreateSharedColumn extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
-    DesignCrud.upsertNamed(request, "sharedcolumn", "sharedcolumn");
+    DesignCrud.createNamed(request, "sharedcolumn", "sharedcolumn");
   }
 }

@@ -1,4 +1,4 @@
 package se.infoware.domino.keep.handlers.design;
 
-/** HTTP handler for XPage DXL create/replace - PUT /xpages?nsfPath= */
+/** HTTP handler for create-only POST */
 public class CreateXPage extends AbstractImportDxlHandler {}

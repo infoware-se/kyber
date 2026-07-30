@@ -1,4 +1,4 @@
 package se.infoware.domino.keep.handlers.design;
 
-/** HTTP handler for style sheet DXL create/replace - PUT /stylesheets?nsfPath= */
+/** HTTP handler for create-only POST */
 public class CreateStyleSheet extends AbstractImportDxlHandler {}

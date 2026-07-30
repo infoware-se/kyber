@@ -6,11 +6,11 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Upsert (deprecated) — PUT /webserviceconsumers?nsfPath= */
+/** Create-only — POST /webserviceconsumers?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
 public class CreateWebServiceConsumer extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
-    DesignCrud.upsertNamed(request, "webserviceconsumer", "note", "fileresource", "scriptlibrary", "webservice");
+    DesignCrud.createNamed(request, "webserviceconsumer", "note", "fileresource", "scriptlibrary", "webservice");
   }
 }

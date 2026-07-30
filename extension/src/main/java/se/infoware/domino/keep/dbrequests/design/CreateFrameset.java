@@ -6,11 +6,11 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Upsert (deprecated) — PUT /framesets?nsfPath= */
+/** Create-only — POST /framesets?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
 public class CreateFrameset extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
-    DesignCrud.upsertNamed(request, "frameset", "frameset");
+    DesignCrud.createNamed(request, "frameset", "frameset");
   }
 }

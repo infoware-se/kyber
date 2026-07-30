@@ -1,4 +1,4 @@
 package se.infoware.domino.keep.handlers.design;
 
-/** HTTP handler for navigator DXL create/replace - PUT /navigators?nsfPath= */
+/** HTTP handler for create-only POST */
 public class CreateNavigator extends AbstractImportDxlHandler {}

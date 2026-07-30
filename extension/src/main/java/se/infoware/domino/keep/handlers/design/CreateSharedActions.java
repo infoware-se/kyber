@@ -1,4 +1,4 @@
 package se.infoware.domino.keep.handlers.design;
 
-/** HTTP handler for Shared Actions DXL create/replace - PUT /sharedactions?nsfPath= */
+/** HTTP handler for create-only POST */
 public class CreateSharedActions extends AbstractImportDxlHandler {}

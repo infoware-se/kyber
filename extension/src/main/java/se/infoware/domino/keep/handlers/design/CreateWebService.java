@@ -1,4 +1,4 @@
 package se.infoware.domino.keep.handlers.design;
 
-/** HTTP handler for Web Service Provider DXL create/replace - PUT /webservices?nsfPath= */
+/** HTTP handler for create-only POST */
 public class CreateWebService extends AbstractImportDxlHandler {}
