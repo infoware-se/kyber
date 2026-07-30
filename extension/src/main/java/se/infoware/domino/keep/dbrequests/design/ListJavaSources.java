@@ -8,13 +8,14 @@ import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-/** List applet names - GET /= */
+/** List — GET /javasourcenames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetAppletNames extends AsyncDominoJNXJson {
+public class ListJavaSources extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
-    request.emit(new JsonObject().put("Applets", new JsonArray(ResidualDesign.listNames(db, "applet"))));
+    request.emit(
+        new JsonObject().put("JavaSources", new JsonArray(ResidualDesign.listNames(db, "javasource"))));
   }
 }

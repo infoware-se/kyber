@@ -8,13 +8,13 @@ import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-/** List dataconnection names - GET /= */
+/** List — GET /= */
 @MinimumAcl(AclLevel.READER)
-public class GetDataConnectionNames extends AsyncDominoJNXJson {
+public class ListApplets extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
-    request.emit(new JsonObject().put("DataConnections", new JsonArray(ResidualDesign.listNames(db, "dataconnection"))));
+    request.emit(new JsonObject().put("Applets", new JsonArray(ResidualDesign.listNames(db, "applet"))));
   }
 }

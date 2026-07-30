@@ -11,16 +11,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** List shared column names - GET /sharedcolumnnames?nsfPath= */
+/** List — GET /compositecomponentnames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetSharedColumnNames extends AsyncDominoJNXJson {
+public class ListCompositeComponents extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
     List<String> names = new ArrayList<>();
-    db.getDesign()
-        .getSharedColumns()
+    db.getDesign().getCompositeComponents()
         .forEach(
             el -> {
               String title = el.getTitle();
@@ -29,6 +28,6 @@ public class GetSharedColumnNames extends AsyncDominoJNXJson {
               }
             });
     Collections.sort(names);
-    request.emit(new JsonObject().put("Columns", new JsonArray(names)));
+    request.emit(new JsonObject().put("CompositeComponents", new JsonArray(names)));
   }
 }

@@ -8,19 +8,27 @@ import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-/** List Custom Control names - GET /customcontrolnames?nsfPath= */
+/** List — GET /agentnames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetCustomControlNames extends AsyncDominoJNXJson {
+public class ListAgents extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
     List<String> names = new ArrayList<>();
-    for (CustomControls.Entry e : CustomControls.list(db)) {
-      names.add(e.name());
-    }
-    request.emit(new JsonObject().put("CustomControls", new JsonArray(names)));
+    db.getDesign()
+        .getAgents()
+        .forEach(
+            el -> {
+              String title = el.getTitle();
+              if (title != null && !title.isBlank()) {
+                names.add(title);
+              }
+            });
+    Collections.sort(names);
+    request.emit(new JsonObject().put("Agents", new JsonArray(names)));
   }
 }

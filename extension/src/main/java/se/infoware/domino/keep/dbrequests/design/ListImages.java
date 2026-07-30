@@ -11,24 +11,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** List style sheet names - GET /stylesheetnames?nsfPath= */
+/** List — GET /imagenames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetStyleSheetNames extends AsyncDominoJNXJson {
+public class ListImages extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
     List<String> names = new ArrayList<>();
     db.getDesign()
-        .getStyleSheets()
+        .getImageResources()
         .forEach(
             el -> {
               String title = el.getTitle();
-              if (title != null && !title.isBlank()) {
+              if (title != null
+                  && !title.isBlank()
+                  && !DesignElementLookup.isDbIconName(title)) {
                 names.add(title);
               }
             });
     Collections.sort(names);
-    request.emit(new JsonObject().put("StyleSheets", new JsonArray(names)));
+    request.emit(new JsonObject().put("Images", new JsonArray(names)));
   }
 }

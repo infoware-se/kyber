@@ -8,29 +8,19 @@ import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-/** List image resource names - GET /imagenames?nsfPath= */
+/** List — GET /webserviceconsumernames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetImageNames extends AsyncDominoJNXJson {
+public class ListWebServiceConsumers extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
     List<String> names = new ArrayList<>();
-    db.getDesign()
-        .getImageResources()
-        .forEach(
-            el -> {
-              String title = el.getTitle();
-              if (title != null
-                  && !title.isBlank()
-                  && !DesignElementLookup.isDbIconName(title)) {
-                names.add(title);
-              }
-            });
-    Collections.sort(names);
-    request.emit(new JsonObject().put("Images", new JsonArray(names)));
+    for (WebServices.Entry e : WebServices.list(db, WebServices.Kind.CONSUMER)) {
+      names.add(e.name());
+    }
+    request.emit(new JsonObject().put("WebServiceConsumers", new JsonArray(names)));
   }
 }

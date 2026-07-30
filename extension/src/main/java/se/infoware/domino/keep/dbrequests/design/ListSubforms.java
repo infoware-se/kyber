@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** List subform names - GET /subformnames?nsfPath= */
+/** List — GET /subformnames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetSubformNames extends AsyncDominoJNXJson {
+public class ListSubforms extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

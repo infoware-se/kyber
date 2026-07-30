@@ -11,15 +11,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** List compositecomponent names - GET /compositecomponentnames?nsfPath= */
+/** List — GET /wiringpropertiesnames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetCompositeComponentNames extends AsyncDominoJNXJson {
+public class ListWiringProperties extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
     List<String> names = new ArrayList<>();
-    db.getDesign().getCompositeComponents()
+    db.getDesign().getWiringPropertiesElements()
         .forEach(
             el -> {
               String title = el.getTitle();
@@ -28,6 +28,6 @@ public class GetCompositeComponentNames extends AsyncDominoJNXJson {
               }
             });
     Collections.sort(names);
-    request.emit(new JsonObject().put("CompositeComponents", new JsonArray(names)));
+    request.emit(new JsonObject().put("WiringProperties", new JsonArray(names)));
   }
 }

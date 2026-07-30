@@ -11,26 +11,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** List form names - GET /formnames?nsfPath= */
+/** List — GET /sharedcolumnnames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetFormNames extends AsyncDominoJNXJson {
+public class ListSharedColumns extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
-
     List<String> names = new ArrayList<>();
     db.getDesign()
-        .getForms()
+        .getSharedColumns()
         .forEach(
-            form -> {
-              String title = form.getTitle();
+            el -> {
+              String title = el.getTitle();
               if (title != null && !title.isBlank()) {
                 names.add(title);
               }
             });
     Collections.sort(names);
-
-    request.emit(new JsonObject().put("Forms", new JsonArray(names)));
+    request.emit(new JsonObject().put("Columns", new JsonArray(names)));
   }
 }

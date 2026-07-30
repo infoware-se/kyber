@@ -11,23 +11,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** List compositeapplication names - GET /compositeapplicationnames?nsfPath= */
+/** List — GET /viewnames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetCompositeApplicationNames extends AsyncDominoJNXJson {
+public class ListViews extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
+
     List<String> names = new ArrayList<>();
-    db.getDesign().getCompositeApplications()
+    db.getDesign()
+        .getViews()
         .forEach(
-            el -> {
-              String title = el.getTitle();
+            view -> {
+              String title = view.getTitle();
               if (title != null && !title.isBlank()) {
                 names.add(title);
               }
             });
     Collections.sort(names);
-    request.emit(new JsonObject().put("CompositeApplications", new JsonArray(names)));
+
+    request.emit(new JsonObject().put("Views", new JsonArray(names)));
   }
 }

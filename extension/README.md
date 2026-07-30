@@ -18,6 +18,8 @@ Manage database **design elements** via Domino REST API. Target database is sele
 
 OpenAPI operationIds: `createX` (POST), `updateX` (PUT item/singleton), `upsertX` (deprecated collection PUT).
 
+OpenAPI operationIds follow CRUD: `listX` / `getX` / `createX` / `updateX` / `deleteX` (plus deprecated `upsertX`).
+
 All paths are under `/api/design-v1` and require `?nsfPath=`.
 
 ## Bulk export/import (`design-handler`)

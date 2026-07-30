@@ -11,16 +11,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** List theme names - GET /themenames?nsfPath= */
+/** List — GET /compositeapplicationnames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetThemeNames extends AsyncDominoJNXJson {
+public class ListCompositeApplications extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
     List<String> names = new ArrayList<>();
-    db.getDesign()
-        .getThemes()
+    db.getDesign().getCompositeApplications()
         .forEach(
             el -> {
               String title = el.getTitle();
@@ -29,6 +28,6 @@ public class GetThemeNames extends AsyncDominoJNXJson {
               }
             });
     Collections.sort(names);
-    request.emit(new JsonObject().put("Themes", new JsonArray(names)));
+    request.emit(new JsonObject().put("CompositeApplications", new JsonArray(names)));
   }
 }

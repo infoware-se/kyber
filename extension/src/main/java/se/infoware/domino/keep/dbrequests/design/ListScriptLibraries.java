@@ -11,26 +11,27 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** List outline names - GET /outlinenames?nsfPath= */
+/** List — GET /scriptlibrarynames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetOutlineNames extends AsyncDominoJNXJson {
+public class ListScriptLibraries extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
-
     List<String> names = new ArrayList<>();
     db.getDesign()
-        .getOutlines()
+        .getScriptLibraries()
         .forEach(
-            outline -> {
-              String title = outline.getTitle();
+            el -> {
+              if (WebServices.isConsumer(el.getDocument())) {
+                return;
+              }
+              String title = el.getTitle();
               if (title != null && !title.isBlank()) {
                 names.add(title);
               }
             });
     Collections.sort(names);
-
-    request.emit(new JsonObject().put("Outlines", new JsonArray(names)));
+    request.emit(new JsonObject().put("ScriptLibraries", new JsonArray(names)));
   }
 }

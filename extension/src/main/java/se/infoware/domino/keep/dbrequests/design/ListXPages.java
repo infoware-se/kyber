@@ -11,16 +11,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** List shared field names - GET /sharedfieldnames?nsfPath= */
+/** List — GET /xpagenames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetSharedFieldNames extends AsyncDominoJNXJson {
+public class ListXPages extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
     List<String> names = new ArrayList<>();
     db.getDesign()
-        .getSharedFields()
+        .getXPages()
         .forEach(
             el -> {
               String title = el.getTitle();
@@ -29,6 +29,6 @@ public class GetSharedFieldNames extends AsyncDominoJNXJson {
               }
             });
     Collections.sort(names);
-    request.emit(new JsonObject().put("Fields", new JsonArray(names)));
+    request.emit(new JsonObject().put("XPages", new JsonArray(names)));
   }
 }

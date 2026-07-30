@@ -11,16 +11,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** List XPage names - GET /xpagenames?nsfPath= */
+/** List — GET /themenames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetXPageNames extends AsyncDominoJNXJson {
+public class ListThemes extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
     List<String> names = new ArrayList<>();
     db.getDesign()
-        .getXPages()
+        .getThemes()
         .forEach(
             el -> {
               String title = el.getTitle();
@@ -29,6 +29,6 @@ public class GetXPageNames extends AsyncDominoJNXJson {
               }
             });
     Collections.sort(names);
-    request.emit(new JsonObject().put("XPages", new JsonArray(names)));
+    request.emit(new JsonObject().put("Themes", new JsonArray(names)));
   }
 }

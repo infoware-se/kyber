@@ -11,26 +11,35 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** List folder names - GET /foldernames?nsfPath= */
+/** List — GET /framesetnames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetFolderNames extends AsyncDominoJNXJson {
+public class ListFramesets extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
 
     List<String> names = new ArrayList<>();
-    db.getDesign()
-        .getFolders()
-        .forEach(
-            folder -> {
-              String title = folder.getTitle();
-              if (title != null && !title.isBlank()) {
-                names.add(title);
-              }
-            });
+    try {
+      var it = db.getDesign().getFramesets().iterator();
+      while (true) {
+        try {
+          if (!it.hasNext()) {
+            break;
+          }
+          String title = it.next().getTitle();
+          if (title != null && !title.isBlank()) {
+            names.add(title);
+          }
+        } catch (RuntimeException skipped) {
+          // JNX FramesetImpl may throw on Optional.empty version
+        }
+      }
+    } catch (RuntimeException ignored) {
+      // return whatever we collected
+    }
     Collections.sort(names);
 
-    request.emit(new JsonObject().put("Folders", new JsonArray(names)));
+    request.emit(new JsonObject().put("Framesets", new JsonArray(names)));
   }
 }

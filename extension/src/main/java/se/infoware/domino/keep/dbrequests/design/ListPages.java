@@ -11,24 +11,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** List file resource names - GET /fileresourcenames?nsfPath= */
+/** List — GET /pagenames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetFileResourceNames extends AsyncDominoJNXJson {
+public class ListPages extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
+
     List<String> names = new ArrayList<>();
     db.getDesign()
-        .getFileResources()
+        .getPages()
         .forEach(
-            el -> {
-              String title = el.getTitle();
+            page -> {
+              String title = page.getTitle();
               if (title != null && !title.isBlank()) {
                 names.add(title);
               }
             });
     Collections.sort(names);
-    request.emit(new JsonObject().put("Files", new JsonArray(names)));
+
+    request.emit(new JsonObject().put("Pages", new JsonArray(names)));
   }
 }

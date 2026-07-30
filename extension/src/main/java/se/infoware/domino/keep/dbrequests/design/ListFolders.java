@@ -11,23 +11,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** List wiringproperties names - GET /wiringpropertiesnames?nsfPath= */
+/** List — GET /foldernames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetWiringPropertiesNames extends AsyncDominoJNXJson {
+public class ListFolders extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
+
     List<String> names = new ArrayList<>();
-    db.getDesign().getWiringPropertiesElements()
+    db.getDesign()
+        .getFolders()
         .forEach(
-            el -> {
-              String title = el.getTitle();
+            folder -> {
+              String title = folder.getTitle();
               if (title != null && !title.isBlank()) {
                 names.add(title);
               }
             });
     Collections.sort(names);
-    request.emit(new JsonObject().put("WiringProperties", new JsonArray(names)));
+
+    request.emit(new JsonObject().put("Folders", new JsonArray(names)));
   }
 }

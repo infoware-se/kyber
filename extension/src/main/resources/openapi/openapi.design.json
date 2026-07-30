@@ -3,7 +3,7 @@
   "info": {
     "title": "Infoware Domino REST API design",
     "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (only bulk import); per-type CRUD requires an existing database. This API never deletes databases.",
-    "version": "0.20.1"
+    "version": "0.20.2"
   },
   "servers": [
     {
@@ -380,8 +380,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getPageNames",
-        "summary": "List page names in the database",
+        "operationId": "listPages",
+        "summary": "List in the database",
         "description": "Returns the titles of design pages in the database.",
         "x-keep-version": 1,
         "security": [
@@ -790,8 +790,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getOutlineNames",
-        "summary": "List outline names in the database",
+        "operationId": "listOutlines",
+        "summary": "List in the database",
         "description": "Returns the titles of design outlines in the database.",
         "x-keep-version": 1,
         "security": [
@@ -1200,8 +1200,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getFramesetNames",
-        "summary": "List frameset names in the database",
+        "operationId": "listFramesets",
+        "summary": "List in the database",
         "description": "Returns the titles of design framesets in the database.",
         "x-keep-version": 1,
         "security": [
@@ -1610,8 +1610,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getFormNames",
-        "summary": "List form names in the database",
+        "operationId": "listForms",
+        "summary": "List in the database",
         "description": "Returns the titles of design forms in the database.",
         "x-keep-version": 1,
         "security": [
@@ -2020,8 +2020,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getViewNames",
-        "summary": "List view names in the database",
+        "operationId": "listViews",
+        "summary": "List in the database",
         "description": "Returns the titles of design views in the database.",
         "x-keep-version": 1,
         "security": [
@@ -2430,8 +2430,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getFolderNames",
-        "summary": "List folder names in the database",
+        "operationId": "listFolders",
+        "summary": "List in the database",
         "description": "Returns the titles of design folders in the database.",
         "x-keep-version": 1,
         "security": [
@@ -2840,8 +2840,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getSubformNames",
-        "summary": "List subforms names in the database",
+        "operationId": "listSubforms",
+        "summary": "List in the database",
         "description": "Returns the titles of design subforms in the database.",
         "x-keep-version": 1,
         "security": [
@@ -3249,8 +3249,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getSharedFieldNames",
-        "summary": "List sharedfields names in the database",
+        "operationId": "listSharedFields",
+        "summary": "List in the database",
         "description": "Returns the titles of design sharedfields in the database.",
         "x-keep-version": 1,
         "security": [
@@ -3658,8 +3658,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getSharedColumnNames",
-        "summary": "List sharedcolumns names in the database",
+        "operationId": "listSharedColumns",
+        "summary": "List in the database",
         "description": "Returns the titles of design sharedcolumns in the database.",
         "x-keep-version": 1,
         "security": [
@@ -4067,8 +4067,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getImageNames",
-        "summary": "List images names in the database",
+        "operationId": "listImages",
+        "summary": "List in the database",
         "description": "Returns the titles of design images in the database.",
         "x-keep-version": 1,
         "security": [
@@ -4476,8 +4476,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getFileResourceNames",
-        "summary": "List fileresources names in the database",
+        "operationId": "listFileResources",
+        "summary": "List in the database",
         "description": "Returns the titles of design fileresources in the database.",
         "x-keep-version": 1,
         "security": [
@@ -4885,8 +4885,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getStyleSheetNames",
-        "summary": "List stylesheets names in the database",
+        "operationId": "listStyleSheets",
+        "summary": "List in the database",
         "description": "Returns the titles of design stylesheets in the database.",
         "x-keep-version": 1,
         "security": [
@@ -5294,8 +5294,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getThemeNames",
-        "summary": "List themes names in the database",
+        "operationId": "listThemes",
+        "summary": "List in the database",
         "description": "Returns the titles of design themes in the database.",
         "x-keep-version": 1,
         "security": [
@@ -6318,8 +6318,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getAgentNames",
-        "summary": "List agents names in the database",
+        "operationId": "listAgents",
+        "summary": "List in the database",
         "description": "Returns the titles of design agents in the database.",
         "x-keep-version": 1,
         "security": [
@@ -6766,8 +6766,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getScriptLibraryNames",
-        "summary": "List scriptlibraries names in the database",
+        "operationId": "listScriptLibraries",
+        "summary": "List in the database",
         "description": "Returns the titles of design scriptlibraries in the database.",
         "x-keep-version": 1,
         "security": [
@@ -7214,8 +7214,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getSharedActionNames",
-        "summary": "List sharedactions names in the database",
+        "operationId": "listSharedActions",
+        "summary": "List in the database",
         "description": "Returns the names of Shared Actions design notes ($TITLE or $ScriptName).",
         "x-keep-version": 1,
         "security": [
@@ -8218,8 +8218,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getXPageNames",
-        "summary": "List XPage names in the database",
+        "operationId": "listXPages",
+        "summary": "List in the database",
         "description": "Returns the titles of XPages in the database. Custom Controls are listed separately via /customcontrolnames.",
         "x-keep-version": 1,
         "security": [
@@ -8627,8 +8627,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getCustomControlNames",
-        "summary": "List Custom Control names",
+        "operationId": "listCustomControls",
+        "summary": "List",
         "description": "Returns $TITLE values of XPages Custom Controls (.xsp notes without the XPage K flag). Not the same as Composite Components.",
         "x-keep-version": 1,
         "security": [
@@ -9021,8 +9021,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getWebServiceNames",
-        "summary": "List Web Service Provider names",
+        "operationId": "listWebServices",
+        "summary": "List",
         "description": "Returns $TITLE of design notes whose $Flags contain the Web Service Provider flag '{'.",
         "x-keep-version": 1,
         "security": [
@@ -9415,8 +9415,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getWebServiceConsumerNames",
-        "summary": "List Web Service Consumer names",
+        "operationId": "listWebServiceConsumers",
+        "summary": "List",
         "description": "Returns $TITLE of script-library notes whose $FlagsExt contains W (WEBSERVICELIB). Listed separately from /scriptlibrarynames.",
         "x-keep-version": 1,
         "security": [
@@ -9809,8 +9809,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getNavigatorNames",
-        "summary": "List Navigator names in the database",
+        "operationId": "listNavigators",
+        "summary": "List in the database",
         "description": "Returns the titles of these design elements in the database.",
         "x-keep-version": 1,
         "security": [
@@ -10203,8 +10203,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getDataConnectionNames",
-        "summary": "List DataConnection names in the database",
+        "operationId": "listDataConnections",
+        "summary": "List in the database",
         "description": "Returns the titles of these design elements in the database.",
         "x-keep-version": 1,
         "security": [
@@ -10597,8 +10597,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getJarNames",
-        "summary": "List Jar names in the database",
+        "operationId": "listJars",
+        "summary": "List in the database",
         "description": "Returns the titles of these design elements in the database.",
         "x-keep-version": 1,
         "security": [
@@ -10991,8 +10991,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getAppletNames",
-        "summary": "List Applet names in the database",
+        "operationId": "listApplets",
+        "summary": "List in the database",
         "description": "Returns the titles of these design elements in the database.",
         "x-keep-version": 1,
         "security": [
@@ -11385,8 +11385,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getJavaSourceNames",
-        "summary": "List JavaSource names in the database",
+        "operationId": "listJavaSources",
+        "summary": "List in the database",
         "description": "Returns the titles of these design elements in the database.",
         "x-keep-version": 1,
         "security": [
@@ -11816,8 +11816,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getWiringPropertiesNames",
-        "summary": "List WiringProperties names in the database",
+        "operationId": "listWiringProperties",
+        "summary": "List in the database",
         "description": "Returns the titles of these design elements in the database.",
         "x-keep-version": 1,
         "security": [
@@ -12210,8 +12210,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getCompositeApplicationNames",
-        "summary": "List CompositeApplication names in the database",
+        "operationId": "listCompositeApplications",
+        "summary": "List in the database",
         "description": "Returns the titles of these design elements in the database.",
         "x-keep-version": 1,
         "security": [
@@ -12604,8 +12604,8 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "getCompositeComponentNames",
-        "summary": "List CompositeComponent names in the database",
+        "operationId": "listCompositeComponents",
+        "summary": "List in the database",
         "description": "Returns the titles of these design elements in the database.",
         "x-keep-version": 1,
         "security": [

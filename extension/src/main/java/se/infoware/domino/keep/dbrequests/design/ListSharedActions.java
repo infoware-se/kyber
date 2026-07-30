@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** List Shared Actions names - GET /sharedactionnames?nsfPath= */
+/** List — GET /sharedactionnames?nsfPath= */
 @MinimumAcl(AclLevel.READER)
-public class GetSharedActionNames extends AsyncDominoJNXJson {
+public class ListSharedActions extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
