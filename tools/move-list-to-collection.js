@@ -2,7 +2,7 @@ const fs = require("fs");
 const path =
   "c:/Git/drapi-iws-design/extension/src/main/resources/openapi/openapi.design.json";
 const doc = JSON.parse(fs.readFileSync(path, "utf8"));
-doc.info.version = "0.21.0";
+doc.info.version = "0.22.2";
 
 // Build createX -> collection path
 const createToCollection = {};

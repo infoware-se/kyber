@@ -1,16 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE imageresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<imageresource name='Default-ImageResource.png' xmlns='http://www.lotus.com/dxl'
- version='14.5' maintenanceversion='1.0' replicaid='C1258E4300212830' publicaccess='false'
+<imageresource name='Default-ImageResource.png' xmlns='http://www.lotus.com/dxl' version='14.5'
+ maintenanceversion='1.0' publicaccess='false'
  designerversion='8.5.3' imagename='projectkeep.png'>
-<noteinfo noteid='1e6' unid='FD9DFDE0DF42418BC1258E4300250863' sequence='8'>
-<created><datetime dst='true'>20260729T084429,79+02</datetime></created>
-<modified><datetime dst='true'>20260729T141911,03+02</datetime></modified>
-<revised><datetime dst='true'>20260729T141911,02+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T141911,02+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260729T084429,83+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby><png>
+
+
+<png>
 iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fY51AABhRElEQVR4nO3dB3wcxdk/cJHQu3G3
 inuRCyaQhDQS8pIESCiBkAA2zQYDxjTbYFu600ly7733pmLZki3JtmRLluQiV7kDtsGYmjcJeZO8
 +b9pgKTn/zyzu3e7s7Nze9JJupPGn8/vs3un0+nK3tfPzM3OxMSY/sFvf/tNSEv7BttftuwKGDfu
@@ -454,4 +449,3 @@ s8tGzrOt9zO05bNdCNUE3N5pgupyALjMbNT/B800a07b2yE0AAAAAElFTkSuQmCC
 <item name='$MimeType' sign='true'><text>image/png</text></item>
 <item name='$FileModDT' sign='true'><datetime dst='true'>20260729T080302,88+02</datetime></item>
 <item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></imageresource>
-

@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE agent SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<agent name='newagentformula' xmlns='http://www.lotus.com/dxl' version='14.5'
+ maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3' publicaccess='false'
+ designerversion='8.5.3'>
+<noteinfo noteid='7fe' unid='F2927A01C4D8FD32C1258E4800408595' sequence='6'>
+<created><datetime dst='true'>20260803T134445,01+02</datetime></created>
+<modified><datetime dst='true'>20260803T141925,12+02</datetime></modified>
+<revised><datetime dst='true'>20260803T141925,11+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T141925,11+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260803T134445,01+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
+<designchange><datetime dst='true'>20260803T141925,09+02</datetime></designchange>
+<trigger type='actionsmenu'/>
+<documentset type='selected'/><code event='action'>
+<simpleaction action='runformula'><formula>REM {newagentformula - Hello World};
+@Prompt([Ok]; "newagentformula"; "Hello World");
+SELECT @All</formula></simpleaction></code></agent>
+

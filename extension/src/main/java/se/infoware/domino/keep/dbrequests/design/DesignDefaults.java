@@ -17,14 +17,19 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * Resolves starter DXL: if configured NSF is present, prefer names starting with {@code Default-};
- * else first alphabetical of that type; else classpath {@code /defaults/{type}.dxl}.
+ * Resolves starter DXL:
+ *
+ * <ol>
+ *   <li>If {@code keepdesign.nsf} (or configured default NSF) is openable and has at least one
+ *       element of the type (and kind, when kinded) → first match by case-insensitive name order
+ *   <li>Else classpath {@code /defaults/{type}.dxl} (embedded JAR fallback)
+ * </ol>
  *
  * <p>Kinded types:
  *
  * <ul>
  *   <li>{@code scriptlibrary} — kind lotusscript|javascript|ssjs|java
- *   <li>{@code agent} — kind lotusscript|formula|simpleaction|java
+ *   <li>{@code agent} — kind lotusscript|formula|simpleaction|java|importedjava
  *   <li>{@code javasource} — kind class|interface|enum (Code &gt; Java)
  * </ul>
  */
@@ -37,12 +42,10 @@ final class DesignDefaults {
   private static final String[] EMBEDDED_TYPES = {
     "about",
     "agent",
-    "applicationproperties",
     "customcontrol",
     "compositeapplication",
     "compositecomponent",
     "databasescript",
-    "dbicon",
     "dataconnection",
     "fileresource",
     "folder",
@@ -322,21 +325,6 @@ final class DesignDefaults {
     return "Default";
   }
 
-  private static final String DEFAULT_NAME_PREFIX = "Default-";
-
-  private static boolean isDefaultNamed(String name) {
-    if (name == null || name.isBlank()) {
-      return false;
-    }
-    if (name.regionMatches(true, 0, DEFAULT_NAME_PREFIX, 0, DEFAULT_NAME_PREFIX.length())) {
-      return true;
-    }
-    // Code > Java / Jars: se/infoware/keep/DefaultHello.java, Default-Jar.jar
-    int slash = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'));
-    String base = slash >= 0 ? name.substring(slash + 1) : name;
-    return base.regionMatches(true, 0, "Default", 0, "Default".length());
-  }
-
   private static Optional<JsonObject> fromNsf(
       KeepJnxSession session, String type, String resolvedKind) {
     Optional<Database> dbOpt = tryOpenDefaultsDb(session);
@@ -363,24 +351,19 @@ final class DesignDefaults {
       if (matches.isEmpty()) {
         return Optional.empty();
       }
-      if (DesignBulkTypes.isSingleton(type) || matches.size() == 1) {
-        return Optional.of(copyWithSource(matches.get(0), "nsf", resolvedKind));
-      }
-      List<JsonObject> preferred = new ArrayList<>();
-      for (JsonObject el : matches) {
-        if (isDefaultNamed(el.getString("name", ""))) {
-          preferred.add(el);
-        }
-      }
-      List<JsonObject> pick = preferred.isEmpty() ? matches : preferred;
-      pick.sort(
-          Comparator.comparing(
-              el -> el.getString("name", ""),
-              String.CASE_INSENSITIVE_ORDER.thenComparing(Comparator.naturalOrder())));
-      return Optional.of(copyWithSource(pick.get(0), "nsf", resolvedKind));
+      return Optional.of(copyWithSource(pickFirstByName(matches), "nsf", resolvedKind));
     } catch (Exception e) {
       return Optional.empty();
     }
+  }
+
+  /** First match by case-insensitive name (then natural order). Mutates {@code matches} order. */
+  static JsonObject pickFirstByName(List<JsonObject> matches) {
+    matches.sort(
+        Comparator.comparing(
+            el -> el.getString("name", ""),
+            String.CASE_INSENSITIVE_ORDER.thenComparing(Comparator.naturalOrder())));
+    return matches.get(0);
   }
 
   private static JsonObject copyWithSource(JsonObject el, String source, String resolvedKind) {

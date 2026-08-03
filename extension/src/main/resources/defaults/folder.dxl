@@ -1,30 +1,21 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE folder SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<folder name='Default-Folder' xmlns='http://www.lotus.com/dxl' version='14.5'
- maintenanceversion='1.0' replicaid='C1258E4300212830' showinmenu='true' publicaccess='false'
- designerversion='8.5.3' unreadmarks='none' onopengoto='top' onrefresh='displayindicator'
- headers='beveled' opencollapsed='false' showresponsehierarchy='false' showmargin='true'
+<folder name='Default-Folder' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0' showinmenu='false' noreplace='true' publicaccess='false'
+ designerversion='8.5.3' unreadmarks='none' onopengoto='lastopened' onrefresh='displayindicator'
+ headers='beveled' opencollapsed='false' showresponsehierarchy='true' showmargin='true'
  shrinkrows='false' extendlastcolumn='false' showhierarchies='false' unreadcolor='black'
  rowlinecount='1' headerlinecount='1' rowspacing='1' bgcolor='white' totalscolor='black'
  headerbgcolor='white' boldunreadrows='false' evaluateactions='false' allownewdocuments='false'
  allowcustomizations='false' hidemarginborder='false' marginwidth='0px' marginbgcolor='white'
- uniquekeys='false'>
-<noteinfo noteid='17a' unid='FF0A90FF94E3E9F3C1258E4300220A4B' sequence='121'>
-<created><datetime dst='true'>20260729T081148,59+02</datetime></created>
-<modified><datetime dst='true'>20260730T151842,09+02</datetime></modified>
-<revised><datetime dst='true'>20260730T151842,08+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260730T151842,08+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260729T081148,63+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
-<column hidedetailrows='false' itemname='Subject' width='30' resizable='true'
- separatemultiplevalues='false' sortnoaccent='false' sortnocase='false' showaslinks='true'><columnheader
- title='Subject'><font size='9pt' style='bold'/></columnheader><code event='value'><formula
->@If(Subject = ""; "(untitled)"; Subject)</formula></code></column>
-<column hidedetailrows='false' itemname='$Created' width='14' resizable='true'
- separatemultiplevalues='false' sortnoaccent='false' sortnocase='false' showaslinks='false'><columnheader
- title='Created'><font size='9pt' style='bold'/></columnheader><code event='value'><formula
->@Created</formula></code></column>
-<item name='$Name' sign='true'><text>Default-Folder</text></item>
-<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></folder>
+ uniquekeys='false' formatnoteid='DEEEAE2BF6A26632C1258E430021283C'>
 
+
+
+<actionbar bgcolor='#f0f0f0' bordercolor='black'>
+<actionbuttonstyle bgcolor='#f0f0f0'/><font color='system'/><border style='solid'
+ width='0px 0px 1px'/></actionbar>
+<column hidedetailrows='false' itemname='newfield' width='10' resizable='true'
+ separatemultiplevalues='false' sortnoaccent='true' sortnocase='true' showaslinks='false'><columnheader
+ title='newcolumn'><font size='9pt' style='bold'/></columnheader></column>
+<item name='$Name' sign='true'><text>newfolder</text></item>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></folder>

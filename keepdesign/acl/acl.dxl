@@ -9,10 +9,12 @@
 <aclentry name='OtherDomainServers' type='servergroup' level='noaccess' readpublicdocs='false'
  writepublicdocs='false'/>
 <aclentry name='Anonymous' level='noaccess' readpublicdocs='false' writepublicdocs='false'/>
-<aclentry name='LocalDomainAdmins' type='persongroup' level='manager' deletedocs='true'
+<aclentry name='LocalDomainAdmins' type='mixedgroup' level='manager' deletedocs='true'
  noreplicate='false'/>
-<aclentry name='LocalDomainServers' type='servergroup' level='manager' deletedocs='true'
+<aclentry name='LocalDomainServers' type='server' level='manager' deletedocs='true'
  noreplicate='false'/>
+<logentry>2026/08/03 12:15:01 PM Domino/Infoware updated LocalDomainServers</logentry>
+<logentry>2026/08/03 12:15:01 PM Domino/Infoware updated LocalDomainAdmins</logentry>
 <logentry>2026/07/29 08:11:11 AM Designer/Infoware deleted Domino/Infoware</logentry>
 <logentry>2026/07/29 08:11:07 AM Designer/Infoware updated Domino/Infoware</logentry>
 <logentry>2026/07/29 08:11:01 AM Designer/Infoware updated LocalDomainAdmins</logentry>

@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258E4300212830'>
+<noteinfo noteid='1136' unid='5F7B1CB0FABD29E9C1258E4800449F7F' sequence='2'>
+<created><datetime dst='true'>20260803T142932,79+02</datetime></created>
+<modified><datetime dst='true'>20260803T142932,82+02</datetime></modified>
+<revised><datetime dst='true'>20260803T142932,81+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T142932,81+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260803T142932,79+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<item name='$Flags'><text>34567Cg~[</text></item>
+<item name='$TITLE'><text>se/infoware/keep/NewJava.java</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='$FileSize' sign='true'><number>233</number></item>
+<item name='$FileData' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAADpAAAAAQAAAAAAAAAAAAAAYAD7AAAA6QAAAAAAAAAAAAAAcGFja2FnZSBzZS5pbmZv
+d2FyZS5rZWVwOw0KDQovKiogTWluaW1hbCBKYXZhIGNsYXNzIHN0YXJ0ZXIuICovDQpwdWJsaWMg
+Y2xhc3MgTmV3SmF2YSB7DQoJcHVibGljIHN0YXRpYyBTdHJpbmcgaGVsbG8oU3RyaW5nIHdobykg
+ew0KCQlpZiAod2hvID09IG51bGwgfHwgd2hvLmlzRW1wdHkoKSkgew0KCQkJd2hvID0gIldvcmxk
+IjsNCgkJfQ0KCQlyZXR1cm4gIkhlbGxvLCAiICsgd2hvICsgIiEiOw0KCX0NCn0=
+</rawitemdata></item>
+<item name='$FileNames' sign='true'><text>se/infoware/keep/NewJava.java</text></item></note>
+

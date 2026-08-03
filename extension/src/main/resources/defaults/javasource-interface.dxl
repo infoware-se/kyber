@@ -1,35 +1,16 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
- replicaid='C1258E4300212830'>
-<noteinfo noteid='51e' unid='323E4C6CF2245F1DC1258E4400477BEC' sequence='4'>
-<created><datetime dst='true'>20260730T150047,80+02</datetime></created>
-<modified><datetime dst='true'>20260730T151949,01+02</datetime></modified>
-<revised><datetime dst='true'>20260730T151949,00+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260730T151949,00+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260730T150047,80+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'>
+
 <item name='$Flags'><text>34567Cg~[</text></item>
-<item name='$TITLE'><text>se/infoware/keep/DefaultHelloInterface.java</text></item>
+<item name='$TITLE'><text>se/infoware/keep/NewJavaInterface.java</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
-<item name='$FileSize' sign='true'><number>168</number></item>
+<item name='$FileSize' sign='true'><number>135</number></item>
 <item name='$FileData' sign='true'>
 <rawitemdata type='1'>
-YQAYAAAAAACoAAAAAQAAAAAAAAAAAAAAYAC6AAAAqACoAAAAAAAAAAAAcGFja2FnZSBzZS5pbmZv
-d2FyZS5rZWVwOw0KDQovKioNCiAqIERlZmF1bHQgSmF2YSBpbnRlcmZhY2UgZm9yIEtlZXAgRGVz
-aWduIChDb2RlID4gSmF2YSkuDQogKi8NCnB1YmxpYyBpbnRlcmZhY2UgRGVmYXVsdEhlbGxvSW50
-ZXJmYWNlIHsNCglTdHJpbmcgZ3JlZXQoU3RyaW5nIHdobyk7DQp9
+YQAYAAAAAACHAAAAAQAAAAAAAAAAAAAAYACZAAAAhwAAAAAAAAAAAAAAcGFja2FnZSBzZS5pbmZv
+d2FyZS5rZWVwOw0KDQovKiogTWluaW1hbCBKYXZhIGludGVyZmFjZSBzdGFydGVyLiAqLw0KcHVi
+bGljIGludGVyZmFjZSBOZXdKYXZhSW50ZXJmYWNlIHsNCglTdHJpbmcgZ3JlZXQoU3RyaW5nIHdo
+byk7DQp9
 </rawitemdata></item>
-<item name='$FileNames' sign='true'><text>se/infoware/keep/DefaultHelloInterface.java</text></item>
-<item name='$ClassIndexItem'><text>WEB-INF/classes/se/infoware/keep/DefaultHelloInterface.class</text></item>
-<item name='$ClassSize0' sign='true'><number>197</number></item>
-<item name='$ClassData0' sign='true'>
-<rawitemdata type='1'>
-YQAYAAAAAADFAAAAAQAAAAAAAAAAAAAAYADXAAAAxQDGAAAAAAAAAAAAyv66vgAAAD0ACQcAAgEA
-JnNlL2luZm93YXJlL2tlZXAvRGVmYXVsdEhlbGxvSW50ZXJmYWNlBwAEAQAQamF2YS9sYW5nL09i
-amVjdAEABWdyZWV0AQAmKExqYXZhL2xhbmcvU3RyaW5nOylMamF2YS9sYW5nL1N0cmluZzsBAApT
-b3VyY2VGaWxlAQAaRGVmYXVsdEhlbGxvSW50ZXJmYWNlLmphdmEGAQABAAMAAAAAAAEEAQAFAAYA
-AAABAAcAAAACAAgS
-</rawitemdata></item></note>
-
+<item name='$FileNames' sign='true'><text>se/infoware/keep/NewJavaInterface.java</text></item></note>

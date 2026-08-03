@@ -1,43 +1,26 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE agent SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <agent name='Default-JavaAgent' xmlns='http://www.lotus.com/dxl' version='14.5'
- maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3' publicaccess='false'
+ maintenanceversion='1.0' hide='v3' publicaccess='false'
  designerversion='8.5.3'>
-<noteinfo noteid='33a' unid='76D3782B33309B09C1258E430043917A' sequence='13'>
-<created><datetime dst='true'>20260729T141801,54+02</datetime></created>
-<modified><datetime dst='true'>20260730T152025,81+02</datetime></modified>
-<revised><datetime dst='true'>20260730T152025,80+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260730T152025,80+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260729T141801,58+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
-<designchange><datetime dst='true'>20260730T152025,76+02</datetime></designchange>
+
+
+
 <trigger type='actionsmenu'/>
 <documentset type='selected'/><code event='action'><javaproject class='JavaAgent.class'
  codepath='c:\Program Files\HCL\Notes\Data'><java name='JavaAgent.java'>import lotus.domino.*;
 
 /**
- * Example Java agent (Default-JavaAgent).
- * Shows Session, Database and a simple document count.
+ * Example Java agent (newagentjava).
  */
 public class JavaAgent extends AgentBase {
 
 	public void NotesMain() {
 		try {
-			Session session = getSession();
-			AgentContext ctx = session.getAgentContext();
-			Database db = ctx.getCurrentDatabase();
-			System.out.println("Hello from " + session.getUserName());
-			System.out.println("Database: " + db.getTitle());
-			System.out.println("Documents: " + db.getAllDocuments().getCount());
+			System.out.println("Hello World");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 }
-</java></javaproject></code>
-<rundata processeddocs='0' exitcode='0'>
-<agentmodified><datetime dst='true'>20260730T152025,76+02</datetime></agentmodified></rundata>
-<item name='$JavaCompilerSource'><text>1.8</text></item>
-<item name='$JavaCompilerTarget'><text>1.8</text></item>
-<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></agent>
-
+</java></javaproject></code></agent>

@@ -16,11 +16,11 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 /**
- * Agent language/action kinds: LotusScript, Formula, Simple action, Java.
+ * Agent language/action kinds: LotusScript, Formula, Simple action, Java, Imported Java.
  *
- * <p>Imported Java is not a separate starter (rare; use raw DXL). Formula agents commonly use
- * {@code <simpleaction action='runformula'>}; plain simple actions use other {@code simpleaction}
- * values without formula.
+ * <p>Imported Java is Designer {@code <javaproject imported='true'>} (class/jar files, not
+ * editable source). Formula agents commonly use {@code <simpleaction action='runformula'>};
+ * plain simple actions use other {@code simpleaction} values without formula.
  */
 final class AgentKinds {
 
@@ -28,8 +28,9 @@ final class AgentKinds {
   static final String FORMULA = "formula";
   static final String SIMPLEACTION = "simpleaction";
   static final String JAVA = "java";
+  static final String IMPORTEDJAVA = "importedjava";
 
-  static final String[] ALL = {LOTUSSCRIPT, FORMULA, SIMPLEACTION, JAVA};
+  static final String[] ALL = {LOTUSSCRIPT, FORMULA, SIMPLEACTION, JAVA, IMPORTEDJAVA};
 
   private AgentKinds() {}
 
@@ -43,11 +44,12 @@ final class AgentKinds {
       case "formula", "formulae", "@formula" -> FORMULA;
       case "simpleaction", "simple", "simpleactions", "actions" -> SIMPLEACTION;
       case "java" -> JAVA;
+      case "importedjava", "imported-java", "imported_java", "ijava" -> IMPORTEDJAVA;
       default ->
           throw new KeepExceptionWrongDataRequest(
               "Unknown agent kind '"
                   + kind
-                  + "'; expected lotusscript|formula|simpleaction|java");
+                  + "'; expected lotusscript|formula|simpleaction|java|importedjava");
     };
   }
 
@@ -58,6 +60,7 @@ final class AgentKinds {
       case FORMULA -> "-formula";
       case SIMPLEACTION -> "-simpleaction";
       case JAVA -> "-java";
+      case IMPORTEDJAVA -> "-importedjava";
       default -> "";
     };
   }
@@ -65,7 +68,8 @@ final class AgentKinds {
   /**
    * Detect agent kind from DXL. Returns {@code null} when markers are missing.
    *
-   * <p>Priority: Java → LotusScript → Formula (incl. runformula) → other simpleaction.
+   * <p>Priority: Imported Java → Java → LotusScript → Formula (incl. runformula) → other
+   * simpleaction.
    */
   static String detect(String dxl) {
     if (dxl == null || dxl.isBlank()) {
@@ -73,6 +77,9 @@ final class AgentKinds {
     }
     String lower = dxl.toLowerCase(Locale.ROOT);
     if (lower.contains("<javaproject")) {
+      if (isImportedJavaProject(lower)) {
+        return IMPORTEDJAVA;
+      }
       return JAVA;
     }
     if (lower.contains("<lotusscript")) {
@@ -88,6 +95,26 @@ final class AgentKinds {
     return null;
   }
 
+  /** True when a {@code <javaproject>} opening tag has {@code imported} set to true. */
+  private static boolean isImportedJavaProject(String lowerDxl) {
+    int from = 0;
+    while (true) {
+      int start = lowerDxl.indexOf("<javaproject", from);
+      if (start < 0) {
+        return false;
+      }
+      int end = lowerDxl.indexOf('>', start);
+      if (end < 0) {
+        return false;
+      }
+      String tag = lowerDxl.substring(start, end + 1);
+      if (tag.contains("imported='true'") || tag.contains("imported=\"true\"")) {
+        return true;
+      }
+      from = end + 1;
+    }
+  }
+
   static String detectOrDefault(String dxl) {
     String d = detect(dxl);
     return d == null ? LOTUSSCRIPT : d;
@@ -98,6 +125,7 @@ final class AgentKinds {
       case FORMULA -> "Default-FormulaAgent";
       case SIMPLEACTION -> "Default-SimpleAgent";
       case JAVA -> "Default-JavaAgent";
+      case IMPORTEDJAVA -> "Default-ImportedJavaAgent";
       default -> "Default-LotusScriptAgent";
     };
   }

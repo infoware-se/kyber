@@ -8,15 +8,15 @@ KEEP extension for Domino REST API: manage database **design elements** via `nsf
 | **API** | `/api/design-v1` |
 | **Swagger** | tags **`design-element`** (typed CRUD), **`design-handler`** (`/defaults*` + bulk GET/PUT `/designdxl`) |
 | **Defaults NSF** | `keepdesign.nsf` (property `keep.design.defaultNsf`) |
-| **Version** | 0.21.0 |
+| **Version** | 0.22.9 |
 
 Full endpoint tables and Designer coverage: **[extension/README.md](extension/README.md)**.
 
 ## What’s in / what’s out
 
-**In (CRUD):** Forms, Views, Folders, Framesets, Pages, Subforms, Shared Fields/Columns, Outlines, Navigators, Agents (**LotusScript / Formula / Simple action / Java**), Shared Actions, Script Libraries (**LotusScript / client JS / SSJS / Java**), Code → Java sources (**class / interface / enum**), Jars, Applets, **Web Service Providers/Consumers**, Data Connections, Database Script, Images, Files, Style Sheets, Themes, About/Using, XPages, **Custom Controls**, Wiring Properties, Composite Applications/Components, Application Properties, Xsp Properties, ACL.
+**In (CRUD):** Forms, Views, Folders, Framesets, Pages, Subforms, Shared Fields/Columns, Outlines, Navigators, Agents (**LotusScript / Formula / Simple action / Java / Imported Java**), Shared Actions, Script Libraries (**LotusScript / client JS / SSJS / Java**), Code → Java sources (**class / interface / enum**), Jars, Applets, **Web Service Providers/Consumers**, Data Connections, Database Script, Images, Files, Style Sheets, Themes, About/Using, XPages, **Custom Controls**, Wiring Properties, Composite Applications/Components, Application Properties, **DB icon (`$DBIcon`)**, Xsp Properties, ACL.
 
-**Starters:** `GET /defaults` and `GET /defaults/{type}` — if `keepdesign.nsf` has elements of that type, prefer `Default-*` names; else embedded DXL in the JAR (`resources/defaults/`). Script libraries: `?kind=lotusscript|javascript|ssjs|java`. Agents: `?kind=lotusscript|formula|simpleaction|java`. Java sources: `?kind=class|interface|enum`. Create: raw DXL body, or empty body with `?kind=&name=` for script libraries, agents, and javasources.
+**Starters:** `GET /defaults` and `GET /defaults/{type}` — if `keepdesign.nsf` has elements of that type, prefer `Default-*` names; else embedded DXL in the JAR (`resources/defaults/`). Script libraries: `?kind=lotusscript|javascript|ssjs|java`. Agents: `?kind=lotusscript|formula|simpleaction|java|importedjava`. Java sources: `?kind=class|interface|enum`. Create: raw DXL body, or empty body with `?kind=&name=` for script libraries, agents, and javasources.
 
 **Blank NSF baseline:** snapshot of what Domino puts in a new blank database lives under [`extension/src/main/resources/defaults/blank/`](extension/src/main/resources/defaults/blank/) (`acl`, `applicationproperties`, `$DBIcon`, untitled default view) + `manifest.json` — reference so sync does not treat these as removable app design.
 

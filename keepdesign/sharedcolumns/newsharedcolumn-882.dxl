@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE sharedcolumn SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<sharedcolumn name='newsharedcolumn' xmlns='http://www.lotus.com/dxl' version='14.5'
+ maintenanceversion='1.0' replicaid='C1258E4300212830' noreplace='true' designerversion='8.5.3'>
+<noteinfo noteid='882' unid='8C09C25D1719B0FBC1258E4800408730' sequence='8'>
+<created><datetime dst='true'>20260803T134449,12+02</datetime></created>
+<modified><datetime dst='true'>20260803T141926,00+02</datetime></modified>
+<revised><datetime dst='true'>20260803T141925,99+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T141925,99+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260803T134449,12+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+<column hidedetailrows='false' itemname='newfield' width='12' resizable='true'
+ separatemultiplevalues='false' sortnoaccent='true' sortnocase='true' showaslinks='false'><columnheader
+ title='newsharedcolumn'><font size='9pt' style='bold'/></columnheader></column>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></sharedcolumn>
+

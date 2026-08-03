@@ -1,22 +1,11 @@
 package se.infoware.domino.keep.dbrequests.design;
 
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 /**
  * Domino Designer Code &gt; Java kinds: class, interface, enum ({@code $Flags} like {@code
@@ -64,9 +53,9 @@ final class JavaSourceKinds {
 
   static String defaultName(String kind) throws KeepExceptionWrongDataRequest {
     return switch (normalize(kind)) {
-      case INTERFACE -> "se/infoware/keep/DefaultHelloInterface.java";
-      case ENUM -> "se/infoware/keep/DefaultHelloEnum.java";
-      default -> "se/infoware/keep/DefaultHello.java";
+      case INTERFACE -> "se/infoware/keep/NewJavaInterface.java";
+      case ENUM -> "se/infoware/keep/NewJavaEnum.java";
+      default -> "se/infoware/keep/NewJava.java";
     };
   }
 
@@ -114,78 +103,121 @@ final class JavaSourceKinds {
     return d == null ? CLASS : d;
   }
 
-  /** Set {@code $TITLE} / {@code $FileNames} on a javasource {@code <note>} DXL. */
+  /** Set {@code $TITLE} / {@code $FileNames} and rewrite package/type in {@code $FileData}. */
   static String withName(String dxl, String name) throws KeepExceptionWrongDataRequest {
     if (name == null || name.isBlank()) {
       throw new KeepExceptionWrongDataRequest("name is required");
     }
-    String wanted = name.trim();
-    try {
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      factory.setNamespaceAware(true);
-      factory.setValidating(false);
-      factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-      factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-      factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-      factory.setExpandEntityReferences(false);
-      Document doc =
-          factory.newDocumentBuilder().parse(new InputSource(new StringReader(dxl)));
-      Element root = doc.getDocumentElement();
-      if (root == null) {
-        throw new KeepExceptionWrongDataRequest("invalid design DXL: missing root element");
-      }
-      NodeList items = root.getElementsByTagNameNS("*", "item");
-      if (items.getLength() == 0) {
-        items = root.getElementsByTagName("item");
-      }
-      for (int i = 0; i < items.getLength(); i++) {
-        if (!(items.item(i) instanceof Element item)) {
-          continue;
-        }
-        String itemName = item.getAttribute("name");
-        if (!"$TITLE".equalsIgnoreCase(itemName)
-            && !"TITLE".equalsIgnoreCase(itemName)
-            && !"$FileNames".equalsIgnoreCase(itemName)
-            && !"FileNames".equalsIgnoreCase(itemName)) {
-          continue;
-        }
-        NodeList texts = item.getElementsByTagNameNS("*", "text");
-        if (texts.getLength() == 0) {
-          texts = item.getElementsByTagName("text");
-        }
-        if (texts.getLength() > 0) {
-          texts.item(0).setTextContent(wanted);
-        }
-      }
-
-      var transformer = TransformerFactory.newInstance().newTransformer();
-      transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-      transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-      transformer.setOutputProperty(OutputKeys.INDENT, "no");
-      StringWriter sw = new StringWriter();
-      transformer.transform(new DOMSource(doc), new StreamResult(sw));
-      String out = sw.toString();
-      if (!out.toLowerCase(Locale.ROOT).contains("<!doctype")
-          && dxl.toLowerCase(Locale.ROOT).contains("<!doctype")) {
-        int xmlEnd = out.indexOf("?>");
-        String doctype = "<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n";
-        if (xmlEnd >= 0) {
-          out =
-              out.substring(0, xmlEnd + 2)
-                  + "\n"
-                  + doctype
-                  + out.substring(xmlEnd + 2).stripLeading();
-        } else {
-          out = doctype + out;
-        }
-      }
-      return out;
-    } catch (KeepExceptionWrongDataRequest e) {
-      throw e;
-    } catch (Exception e) {
-      String message = e.getMessage() == null ? e.toString() : e.getMessage();
-      throw new KeepExceptionWrongDataRequest("cannot set javasource name: " + message);
+    String wanted = name.trim().replace('\\', '/');
+    if (!wanted.toLowerCase(Locale.ROOT).endsWith(".java")) {
+      throw new KeepExceptionWrongDataRequest("javasource name must end with .java");
     }
+    String pathNoExt = wanted.substring(0, wanted.length() - 5);
+    int slash = pathNoExt.lastIndexOf('/');
+    String simpleName = slash >= 0 ? pathNoExt.substring(slash + 1) : pathNoExt;
+    String pkg = slash >= 0 ? pathNoExt.substring(0, slash).replace('/', '.') : "";
+    if (simpleName.isBlank()) {
+      throw new KeepExceptionWrongDataRequest("javasource name has empty type name");
+    }
+
+    String out = dxl;
+    out =
+        out.replaceAll(
+            "(?i)(<item\\s+name=['\"]\\$?TITLE['\"][^>]*>\\s*<text>)[^<]*(</text>)",
+            "$1" + Matcher.quoteReplacement(wanted) + "$2");
+    out =
+        out.replaceAll(
+            "(?i)(<item\\s+name=['\"]\\$?FileNames['\"][^>]*>\\s*<text>)[^<]*(</text>)",
+            "$1" + Matcher.quoteReplacement(wanted) + "$2");
+
+    // Rewrite package + public type name inside $FileData (host file attachment).
+    Pattern fileDataPat =
+        Pattern.compile(
+            "(?is)(<item\\s+name=['\"]\\$?FileData['\"][^>]*>\\s*<rawitemdata[^>]*>)([A-Za-z0-9+/=\\s]+)(</rawitemdata>)");
+    Matcher fileData = fileDataPat.matcher(out);
+    if (!fileData.find()) {
+      return out;
+    }
+    try {
+      byte[] raw = Base64.getDecoder().decode(fileData.group(2).replaceAll("\\s+", ""));
+      if (raw.length <= 42) {
+        return out;
+      }
+      int oldSize = raw.length - 42;
+      String source = new String(raw, 42, oldSize, StandardCharsets.UTF_8);
+      String rewritten = rewriteJavaSource(source, pkg, simpleName);
+      byte[] body = rewritten.getBytes(StandardCharsets.UTF_8);
+      byte[] next = new byte[42 + body.length];
+      System.arraycopy(raw, 0, next, 0, 42);
+      System.arraycopy(body, 0, next, 42, body.length);
+      writeLe32(next, 8, body.length);
+      int off26 = readLe32(raw, 26);
+      if (off26 == oldSize + 18) {
+        writeLe32(next, 26, body.length + 18);
+      } else if (off26 == oldSize) {
+        writeLe32(next, 26, body.length);
+      }
+      if (readLe32(raw, 28) == oldSize) {
+        writeLe32(next, 28, body.length);
+      }
+      if (readLe32(raw, 30) == oldSize) {
+        writeLe32(next, 30, body.length);
+      }
+      String b64 = Base64.getEncoder().encodeToString(next);
+      out =
+          out.substring(0, fileData.start(2))
+              + "\n"
+              + b64
+              + "\n"
+              + out.substring(fileData.end(2));
+      out =
+          out.replaceAll(
+              "(?i)(<item\\s+name=['\"]\\$?FileSize['\"][^>]*>\\s*<number>)\\d+(</number>)",
+              "$1" + body.length + "$2");
+      // Drop compiled class items — mismatched .class makes DXL import fail (id=519)
+      out =
+          out.replaceAll(
+              "(?is)<item\\s+name=['\"]\\$Class(?:Data0|Size0|IndexItem)['\"][^>]*>.*?</item>",
+              "");
+      return out;
+    } catch (IllegalArgumentException e) {
+      throw new KeepExceptionWrongDataRequest("invalid javasource $FileData encoding");
+    }
+  }
+
+  private static int readLe32(byte[] raw, int offset) {
+    if (offset + 3 >= raw.length) {
+      return -1;
+    }
+    return (raw[offset] & 0xff)
+        | ((raw[offset + 1] & 0xff) << 8)
+        | ((raw[offset + 2] & 0xff) << 16)
+        | ((raw[offset + 3] & 0xff) << 24);
+  }
+
+  private static void writeLe32(byte[] raw, int offset, int value) {
+    raw[offset] = (byte) (value & 0xff);
+    raw[offset + 1] = (byte) ((value >>> 8) & 0xff);
+    raw[offset + 2] = (byte) ((value >>> 16) & 0xff);
+    raw[offset + 3] = (byte) ((value >>> 24) & 0xff);
+  }
+
+  static String rewriteJavaSource(String source, String pkg, String simpleName) {
+    String out = source;
+    if (pkg == null || pkg.isBlank()) {
+      out = out.replaceFirst("(?m)^\\s*package\\s+[^;]+;\\s*", "");
+    } else {
+      if (Pattern.compile("(?m)^\\s*package\\s+").matcher(out).find()) {
+        out = out.replaceFirst("(?m)^(\\s*package\\s+)[^;]+;", "$1" + pkg + ";");
+      } else {
+        out = "package " + pkg + ";\r\n\r\n" + out;
+      }
+    }
+    out =
+        out.replaceFirst(
+            "(public\\s+(?:abstract\\s+|final\\s+)?)(class|interface|enum)(\\s+)\\w+",
+            "$1$2$3" + Matcher.quoteReplacement(simpleName));
+    return out;
   }
 
   private static String filePayload(String dxl) {
@@ -198,11 +230,7 @@ final class JavaSourceKinds {
       if (raw.length <= 42) {
         return null;
       }
-      int end = raw.length;
-      if (raw[end - 1] == 0) {
-        end--;
-      }
-      return new String(raw, 42, end - 42, StandardCharsets.UTF_8);
+      return new String(raw, 42, raw.length - 42, StandardCharsets.UTF_8);
     } catch (Exception e) {
       return null;
     }

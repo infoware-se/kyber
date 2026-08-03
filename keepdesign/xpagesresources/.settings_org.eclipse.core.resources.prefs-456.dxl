@@ -2,14 +2,14 @@
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258E4300212830'>
-<noteinfo noteid='456' unid='ABA92DB761D6B179C1258E43004DBEAC' sequence='2'>
+<noteinfo noteid='456' unid='ABA92DB761D6B179C1258E43004DBEAC' sequence='7'>
 <created><datetime dst='true'>20260729T160910,84+02</datetime></created>
-<modified><datetime dst='true'>20260729T160910,90+02</datetime></modified>
-<revised><datetime dst='true'>20260729T160910,89+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T160910,89+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260803T141926,61+02</datetime></modified>
+<revised><datetime dst='true'>20260803T141926,60+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T141926,60+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T160910,84+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
 <item name='$Flags'><text>~C4g</text></item>
 <item name='$TITLE'><text>.settings/org.eclipse.core.resources.prefs</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>

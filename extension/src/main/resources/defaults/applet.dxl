@@ -1,17 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE appletresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <appletresource name='Default-Applet' xmlns='http://www.lotus.com/dxl' version='14.5'
- maintenanceversion='1.0' replicaid='C1258E4300212830' nocompose='true' designerversion='8.5.3'>
-<noteinfo noteid='44a' unid='0BB24FF7D94C6BDFC1258E43004D4697' sequence='9'>
-<created><datetime dst='true'>20260729T160403,43+02</datetime></created>
-<modified><datetime dst='true'>20260730T152953,22+02</datetime></modified>
-<revised><datetime dst='true'>20260730T152953,21+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260730T152953,21+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260729T160403,46+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby><code event='action'><javaproject
+ maintenanceversion='1.0' nocompose='true' designerversion='8.5.3'>
+
+
+<code event='action'><javaproject
 ><java name='DefaultApplet.java'>public class DefaultApplet {
   public String hello() { return "hello"; }
 }
 </java></javaproject></code></appletresource>
-

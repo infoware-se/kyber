@@ -1,63 +1,15 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
- replicaid='C1258E4300212830'>
-<noteinfo noteid='522' unid='C5AF1FEDC917E0B1C1258E4400477C06' sequence='4'>
-<created><datetime dst='true'>20260730T150048,06+02</datetime></created>
-<modified><datetime dst='true'>20260730T151948,93+02</datetime></modified>
-<revised><datetime dst='true'>20260730T151948,92+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260730T151948,92+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260730T150048,06+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'>
+
 <item name='$Flags'><text>34567Cg~[</text></item>
-<item name='$TITLE'><text>se/infoware/keep/DefaultHelloEnum.java</text></item>
+<item name='$TITLE'><text>se/infoware/keep/NewJavaEnum.java</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
-<item name='$FileSize' sign='true'><number>332</number></item>
+<item name='$FileSize' sign='true'><number>118</number></item>
 <item name='$FileData' sign='true'>
 <rawitemdata type='1'>
-YQAYAAAAAABMAQAAAQAAAAAAAAAAAAAAYABeAQAATAFMAQAAAAAAAAAAcGFja2FnZSBzZS5pbmZv
-d2FyZS5rZWVwOw0KDQovKioNCiAqIERlZmF1bHQgSmF2YSBlbnVtIGZvciBLZWVwIERlc2lnbiAo
-Q29kZSA+IEphdmEpLg0KICovDQpwdWJsaWMgZW51bSBEZWZhdWx0SGVsbG9FbnVtIHsNCglEUkFG
-VCwNCglPUEVOLA0KCUNMT1NFRDsNCg0KCXB1YmxpYyBTdHJpbmcgbGFiZWwoKSB7DQoJCXN3aXRj
-aCAodGhpcykgew0KCQkJY2FzZSBEUkFGVDogcmV0dXJuICJEcmFmdCI7DQoJCQljYXNlIE9QRU46
-IHJldHVybiAiT3BlbiI7DQoJCQljYXNlIENMT1NFRDogcmV0dXJuICJDbG9zZWQiOw0KCQkJZGVm
-YXVsdDogcmV0dXJuIG5hbWUoKTsNCgkJfQ0KCX0NCn0=
+YQAYAAAAAAB2AAAAAQAAAAAAAAAAAAAAYACIAAAAdgAAAAAAAAAAAAAAcGFja2FnZSBzZS5pbmZv
+d2FyZS5rZWVwOw0KDQovKiogTWluaW1hbCBKYXZhIGVudW0gc3RhcnRlci4gKi8NCnB1YmxpYyBl
+bnVtIE5ld0phdmFFbnVtIHsNCglEUkFGVCwNCglPUEVOLA0KCUNMT1NFRA0KfQ==
 </rawitemdata></item>
-<item name='$FileNames' sign='true'><text>se/infoware/keep/DefaultHelloEnum.java</text></item>
-<item name='$ClassIndexItem'><text>WEB-INF/classes/se/infoware/keep/DefaultHelloEnum.class</text></item>
-<item name='$ClassSize0' sign='true'><number>1661</number></item>
-<item name='$ClassData0' sign='true'>
-<rawitemdata type='1'>
-YQAYAAAAAAB9BgAAAQAAAAAAAAAAAAAAYACPBgAAfQZ+BgAAAAAAAAAAyv66vgAAAD0ATgcAAgEA
-IXNlL2luZm93YXJlL2tlZXAvRGVmYXVsdEhlbGxvRW51bQcABAEADmphdmEvbGFuZy9FbnVtAQAF
-RFJBRlQBACNMc2UvaW5mb3dhcmUva2VlcC9EZWZhdWx0SGVsbG9FbnVtOwEABE9QRU4BAAZDTE9T
-RUQBAC8kU1dJVENIX1RBQkxFJHNlJGluZm93YXJlJGtlZXAkRGVmYXVsdEhlbGxvRW51bQEAAltJ
-AQALRU5VTSRWQUxVRVMBACRbTHNlL2luZm93YXJlL2tlZXAvRGVmYXVsdEhlbGxvRW51bTsBAAg8
-Y2xpbml0PgEAAygpVgEABENvZGUIAAUKAAEAEgwAEwAUAQAGPGluaXQ+AQAWKExqYXZhL2xhbmcv
-U3RyaW5nO0kpVgkAAQAWDAAFAAYIAAcJAAEAGQwABwAGCAAICQABABwMAAgABgkAAQAeDAALAAwB
-AA9MaW5lTnVtYmVyVGFibGUBABJMb2NhbFZhcmlhYmxlVGFibGUKAAMAEgEABHRoaXMBAAVsYWJl
-bAEAFCgpTGphdmEvbGFuZy9TdHJpbmc7CgABACYMAAkAJwEABCgpW0kKAAEAKQwAKgArAQAHb3Jk
-aW5hbAEAAygpSQgALQEABURyYWZ0CAAvAQAET3BlbggAMQEABkNsb3NlZAoAAQAzDAA0ACQBAARu
-YW1lAQANU3RhY2tNYXBUYWJsZQEABnZhbHVlcwEAJigpW0xzZS9pbmZvd2FyZS9rZWVwL0RlZmF1
-bHRIZWxsb0VudW07CgA5ADsHADoBABBqYXZhL2xhbmcvU3lzdGVtDAA8AD0BAAlhcnJheWNvcHkB
-ACooTGphdmEvbGFuZy9PYmplY3Q7SUxqYXZhL2xhbmcvT2JqZWN0O0lJKVYBAAd2YWx1ZU9mAQA3
-KExqYXZhL2xhbmcvU3RyaW5nOylMc2UvaW5mb3dhcmUva2VlcC9EZWZhdWx0SGVsbG9FbnVtOwoA
-AwBBDAA+AEIBADUoTGphdmEvbGFuZy9DbGFzcztMamF2YS9sYW5nL1N0cmluZzspTGphdmEvbGFu
-Zy9FbnVtOwkAAQBEDAAJAAoKAAEARgwANgA3BwBIAQAaamF2YS9sYW5nL05vU3VjaEZpZWxkRXJy
-b3IHAAoBAApTb3VyY2VGaWxlAQAVRGVmYXVsdEhlbGxvRW51bS5qYXZhAQAJU2lnbmF0dXJlAQA1
-TGphdmEvbGFuZy9FbnVtPExzZS9pbmZvd2FyZS9rZWVwL0RlZmF1bHRIZWxsb0VudW07PjtAMQAB
-AAMAAAAFQBkABQAGAABAGQAHAAYAAEAZAAgABgAAEEoACQAKAAAQGgALAAwAAAAGAAgADQAOAAEA
-DwAAAG0ABAAAAAAAQbsAAVkSEAO3ABGzABW7AAFZEhcEtwARswAYuwABWRIaBbcAEbMAGwa9AAFZ
-A7IAFVNZBLIAGFNZBbIAG1OzAB2xAAAAAgAfAAAAEgAEAAAABwANAAgAGgAJACcABgAgAAAAAgAA
-AAIAEwAUAAEADwAAADEAAwADAAAAByorHLcAIbEAAAACAB8AAAAGAAEAAAAGACAAAAAMAAEAAAAH
-ACIABgAAAAEAIwAkAAEADwAAAHgAAgABAAAAMrgAJSq2ACguqgAAAAAAACUAAAABAAAAAwAAABwA
-AAAfAAAAIhIssBIusBIwsCq2ADKwAAAAAwAfAAAAFgAFAAAADAAkAA0AJwAOACoADwAtABAAIAAA
-AAwAAQAAADIAIgAGAAAANQAAAAYABCQCAgIACQA2ADcAAQAPAAAANgAFAAMAAAAWsgAdWUsDKr5Z
-PL0AAVlNAxu4ADgssAAAAAIAHwAAAAYAAQAAAAEAIAAAAAIAAAAJAD4APwABAA8AAAAqAAIAAQAA
-AAoSASq4AEDAAAGwAAAAAgAfAAAABgABAAAAAQAgAAAAAgAAEAgACQAnAAEADwAAAJkAAwABAAAA
-PbIAQ1nGAASwV7gARb68CksqsgAbtgAoBk+nAARXKrIAFbYAKARPpwAEVyqyABi2ACgFT6cABFcq
-WbMAQ7AAAwAQABkAHABHAB0AJgApAEcAKgAzADYARwADAB8AAAAGAAEAAAAGACAAAAACAAAANQAA
-AB4AB0gHAEn/ABMAAQcASQABBwBHAEsHAEcASwcARwAAAgBKAAAAAgBLAEwAAAACAE0A
-</rawitemdata></item></note>
-
+<item name='$FileNames' sign='true'><text>se/infoware/keep/NewJavaEnum.java</text></item></note>

@@ -1,16 +1,16 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE sharedactions SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <sharedactions xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
- replicaid='C1258E4300212830' hide='v3 v4strict' designerversion='8.5.3' maxid='2'>
-<noteinfo noteid='1b2' unid='D02B5E6B0DDBB25AC1258E430023AE10' sequence='111'>
+ replicaid='C1258E4300212830' hide='v3 v4strict' designerversion='8.5.3' maxid='3'>
+<noteinfo noteid='1b2' unid='D02B5E6B0DDBB25AC1258E430023AE10' sequence='170'>
 <created><datetime dst='true'>20260729T082943,20+02</datetime></created>
-<modified><datetime dst='true'>20260729T170825,74+02</datetime></modified>
-<revised><datetime dst='true'>20260729T170825,73+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T170825,73+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260803T141926,53+02</datetime></modified>
+<revised><datetime dst='true'>20260803T141926,52+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T141926,52+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T082943,19+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
-<action title='Default-Edit' id='1'><code event='click'><formula>@Command([EditDocument])</formula></code></action>
-<action title='Default-Save' id='2'><code event='click'><formula>@Command([FileSave])</formula></code></action>
-<item name='$$ScriptName' summary='false' sign='true'><text>$ACTIONS</text></item></sharedactions>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+<action title='newsharedaction' id='3'/>
+<item name='$$ScriptName' summary='false' sign='true'><text>$ACTIONS</text></item>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></sharedactions>
 

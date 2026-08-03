@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258E4300212830'>
+<noteinfo noteid='113e' unid='3B98C6C67C0D4312C1258E4800449FC2' sequence='2'>
+<created><datetime dst='true'>20260803T142933,46+02</datetime></created>
+<modified><datetime dst='true'>20260803T142933,50+02</datetime></modified>
+<revised><datetime dst='true'>20260803T142933,49+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T142933,49+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260803T142933,46+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<item name='$Flags'><text>34567Cg~[</text></item>
+<item name='$TITLE'><text>se/infoware/keep/NewJavaEnum.java</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='$FileSize' sign='true'><number>118</number></item>
+<item name='$FileData' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAAB2AAAAAQAAAAAAAAAAAAAAYACIAAAAdgAAAAAAAAAAAAAAcGFja2FnZSBzZS5pbmZv
+d2FyZS5rZWVwOw0KDQovKiogTWluaW1hbCBKYXZhIGVudW0gc3RhcnRlci4gKi8NCnB1YmxpYyBl
+bnVtIE5ld0phdmFFbnVtIHsNCglEUkFGVCwNCglPUEVOLA0KCUNMT1NFRA0KfQ==
+</rawitemdata></item>
+<item name='$FileNames' sign='true'><text>se/infoware/keep/NewJavaEnum.java</text></item></note>
+

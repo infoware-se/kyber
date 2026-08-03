@@ -1,5 +1,5 @@
 {
-    "exportedAt":  "2026-07-29T15:09:01.2837255Z",
+    "exportedAt":  "2026-08-03T12:29:51.5571354Z",
     "layout":  "api-type",
     "nsfPath":  "keepdesign.nsf",
     "elements":  [
@@ -16,11 +16,11 @@
                          "unid":  "3BF422C897FACF25C1258E430021283D"
                      },
                      {
-                         "path":  "about/about-1ce.dxl",
-                         "noteid":  "1ce",
+                         "path":  "about/about-60a.dxl",
+                         "noteid":  "60a",
                          "doctype":  "helpaboutdocument",
                          "type":  "about",
-                         "unid":  "24215A2038A19B9DC1258E430024B995"
+                         "unid":  "7D51A94B9DB92AE8C1258E4800384CEC"
                      },
                      {
                          "path":  "using/using-1d2.dxl",
@@ -53,284 +53,301 @@
                          "noteid":  "13a"
                      },
                      {
-                         "path":  "images/Default-ImageResource.png-1e6.dxl",
+                         "path":  "images/newimage.png-83a.dxl",
                          "type":  "image",
-                         "unid":  "FD9DFDE0DF42418BC1258E4300250863",
-                         "name":  "Default-ImageResource.png",
+                         "unid":  "5219B50BF2CA6AF2C1258E4800408636",
+                         "name":  "newimage.png",
                          "doctype":  "imageresource",
-                         "noteid":  "1e6"
+                         "noteid":  "83a"
                      },
                      {
-                         "path":  "fileresources/Default-FileResource.txt-1e2.dxl",
+                         "path":  "fileresources/newfileresource.txt-83e.dxl",
                          "type":  "fileresource",
-                         "unid":  "66A9BC0F49DF1B4EC1258E430024F8B9",
-                         "name":  "Default-FileResource.txt",
+                         "unid":  "983B48AF87FAB58BC1258E480040863E",
+                         "name":  "newfileresource.txt",
                          "doctype":  "fileresource",
-                         "noteid":  "1e2"
+                         "noteid":  "83e"
                      },
                      {
-                         "path":  "stylesheets/Default-StyleSheet.css-1da.dxl",
+                         "path":  "stylesheets/newstylesheet.css-86a.dxl",
                          "type":  "stylesheet",
-                         "unid":  "3AE31148CB9C96F4C1258E430024D4EB",
-                         "name":  "Default-StyleSheet.css",
+                         "unid":  "53D609F608473683C1258E480040870C",
+                         "name":  "newstylesheet.css",
                          "doctype":  "stylesheetresource",
-                         "noteid":  "1da"
+                         "noteid":  "86a"
                      },
                      {
-                         "path":  "themes/Default-Theme.theme-1d6.dxl",
+                         "path":  "themes/newtheme.theme-86e.dxl",
                          "type":  "theme",
-                         "unid":  "F8B16795FBD751AAC1258E430024CDEE",
-                         "name":  "Default-Theme.theme",
+                         "unid":  "AAEFB20419A4D076C1258E4800408711",
+                         "name":  "newtheme.theme",
                          "doctype":  "note",
-                         "noteid":  "1d6"
+                         "noteid":  "86e"
                      },
                      {
-                         "path":  "scriptlibraries/Default-ClientJs-312.dxl",
+                         "javaSources":  [
+                                             "scriptlibraries/DefaultJava.java"
+                                         ],
                          "type":  "scriptlibrary",
-                         "unid":  "7DC4CD0604EBD4F1C1258E430043910B",
-                         "name":  "Default-ClientJs",
+                         "unid":  "9CF79AE83BDAAC0FC1258E4800439D09",
+                         "name":  "newscriptlibraryjava",
                          "doctype":  "scriptlibrary",
-                         "noteid":  "312"
+                         "path":  "scriptlibraries/newscriptlibraryjava-1126.dxl",
+                         "noteid":  "1126"
                      },
                      {
-                         "path":  "scriptlibraries/Default-Java-30e.dxl",
+                         "path":  "scriptlibraries/newscriptlibraryjavascript-872.dxl",
                          "type":  "scriptlibrary",
-                         "unid":  "0D8580F0AA86565DC1258E4300439100",
-                         "name":  "Default-Java",
+                         "unid":  "A8DBC10B4FD5D7A9C1258E4800408719",
+                         "name":  "newscriptlibraryjavascript",
                          "doctype":  "scriptlibrary",
-                         "noteid":  "30e"
+                         "noteid":  "872"
                      },
                      {
-                         "path":  "scriptlibraries/Default-LotusScript-302.dxl",
+                         "path":  "scriptlibraries/newscriptlibrarylotusscript-8ca.dxl",
                          "type":  "scriptlibrary",
-                         "unid":  "8E8445F9860491EBC1258E43004390EE",
-                         "name":  "Default-LotusScript",
+                         "unid":  "7EF38A1F8FA1FFC1C1258E480041F055",
+                         "name":  "newscriptlibrarylotusscript",
                          "doctype":  "scriptlibrary",
-                         "noteid":  "302"
+                         "noteid":  "8ca"
                      },
                      {
-                         "path":  "scriptlibraries/Default-Ssjs-316.dxl",
+                         "path":  "scriptlibraries/newscriptlibraryssjs-87a.dxl",
                          "type":  "scriptlibrary",
-                         "unid":  "5F6F132A1B2F57D1C1258E430043910C",
-                         "name":  "Default-Ssjs",
+                         "unid":  "61C51E4402BFF4FCC1258E4800408724",
+                         "name":  "newscriptlibraryssjs",
                          "doctype":  "scriptlibrary",
-                         "noteid":  "316"
+                         "noteid":  "87a"
                      },
                      {
-                         "path":  "sharedfields/Default-SharedField-31a.dxl",
+                         "path":  "sharedfields/newsharedfield-87e.dxl",
                          "type":  "sharedfield",
-                         "unid":  "991551B6D515CA30C1258E430043910F",
-                         "name":  "Default-SharedField",
+                         "unid":  "042609EBE58C4D8DC1258E480040872A",
+                         "name":  "newsharedfield",
                          "doctype":  "sharedfield",
-                         "noteid":  "31a"
+                         "noteid":  "87e"
                      },
                      {
-                         "path":  "sharedcolumns/Default-SharedColumn-192.dxl",
+                         "path":  "sharedcolumns/newsharedcolumn-882.dxl",
                          "type":  "sharedcolumn",
-                         "unid":  "032ECB8E536657F5C1258E4300227906",
-                         "name":  "Default-SharedColumn",
+                         "unid":  "8C09C25D1719B0FBC1258E4800408730",
+                         "name":  "newsharedcolumn",
                          "doctype":  "sharedcolumn",
-                         "noteid":  "192"
+                         "noteid":  "882"
                      },
                      {
-                         "path":  "subforms/Default-Subform-18a.dxl",
+                         "path":  "subforms/newsubform-886.dxl",
                          "type":  "subform",
-                         "unid":  "81A50C0CFD7D15EBC1258E4300226293",
-                         "name":  "Default-Subform",
+                         "unid":  "D74AD03AEDFE42CEC1258E4800408735",
+                         "name":  "newsubform",
                          "doctype":  "subform",
-                         "noteid":  "18a"
+                         "noteid":  "886"
                      },
                      {
-                         "path":  "forms/Default-Form-172.dxl",
+                         "path":  "forms/newform-852.dxl",
                          "type":  "form",
-                         "unid":  "DCB248E28C544CD8C1258E4300217D8D",
-                         "name":  "Default-Form",
+                         "unid":  "A7ECEB88DA3FEB27C1258E480040864D",
+                         "name":  "newform",
                          "doctype":  "form",
-                         "noteid":  "172"
+                         "noteid":  "852"
                      },
                      {
-                         "path":  "pages/Default-Page-182.dxl",
+                         "path":  "pages/newpage-856.dxl",
                          "type":  "page",
-                         "unid":  "633562526EC171B6C1258E4300222464",
-                         "name":  "Default-Page",
+                         "unid":  "EA423215AF806A48C1258E4800408657",
+                         "name":  "newpage",
                          "doctype":  "page",
-                         "noteid":  "182"
+                         "noteid":  "856"
                      },
                      {
-                         "path":  "outlines/Default-Outline-186.dxl",
+                         "path":  "outlines/newoutline-85a.dxl",
                          "type":  "outline",
-                         "unid":  "96A2A0E656070015C1258E4300222CE4",
-                         "name":  "Default-Outline",
+                         "unid":  "EE6E0424680A3117C1258E480040865A",
+                         "name":  "newoutline",
                          "doctype":  "outline",
-                         "noteid":  "186"
+                         "noteid":  "85a"
                      },
                      {
-                         "path":  "navigators/Default-Navigator-19a.dxl",
+                         "path":  "navigators/newnavigator-85e.dxl",
                          "type":  "navigator",
-                         "unid":  "399FFD355415E77FC1258E4300238BCE",
-                         "name":  "Default-Navigator",
+                         "unid":  "AA5FDECD94BB7ABAC1258E4800408660",
+                         "name":  "newnavigator",
                          "doctype":  "note",
-                         "noteid":  "19a"
+                         "noteid":  "85e"
                      },
                      {
-                         "path":  "framesets/Default-Frameset-17e.dxl",
+                         "path":  "framesets/newframeset-862.dxl",
                          "type":  "frameset",
-                         "unid":  "AF074C6B6F7A1D33C1258E4300221718",
-                         "name":  "Default-Frameset",
+                         "unid":  "4A38CD24A2F05E14C1258E4800408666",
+                         "name":  "newframeset",
                          "doctype":  "frameset",
-                         "noteid":  "17e"
+                         "noteid":  "862"
                      },
                      {
-                         "path":  "views/Default-View-11a.dxl",
+                         "path":  "views/newview-88a.dxl",
                          "type":  "view",
-                         "unid":  "DEEEAE2BF6A26632C1258E430021283C",
-                         "name":  "Default-View",
+                         "unid":  "4471B14B33C4DD5BC1258E480040873B",
+                         "name":  "newview",
                          "doctype":  "view",
-                         "noteid":  "11a"
+                         "noteid":  "88a"
                      },
                      {
-                         "path":  "folders/Default-Folder-17a.dxl",
+                         "path":  "folders/newfolder-866.dxl",
                          "type":  "folder",
-                         "unid":  "FF0A90FF94E3E9F3C1258E4300220A4B",
-                         "name":  "Default-Folder",
+                         "unid":  "74C0C8ED9F855C03C1258E480040866B",
+                         "name":  "newfolder",
                          "doctype":  "folder",
-                         "noteid":  "17a"
+                         "noteid":  "866"
                      },
                      {
-                         "path":  "agents/Default-FormulaAgent-32a.dxl",
+                         "path":  "agents/newagentformula-7fe.dxl",
                          "type":  "agent",
-                         "unid":  "DED6206AC67732FEC1258E4300439178",
-                         "name":  "Default-FormulaAgent",
+                         "unid":  "F2927A01C4D8FD32C1258E4800408595",
+                         "name":  "newagentformula",
                          "doctype":  "agent",
-                         "noteid":  "32a"
+                         "noteid":  "7fe"
                      },
                      {
-                         "path":  "agents/Default-JavaAgent-33a.dxl",
+                         "path":  "agents/newagentimportedjava-80a.dxl",
                          "type":  "agent",
-                         "unid":  "76D3782B33309B09C1258E430043917A",
-                         "name":  "Default-JavaAgent",
+                         "unid":  "32D080DB69E97E8DC1258E480040859A",
+                         "name":  "newagentimportedjava",
                          "doctype":  "agent",
-                         "noteid":  "33a"
+                         "noteid":  "80a"
                      },
                      {
-                         "path":  "agents/Default-LotusScriptAgent-322.dxl",
+                         "javaSources":  [
+                                             "agents/JavaAgent.java"
+                                         ],
                          "type":  "agent",
-                         "unid":  "7FC76C47741D82EBC1258E4300439172",
-                         "name":  "Default-LotusScriptAgent",
+                         "unid":  "27F02229E28702DDC1258E48004228C5",
+                         "name":  "newagentjava",
                          "doctype":  "agent",
-                         "noteid":  "322"
+                         "path":  "agents/newagentjava-8d2.dxl",
+                         "noteid":  "8d2"
                      },
                      {
-                         "path":  "agents/Default-SimpleAgent-342.dxl",
+                         "path":  "agents/newagentlotusscript-8be.dxl",
                          "type":  "agent",
-                         "unid":  "758DFBC2C02CC2B3C1258E4300439181",
-                         "name":  "Default-SimpleAgent",
+                         "unid":  "DFB06DFAF066B99AC1258E480041C798",
+                         "name":  "newagentlotusscript",
                          "doctype":  "agent",
-                         "noteid":  "342"
+                         "noteid":  "8be"
                      },
                      {
-                         "path":  "customcontrols/Default-CustomControl.xsp-46e.dxl",
+                         "path":  "agents/newagentsimpleaction-82a.dxl",
+                         "type":  "agent",
+                         "unid":  "F9E98BCF204466E4C1258E48004085AB",
+                         "name":  "newagentsimpleaction",
+                         "doctype":  "agent",
+                         "noteid":  "82a"
+                     },
+                     {
+                         "path":  "customcontrols/newcustomcontrol.xsp-526.dxl",
                          "type":  "customcontrol",
-                         "unid":  "AA396DB961DF3775C1258E4300520771",
-                         "name":  "Default-CustomControl.xsp",
+                         "unid":  "05E06D9BC3D4B78AC1258E4400479B4A",
+                         "name":  "newcustomcontrol.xsp",
                          "doctype":  "note",
-                         "noteid":  "46e"
+                         "noteid":  "526"
                      },
                      {
-                         "path":  "webservices/Default-WebService-346.dxl",
+                         "path":  "webservices/newwebservice-6ea.dxl",
                          "type":  "webservice",
-                         "unid":  "3554B55BF1070C97C1258E4300439188",
-                         "name":  "Default-WebService",
+                         "unid":  "F76C63AA11D021DEC1258E480038633E",
+                         "name":  "newwebservice",
                          "doctype":  "note",
-                         "noteid":  "346"
+                         "noteid":  "6ea"
                      },
                      {
-                         "path":  "webserviceconsumers/Default-WebServiceConsumer-396.dxl",
+                         "path":  "webserviceconsumers/newwebserviceconsumer-6f2.dxl",
                          "type":  "webserviceconsumer",
-                         "unid":  "ECA895F28D4B7A26C1258E4300472847",
-                         "name":  "Default-WebServiceConsumer",
+                         "unid":  "94C6695AEAD0D090C1258E480038635E",
+                         "name":  "newwebserviceconsumer",
                          "doctype":  "note",
-                         "noteid":  "396"
+                         "noteid":  "6f2"
                      },
                      {
-                         "path":  "xpages/Default-XPage.xsp-46a.dxl",
+                         "path":  "xpages/newxpage.xsp-512.dxl",
                          "type":  "xpage",
-                         "unid":  "7D963F3B6ADB5525C1258E4300520762",
-                         "name":  "Default-XPage.xsp",
+                         "unid":  "5993315EC4B6F4E1C1258E4400477B91",
+                         "name":  "newxpage.xsp",
                          "doctype":  "note",
-                         "noteid":  "46a"
+                         "noteid":  "512"
                      },
                      {
-                         "path":  "wiringproperties/Default-Wiring.wsdl-34e.dxl",
+                         "path":  "wiringproperties/newwiring.wsdl-89a.dxl",
                          "type":  "wiringproperties",
-                         "unid":  "13C75417CCE18171C1258E43004391B3",
-                         "name":  "Default-Wiring.wsdl",
+                         "unid":  "CB0501E17F122D20C1258E4800408817",
+                         "name":  "newwiring.wsdl",
                          "doctype":  "note",
-                         "noteid":  "34e"
+                         "noteid":  "89a"
                      },
                      {
-                         "path":  "compositeapplications/Default-CompositeApplication.xml-352.dxl",
+                         "path":  "compositeapplications/newcompositeapplication.xml-832.dxl",
                          "type":  "compositeapplication",
-                         "unid":  "84FED139E0DDF801C1258E43004391BB",
-                         "name":  "Default-CompositeApplication.xml",
+                         "unid":  "7F08A0A251A7F97DC1258E48004085BE",
+                         "name":  "newcompositeapplication.xml",
                          "doctype":  "note",
-                         "noteid":  "352"
+                         "noteid":  "832"
                      },
                      {
-                         "path":  "compositecomponents/Default-CompositeComponent.component-472.dxl",
+                         "path":  "compositecomponents/newcompositecomponent.component-836.dxl",
                          "type":  "compositecomponent",
-                         "unid":  "07A054F26AB79D59C1258E4300520780",
-                         "name":  "Default-CompositeComponent.component",
+                         "unid":  "ACAC06DA7A27A56FC1258E48004085C4",
+                         "name":  "newcompositecomponent.component",
                          "doctype":  "note",
-                         "noteid":  "472"
+                         "noteid":  "836"
                      },
                      {
-                         "path":  "applets/Default-Applet-44a.dxl",
+                         "javaSources":  [
+                                             "applets/DefaultApplet.java"
+                                         ],
                          "type":  "applet",
-                         "unid":  "0BB24FF7D94C6BDFC1258E43004D4697",
-                         "name":  "Default-Applet",
+                         "unid":  "A6C6D4111FED8DEAC1258E480040858F",
+                         "name":  "newapplet",
                          "doctype":  "appletresource",
-                         "noteid":  "44a"
+                         "path":  "applets/newapplet-7f6.dxl",
+                         "noteid":  "7f6"
                      },
                      {
-                         "path":  "dataconnections/Default-DataConnection-2f6.dxl",
+                         "path":  "dataconnections/newdataconnection-82e.dxl",
                          "type":  "dataconnection",
-                         "unid":  "B969CA62EEDA2840C1258E430040FBBB",
-                         "name":  "Default-DataConnection",
+                         "unid":  "876CCA169834CBC0C1258E48004085AE",
+                         "name":  "newdataconnection",
                          "doctype":  "dataconnection",
-                         "noteid":  "2f6"
+                         "noteid":  "82e"
                      },
                      {
-                         "path":  "jars/Default-Jar.jar-426.dxl",
+                         "path":  "jars/newjar.jar-842.dxl",
                          "type":  "jar",
-                         "unid":  "5DE706F3A081569AC1258E43004B0518",
-                         "name":  "Default-Jar.jar",
+                         "unid":  "39458340D0BC34E1C1258E4800408641",
+                         "name":  "newjar.jar",
                          "doctype":  "note",
-                         "noteid":  "426"
+                         "noteid":  "842"
                      },
                      {
-                         "path":  "javasources/se_infoware_keep_DefaultHello.java-42e.dxl",
+                         "path":  "javasources/se_infoware_keep_NewJava.java-1136.dxl",
                          "type":  "javasource",
-                         "unid":  "71C6D8BFC573343AC1258E43004BB2C5",
-                         "name":  "se/infoware/keep/DefaultHello.java",
+                         "unid":  "5F7B1CB0FABD29E9C1258E4800449F7F",
+                         "name":  "se/infoware/keep/NewJava.java",
                          "doctype":  "note",
-                         "noteid":  "42e"
+                         "noteid":  "1136"
                      },
                      {
-                         "path":  "javasources/se_infoware_keep_DefaultHelloEnum.java-432.dxl",
+                         "path":  "javasources/se_infoware_keep_NewJavaEnum.java-113e.dxl",
                          "type":  "javasource",
-                         "unid":  "BE10586BC5B48C77C1258E43004BED28",
-                         "name":  "se/infoware/keep/DefaultHelloEnum.java",
+                         "unid":  "3B98C6C67C0D4312C1258E4800449FC2",
+                         "name":  "se/infoware/keep/NewJavaEnum.java",
                          "doctype":  "note",
-                         "noteid":  "432"
+                         "noteid":  "113e"
                      },
                      {
-                         "path":  "javasources/se_infoware_keep_DefaultHelloInterface.java-436.dxl",
+                         "path":  "javasources/se_infoware_keep_NewJavaInterface.java-113a.dxl",
                          "type":  "javasource",
-                         "unid":  "EDEF54D313697C8DC1258E43004BED2F",
-                         "name":  "se/infoware/keep/DefaultHelloInterface.java",
+                         "unid":  "FD970B09884B3AA0C1258E4800449FA5",
+                         "name":  "se/infoware/keep/NewJavaInterface.java",
                          "doctype":  "note",
-                         "noteid":  "436"
+                         "noteid":  "113a"
                      },
                      {
                          "path":  "xpagesresources/.classpath-44e.dxl",
@@ -413,6 +430,22 @@
                          "noteid":  "16a"
                      },
                      {
+                         "path":  "xpagesresources/WEB-INF_classes_plugin_Activator.class-50a.dxl",
+                         "type":  "xpagesresource",
+                         "unid":  "2E93240705FB9044C1258E440046F231",
+                         "name":  "WEB-INF/classes/plugin/Activator.class",
+                         "doctype":  "note",
+                         "noteid":  "50a"
+                     },
+                     {
+                         "path":  "xpagesresources/WEB-INF_faces-config.xml-506.dxl",
+                         "type":  "xpagesresource",
+                         "unid":  "D0E1672688461BA1C1258E440046F220",
+                         "name":  "WEB-INF/faces-config.xml",
+                         "doctype":  "note",
+                         "noteid":  "506"
+                     },
+                     {
                          "path":  "note/WEB-INF_xsp.properties-152.dxl",
                          "type":  "xspproperties",
                          "unid":  "FD323AD2895146C5C1258E43002142D7",
@@ -421,5 +454,5 @@
                          "noteid":  "152"
                      }
                  ],
-    "elementCount":  53
+    "elementCount":  56
 }

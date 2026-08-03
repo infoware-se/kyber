@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>se.infoware.domino</groupId>
     <artifactId>keep-design</artifactId>
-    <version>0.21.0</version>
+    <version>0.22.14</version>
     <packaging>jar</packaging>
     <name>KEEP Domino REST API design</name>
 
@@ -16,12 +16,20 @@
         <keep.version>1.42.7</keep.version>
         <domino.jnx.version>1.53.3</domino.jnx.version>
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
+        <junit.version>5.11.4</junit.version>
         <smallrye.jandex.version>3.2.3</smallrye.jandex.version>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.hcl.domino.keep</groupId>
             <artifactId>keep-core</artifactId>
@@ -87,6 +95,11 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
             </plugin>
         </plugins>
     </build>

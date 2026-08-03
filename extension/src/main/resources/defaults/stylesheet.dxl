@@ -1,24 +1,15 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE stylesheetresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <stylesheetresource name='Default-StyleSheet.css' xmlns='http://www.lotus.com/dxl'
- version='14.5' maintenanceversion='1.0' replicaid='C1258E4300212830' publicaccess='false'
+ version='14.5' maintenanceversion='1.0' publicaccess='false'
  designerversion='8.5.3' charset='UTF-8'>
-<noteinfo noteid='1da' unid='3AE31148CB9C96F4C1258E430024D4EB' sequence='15'>
-<created><datetime dst='true'>20260729T084218,03+02</datetime></created>
-<modified><datetime dst='true'>20260730T153012,77+02</datetime></modified>
-<revised><datetime dst='true'>20260730T153012,76+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260730T153012,76+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260729T084218,03+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby><filedata
->
-LyogRGVmYXVsdC1TdHlsZVNoZWV0LmNzcyDigJQgS2VlcCBEZXNpZ24gc3RhcnRlciAqLwpib2R5
-IHsKICBmb250LWZhbWlseTogQXJpYWwsIEhlbHZldGljYSwgc2Fucy1zZXJpZjsKICBmb250LXNp
-emU6IDEycHQ7CiAgY29sb3I6ICMyMjI7CiAgbWFyZ2luOiAxZW07CiAgbGluZS1oZWlnaHQ6IDEu
-NDsKfQpoMSwgLnRpdGxlIHsKICBmb250LXNpemU6IDEuNWVtOwogIGNvbG9yOiAjMDAzMzY2Owog
-IG1hcmdpbi1ib3R0b206IDAuNWVtOwp9CmEgeyBjb2xvcjogIzAwNjZjYzsgdGV4dC1kZWNvcmF0
-aW9uOiBub25lOyB9CmE6aG92ZXIgeyB0ZXh0LWRlY29yYXRpb246IHVuZGVybGluZTsgfQoucGFu
-ZWwgewogIGJvcmRlcjogMXB4IHNvbGlkICNjY2M7CiAgcGFkZGluZzogMC43NWVtOwogIGJhY2tn
-cm91bmQ6ICNmYWZhZmE7Cn0KLm11dGVkIHsgY29sb3I6ICM2NjY7IGZvbnQtc2l6ZTogMC45ZW07
-IH0=
-</filedata></stylesheetresource>
 
+<filedata
+>
+LyogRGVmYXVsdC1TdHlsZVNoZWV0LmNzcyDigJQgbWluaW1hbCBzdGFydGVyICovCmJvZHkgewog
+IGZvbnQtZmFtaWx5OiBBcmlhbCwgSGVsdmV0aWNhLCBzYW5zLXNlcmlmOwogIGZvbnQtc2l6ZTog
+MTJwdDsKICBjb2xvcjogIzIyMjsKICBtYXJnaW46IDFlbTsKfQoKaDEgewogIGZvbnQtc2l6ZTog
+MS41ZW07CiAgY29sb3I6ICMwMDMzNjY7Cn0KCmEgewogIGNvbG9yOiAjMDA2NmNjOwogIHRleHQt
+ZGVjb3JhdGlvbjogbm9uZTsKfQoKYTpob3ZlciB7CiAgdGV4dC1kZWNvcmF0aW9uOiB1bmRlcmxp
+bmU7Cn0=
+</filedata></stylesheetresource>

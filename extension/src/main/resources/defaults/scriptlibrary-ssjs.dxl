@@ -1,29 +1,23 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE scriptlibrary SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<scriptlibrary name='Default-Ssjs' xmlns='http://www.lotus.com/dxl' version='14.5'
- maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3 v4strict'
+<scriptlibrary name='Default-Ssjs' xmlns='http://www.lotus.com/dxl'
+ version='14.5' maintenanceversion='1.0' hide='v3 v4strict'
  designerversion='8.5.3'>
-<noteinfo noteid='562' unid='1217EB238850E678C1258E440049E04C' sequence='3'>
-<created><datetime dst='true'>20260730T152655,48+02</datetime></created>
-<modified><datetime dst='true'>20260730T152916,51+02</datetime></modified>
-<revised><datetime dst='true'>20260730T152916,50+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260730T152916,50+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260730T152655,48+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+
+
+
 <item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item>
 <item name='$ServerJavaScriptLibrary' sign='true'>
 <rawitemdata type='1'>
 +f8gAAAAAAAWAAQAKgIAAAAAAAAAAAAAAAAAAAAAAADc/zwC+f8qAiBOAAAAAAAAAAAvKioKICog
-U2VydmVyIEphdmFTY3JpcHQgKFNTSlMpIHN0YXJ0ZXIgLSBEZWZhdWx0LVNzanMKICogSGVscGVy
-cyB0aGF0IHVzZSB0aGUgWFBhZ2VzIHJ1bnRpbWUgKGRhdGFiYXNlIC8gc2Vzc2lvbikuCiAqLwoK
-ZnVuY3Rpb24gaGVsbG8od2hvKSB7CglpZiAoIXdobykgeyB3aG8gPSAiV29ybGQiOyB9CglyZXR1
-cm4gIkhlbGxvLCAiICsgd2hvICsgIiEiOwp9CgpmdW5jdGlvbiBmb3JtYXRUaXRsZSh0aXRsZSkg
-ewoJaWYgKCF0aXRsZSB8fCBTdHJpbmcodGl0bGUpLnRyaW0oKS5sZW5ndGggPT09IDApIHsKCQly
-ZXR1cm4gIih1bnRpdGxlZCkiOwoJfQoJcmV0dXJuIFN0cmluZyh0aXRsZSkudHJpbSgpOwp9Cgpm
-dW5jdGlvbiBjdXJyZW50RGJUaXRsZSgpIHsKCXJldHVybiBkYXRhYmFzZS5nZXRUaXRsZSgpOwp9
-CgpmdW5jdGlvbiBjdXJyZW50VXNlck5hbWUoKSB7CglyZXR1cm4gc2Vzc2lvbi5nZXRFZmZlY3Rp
-dmVVc2VyTmFtZSgpOwp9CgpmdW5jdGlvbiBsb2dNZXNzYWdlKG1zZykgewoJcHJpbnQoIkRlZmF1
-bHQtU3NqczogIiArIG1zZyk7CglyZXR1cm4gbXNnOwp9AA==
+U2VydmVyIEphdmFTY3JpcHQgKFNTSlMpIHN0YXJ0ZXIgLSBuZXdzY3JpcHRsaWJyYXJ5c3Nqcwog
+KiBIZWxwZXJzIHRoYXQgdXNlIHRoZSBYUGFnZXMgcnVudGltZSAoZGF0YWJhc2UgLyBzZXNzaW9u
+KS4KICovCgpmdW5jdGlvbiBoZWxsbyh3aG8pIHsKCWlmICghd2hvKSB7IHdobyA9ICJXb3JsZCI7
+IH0KCXJldHVybiAiSGVsbG8sICIgKyB3aG8gKyAiISI7Cn0gICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgAA==
 </rawitemdata></item></scriptlibrary>
-

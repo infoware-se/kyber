@@ -1,65 +1,25 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE scriptlibrary SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <scriptlibrary name='Default-LotusScript' xmlns='http://www.lotus.com/dxl'
- version='14.5' maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3 v4strict'
+ version='14.5' maintenanceversion='1.0' hide='v3 v4strict'
  designerversion='8.5.3'>
-<noteinfo noteid='302' unid='8E8445F9860491EBC1258E43004390EE' sequence='101'>
-<created><datetime dst='true'>20260729T141800,14+02</datetime></created>
-<modified><datetime dst='true'>20260730T152314,73+02</datetime></modified>
-<revised><datetime dst='true'>20260730T152314,72+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260730T152314,72+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260729T141800,24+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby><code event='options'><lotusscript
+
+
+<code event='options'><lotusscript
 >%REM
-	Library Default-LotusScript
+	Library newscriptlibrarylotusscript
 	Description: Example LotusScript library - Options, Class, Function, Sub
 %END REM
 Option Public
 Option Declare
 
-</lotusscript></code><code event='declarations'><lotusscript>%REM
-	Class Greeting
-	Description: Simple class with constructor, destructor and a method
-%END REM
-Class Greeting
-	Private m_who As String
-
-	%REM
-		Sub New
-		Description: Create a greeting for who (default World)
-	%END REM
-	Sub New(who As String)
-		If who = "" Then
-			m_who = "World"
-		Else
-			m_who = who
-		End If
-	End Sub
-
-	%REM
-		Sub Delete
-		Description: Cleanup
-	%END REM
-	Sub Delete
-		m_who = ""
-	End Sub
-
-	%REM
-		Function Text
-		Description: Build greeting string
-	%END REM
-	Function Text As String
-		Text = "Hello, " &amp; m_who &amp; "!"
-	End Function
-End Class
 </lotusscript></code><code event='Hello'><lotusscript>%REM
 	Function Hello
 	Description: Convenience wrapper around Greeting
 %END REM
 Function Hello(who As String) As String
-	Dim g As New Greeting(who)
-	Hello = g.Text
+	If who = "" Then who = "World"
+	Hello = "Hello, " &amp; who &amp; "!"
 End Function
 
 </lotusscript></code><code event='LogMessage'><lotusscript>%REM
@@ -68,19 +28,5 @@ End Function
 %END REM
 Sub LogMessage(msg As String)
 	If msg = "" Then Exit Sub
-	Print "Default-LotusScript: " &amp; msg
-End Sub
-
-</lotusscript></code><code event='FormatTitle'><lotusscript>%REM
-	Function FormatTitle
-	Description: Normalize a title string
-%END REM
-Function FormatTitle(title As String) As String
-	If title = "" Then
-		FormatTitle = "(untitled)"
-	Else
-		FormatTitle = Trim$(title)
-	End If
-End Function
-</lotusscript></code></scriptlibrary>
-
+	Print msg
+End Sub</lotusscript></code></scriptlibrary>

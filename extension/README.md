@@ -1,6 +1,6 @@
 # keep-design (Java KEEP extension)
 
-**Custom KEEP extension â€” KEEP, not HCL.**
+**Custom KEEP extension — KEEP, not HCL.**
 
 Manage database **design elements** via Domino REST API. Target database is selected with query param **`nsfPath`**. Standard collection CRUD:
 
@@ -21,7 +21,7 @@ Same pattern for other named types (`/forms`, `/scriptlibraries`, …). Write re
 | Named (form, view, page, …) | `GET /{types}` | `POST /{types}?name=` | `PUT /{types}/{name}` | `GET /{types}/{name}` | `DELETE /{types}/{name}` |
 | About / Using / Database Script | — | `POST /about` etc. | `PUT /about` etc. | `GET` | `DELETE` |
 | Xsp Properties | — | `POST /xspproperties` | `PUT /xspproperties` | `GET` | `DELETE` |
-| DB icon (`$DBIcon`) | — | `POST /dbicon` | `PUT /dbicon` | `GET /dbicon` | `DELETE /dbicon` |
+| DB icon (`$DBIcon`) | — | — | `PUT /dbicon` | `GET /dbicon` | — |
 | Application Properties / ACL | — | — | `PUT` | `GET` | ACL: — / App props: — |
 
 `$DBIcon` is excluded from `GET /images` — use `/dbicon`. Kinded types (`agent`, `scriptlibrary`, `javasource`) take `?kind=` + `?name=` on empty-body `POST`.
@@ -39,7 +39,9 @@ All paths are under `/api/design-v1` and require `?nsfPath=`.
 
 Swagger tag: **`design-handler`** for `/defaults`, `/defaults/{type}`, and `/designdxl` (per-type CRUD stays under **`design-element`**).
 
-Element `type` values match repo layout (`form`, `about`, `image`, â€¦). Bridge scripts in repo root [`tools/`](../tools/):
+**Defaults resolution** (`GET /defaults/{type}`): if `keepdesign.nsf` (or `keep.design.defaultNsf`) is available and contains that type (and `?kind=` when kinded), use the **first** match by case-insensitive name; otherwise the embedded JAR starter under `resources/defaults/`.
+
+Element `type` values match repo layout (`form`, `about`, `image`, …). Bridge scripts in repo root [`tools/`](../tools/):
 
 ```powershell
 .\tools\export-to-repo.ps1 -RestUrl https://host:8880 -NsfPath test/app.nsf -OutDir .\design
@@ -48,7 +50,7 @@ Element `type` values match repo layout (`form`, `about`, `image`, â€¦). Bri
 .\tools\import-from-repo.ps1 -RestUrl https://host:8880 -NsfPath test/restored.nsf -InDir .\design
 ```
 
-Repo tree (folders = DXL `<!DOCTYPE â€¦>` name):
+Repo tree (folders = DXL `<!DOCTYPE …>` name):
 
 ```
 design/
@@ -62,7 +64,7 @@ design/
 
 `import-from-repo.ps1` reads `manifest.json` (API `type` + path); folder names follow DOCTYPE.
 
-After PUT, the API compiles LotusScript (script libraries first) and returns a `lotusscript` summary. Notes â€œError processing use list moduleâ€ after a restore usually means code was not compiled; re-import with 0.12+ or run Designer **Recompile All LotusScript**. Some complex libraries (e.g. DDM) can still report syntax errors after DXL round-trip â€” open those in Designer if needed.
+After PUT, the API compiles LotusScript (script libraries first) and returns a `lotusscript` summary. Notes "Error processing use list module" after a restore usually means code was not compiled; re-import with 0.12+ or run Designer **Recompile All LotusScript**. Some complex libraries (e.g. DDM) can still report syntax errors after DXL round-trip — open those in Designer if needed.
 
 **Bulk-only types** (no list/get/put/delete endpoints; only in `/designdxl`): `xpagesresource` (incl. `WEB-INF/` except `xsp.properties`, i18n `*.properties`, `.settings/`, `icons/`, `Local/`), and catch-all `designnote` for any other remaining design note (UNID-deduped after typed exporters). Starters: `GET /defaults/{type}` for `xpagesresource` (not `designnote`).
 
@@ -70,7 +72,7 @@ After PUT, the API compiles LotusScript (script libraries first) and returns a `
 
 ## Coverage (Domino Designer)
 
-Mapped to the Designer outline. â€œInâ€ = typed DXL CRUD; â€œBulkâ€ = `/designdxl` only (v0.16).
+Mapped to the Designer outline. "In" = typed DXL CRUD; "Bulk" = `/designdxl` only (v0.16).
 
 ### Included
 
@@ -85,20 +87,22 @@ Mapped to the Designer outline. â€œInâ€ = typed DXL CRUD; â€œBulkâ
 | Shared Elements | Fields | `/sharedfields` |
 | Shared Elements | Columns | `/sharedcolumns` |
 | Shared Elements | Outlines | `/outlines` |
-| Code | Agents | `/agents` — kinds `lotusscript` \| `formula` \| `simpleaction` \| `java` |
+| Code | Agents | `/agents` — kinds `lotusscript` \| `formula` \| `simpleaction` \| `java` \| `importedjava` |
 | Code | Shared Actions | `/sharedactions/{name}` |
 | Code | Script Libraries | `/scriptlibraries` — kinds `lotusscript` \| `javascript` \| `ssjs` \| `java` (defaults + empty-body create) |
 | Code | Database Script | `/databasescript` (singleton) |
-| Application Configuration | Application Properties | `/applicationproperties` (singleton; GET/PUT, no DELETE) |
-| Application Configuration | Xsp Properties | `/xspproperties` (singleton; GET/PUT, no DELETE; `WEB-INF/xsp.properties`) |
+| Application Configuration | Application Properties | `/applicationproperties` (singleton; GET/PUT update-only, no create/DELETE — always present with NSF) |
+| Application Configuration | Database icon (`$DBIcon`) | `/dbicon` (singleton; GET/PUT update-only, no create/DELETE — always present with NSF; not under `/images`) |
+| Application Configuration | Xsp Properties | `/xspproperties` (singleton; GET/POST/PUT/DELETE — optional `WEB-INF/xsp.properties`) |
 | Resources | Images | `/images` |
 | Resources | Files | `/fileresources` |
 | Resources | Style Sheets | `/stylesheets` |
 | Resources | Themes | `/themes` |
 | Resources | About Document | `/about` (singleton) |
 | Resources | Using Document | `/using` (singleton) |
-| XPages | XPages | `/xpages` |
+| XPages | XPages | `/xpages` (named — list/create + `/{name}` get/update/delete; not a singleton). `POST /xpages` also ensures project skeleton. |
 | Custom Controls | Custom Controls | `/customcontrols` (`.xsp` notes without XPage `K` flag; not Composite Components) |
+| (XPages project) | Bootstrap skeleton | `POST /xpagesproject` — create-if-absent `plugin.xml`, `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, `xsp.properties` |
 | (XPages project) | Other `WEB-INF/` notes | **Bulk only** — type `xpagesresource` |
 | Shared Elements | Navigators | `/navigators` |
 | Code | Web Service Providers | `/webservices` + `GET /defaults/webservice` |
@@ -112,7 +116,7 @@ Mapped to the Designer outline. â€œInâ€ = typed DXL CRUD; â€œBulkâ
 | Composite Applications | Components | `/compositecomponents` |
 | Database | ACL | `/acl` (singleton; also in bulk) |
 
-Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the collection path (ACL has no DELETE).
+Singletons: most use `GET` / `POST` (create) / `PUT` (update) / `DELETE` on the collection path. Exceptions: **ACL** (GET/PUT, no DELETE); **Application Properties** and **`$DBIcon`** (GET/PUT only — always present with the NSF, no create/DELETE).
 
 ### Not included (CRUD or bulk)
 
@@ -125,17 +129,20 @@ Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the c
 | ACL | Operations |
 |-----|------------|
 | Reader | list, get |
-| Designer | create/replace, delete (ACL PUT requires Manager) |
+| Designer | create, update, delete (ACL PUT requires Manager) |
 
 ## Endpoints
+
+Named types share the same CRUD shape: **list** `GET /{types}`, **create** `POST /{types}` (optional `?name=`; empty body + `?kind=&name=` for kinded types), **get/update/delete** on `/{types}/{name}`.
 
 ### Pages
 
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/pages?nsfPath=` |
-| PUT | `/api/design-v1/pages?nsfPath=` (`text/xml` page DXL) |
+| POST | `/api/design-v1/pages?nsfPath=` (`text/xml` page DXL; optional `?name=`) |
 | GET | `/api/design-v1/pages/{name}?nsfPath=` |
+| PUT | `/api/design-v1/pages/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/pages/{name}?nsfPath=` |
 
 ### Outlines
@@ -143,8 +150,9 @@ Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the c
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/outlines?nsfPath=` |
-| PUT | `/api/design-v1/outlines?nsfPath=` (`text/xml` outline DXL) |
+| POST | `/api/design-v1/outlines?nsfPath=` (`text/xml` outline DXL; optional `?name=`) |
 | GET | `/api/design-v1/outlines/{name}?nsfPath=` |
+| PUT | `/api/design-v1/outlines/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/outlines/{name}?nsfPath=` |
 
 ### Framesets
@@ -152,8 +160,9 @@ Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the c
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/framesets?nsfPath=` |
-| PUT | `/api/design-v1/framesets?nsfPath=` (`text/xml` frameset DXL) |
+| POST | `/api/design-v1/framesets?nsfPath=` (`text/xml` frameset DXL; optional `?name=`) |
 | GET | `/api/design-v1/framesets/{name}?nsfPath=` |
+| PUT | `/api/design-v1/framesets/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/framesets/{name}?nsfPath=` |
 
 ### Forms
@@ -161,8 +170,9 @@ Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the c
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/forms?nsfPath=` |
-| PUT | `/api/design-v1/forms?nsfPath=` (`text/xml` form DXL) |
+| POST | `/api/design-v1/forms?nsfPath=` (`text/xml` form DXL; optional `?name=`) |
 | GET | `/api/design-v1/forms/{name}?nsfPath=` |
+| PUT | `/api/design-v1/forms/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/forms/{name}?nsfPath=` |
 
 ### Views
@@ -170,8 +180,9 @@ Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the c
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/views?nsfPath=` |
-| PUT | `/api/design-v1/views?nsfPath=` (`text/xml` view DXL) |
+| POST | `/api/design-v1/views?nsfPath=` (`text/xml` view DXL; optional `?name=`) |
 | GET | `/api/design-v1/views/{name}?nsfPath=` |
+| PUT | `/api/design-v1/views/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/views/{name}?nsfPath=` |
 
 ### Folders
@@ -179,8 +190,9 @@ Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the c
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/folders?nsfPath=` |
-| PUT | `/api/design-v1/folders?nsfPath=` (`text/xml` folder DXL) |
+| POST | `/api/design-v1/folders?nsfPath=` (`text/xml` folder DXL; optional `?name=`) |
 | GET | `/api/design-v1/folders/{name}?nsfPath=` |
+| PUT | `/api/design-v1/folders/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/folders/{name}?nsfPath=` |
 
 ### Subforms
@@ -188,8 +200,9 @@ Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the c
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/subforms?nsfPath=` |
-| PUT | `/api/design-v1/subforms?nsfPath=` (`text/xml` subform DXL) |
+| POST | `/api/design-v1/subforms?nsfPath=` (`text/xml` subform DXL; optional `?name=`) |
 | GET | `/api/design-v1/subforms/{name}?nsfPath=` |
+| PUT | `/api/design-v1/subforms/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/subforms/{name}?nsfPath=` |
 
 ### Shared fields
@@ -197,8 +210,9 @@ Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the c
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/sharedfields?nsfPath=` |
-| PUT | `/api/design-v1/sharedfields?nsfPath=` (`text/xml` sharedfield DXL) |
+| POST | `/api/design-v1/sharedfields?nsfPath=` (`text/xml` sharedfield DXL; optional `?name=`) |
 | GET | `/api/design-v1/sharedfields/{name}?nsfPath=` |
+| PUT | `/api/design-v1/sharedfields/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/sharedfields/{name}?nsfPath=` |
 
 ### Shared columns
@@ -206,17 +220,21 @@ Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the c
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/sharedcolumns?nsfPath=` |
-| PUT | `/api/design-v1/sharedcolumns?nsfPath=` (`text/xml` sharedcolumn DXL) |
+| POST | `/api/design-v1/sharedcolumns?nsfPath=` (`text/xml` sharedcolumn DXL; optional `?name=`) |
 | GET | `/api/design-v1/sharedcolumns/{name}?nsfPath=` |
+| PUT | `/api/design-v1/sharedcolumns/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/sharedcolumns/{name}?nsfPath=` |
 
 ### Images
 
+`$DBIcon` is excluded — use `/dbicon`.
+
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/images?nsfPath=` |
-| PUT | `/api/design-v1/images?nsfPath=` (`text/xml` imageresource DXL) |
+| POST | `/api/design-v1/images?nsfPath=` (`text/xml` imageresource DXL; optional `?name=`) |
 | GET | `/api/design-v1/images/{name}?nsfPath=` |
+| PUT | `/api/design-v1/images/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/images/{name}?nsfPath=` |
 
 ### Files
@@ -224,8 +242,9 @@ Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the c
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/fileresources?nsfPath=` |
-| PUT | `/api/design-v1/fileresources?nsfPath=` (`text/xml` fileresource DXL) |
+| POST | `/api/design-v1/fileresources?nsfPath=` (`text/xml` fileresource DXL; optional `?name=`) |
 | GET | `/api/design-v1/fileresources/{name}?nsfPath=` |
+| PUT | `/api/design-v1/fileresources/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/fileresources/{name}?nsfPath=` |
 
 ### Style sheets
@@ -233,8 +252,9 @@ Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the c
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/stylesheets?nsfPath=` |
-| PUT | `/api/design-v1/stylesheets?nsfPath=` (`text/xml` stylesheetresource DXL) |
+| POST | `/api/design-v1/stylesheets?nsfPath=` (`text/xml` stylesheetresource DXL; optional `?name=`) |
 | GET | `/api/design-v1/stylesheets/{name}?nsfPath=` |
+| PUT | `/api/design-v1/stylesheets/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/stylesheets/{name}?nsfPath=` |
 
 ### Themes
@@ -242,10 +262,20 @@ Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the c
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/themes?nsfPath=` |
-| PUT | `/api/design-v1/themes?nsfPath=` (`text/xml`; prefer Designer-exported DXL) |
+| POST | `/api/design-v1/themes?nsfPath=` (`text/xml`; prefer Designer-exported DXL; optional `?name=`) |
 | GET | `/api/design-v1/themes/{name}?nsfPath=` |
+| PUT | `/api/design-v1/themes/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/themes/{name}?nsfPath=` |
 
+### Navigators
+
+| Method | Path |
+|--------|------|
+| GET | `/api/design-v1/navigators?nsfPath=` |
+| POST | `/api/design-v1/navigators?nsfPath=` (`text/xml`; optional `?name=`) |
+| GET | `/api/design-v1/navigators/{name}?nsfPath=` |
+| PUT | `/api/design-v1/navigators/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/design-v1/navigators/{name}?nsfPath=` |
 
 ### ACL
 
@@ -259,7 +289,8 @@ Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the c
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/about?nsfPath=` |
-| PUT | `/api/design-v1/about?nsfPath=` (`text/xml` helpaboutdocument DXL) |
+| POST | `/api/design-v1/about?nsfPath=` (`text/xml` helpaboutdocument DXL; empty → starter; **409** if exists) |
+| PUT | `/api/design-v1/about?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/about?nsfPath=` |
 
 ### Using Document
@@ -267,20 +298,22 @@ Singletons have no list/`{name}` path — only `GET` / `PUT` / `DELETE` on the c
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/using?nsfPath=` |
-| PUT | `/api/design-v1/using?nsfPath=` (`text/xml` helpusingdocument DXL) |
+| POST | `/api/design-v1/using?nsfPath=` (`text/xml` helpusingdocument DXL; empty → starter; **409** if exists) |
+| PUT | `/api/design-v1/using?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/using?nsfPath=` |
 
 ### Agents
 
-Kinds: `lotusscript` (default), `formula`, `simpleaction`, `java`.
+Kinds: `lotusscript` (default), `formula`, `simpleaction`, `java`, `importedjava`.
 
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/agents?nsfPath=` |
-| PUT | `/api/design-v1/agents?nsfPath=` (`text/xml` agent DXL of any kind) |
-| PUT | `/api/design-v1/agents?nsfPath=&kind=&name=` (empty body → create from starter) |
+| POST | `/api/design-v1/agents?nsfPath=` (`text/xml` agent DXL of any kind; optional `?name=`) |
+| POST | `/api/design-v1/agents?nsfPath=&kind=&name=` (empty body → create from starter; **409** if exists) |
 | GET | `/api/design-v1/defaults/agent?kind=` |
 | GET | `/api/design-v1/agents/{name}?nsfPath=` |
+| PUT | `/api/design-v1/agents/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/agents/{name}?nsfPath=` |
 
 ### Script libraries
@@ -290,19 +323,35 @@ Kinds: `lotusscript` (default), `javascript` (client), `ssjs` (server JS), `java
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/scriptlibraries?nsfPath=` |
-| PUT | `/api/design-v1/scriptlibraries?nsfPath=` (`text/xml` scriptlibrary DXL of any kind) |
-| PUT | `/api/design-v1/scriptlibraries?nsfPath=&kind=&name=` (empty body → create from starter) |
+| POST | `/api/design-v1/scriptlibraries?nsfPath=` (`text/xml` scriptlibrary DXL of any kind; optional `?name=`) |
+| POST | `/api/design-v1/scriptlibraries?nsfPath=&kind=&name=` (empty body → create from starter; **409** if exists) |
 | GET | `/api/design-v1/defaults/scriptlibrary?kind=` |
 | GET | `/api/design-v1/scriptlibraries/{name}?nsfPath=` |
+| PUT | `/api/design-v1/scriptlibraries/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/scriptlibraries/{name}?nsfPath=` |
+
+### Java sources
+
+Kinds: `class` (default), `interface`, `enum`.
+
+| Method | Path |
+|--------|------|
+| GET | `/api/design-v1/javasources?nsfPath=` |
+| POST | `/api/design-v1/javasources?nsfPath=` (`text/xml`; optional `?name=`) |
+| POST | `/api/design-v1/javasources?nsfPath=&kind=&name=` (empty body → create from starter; **409** if exists) |
+| GET | `/api/design-v1/defaults/javasource?kind=` |
+| GET | `/api/design-v1/javasources/{name}?nsfPath=` |
+| PUT | `/api/design-v1/javasources/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/design-v1/javasources/{name}?nsfPath=` |
 
 ### Shared Actions
 
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/sharedactions?nsfPath=` |
+| POST | `/api/design-v1/sharedactions?nsfPath=` (`text/xml` sharedactions DXL; optional `?name=`) |
 | GET | `/api/design-v1/sharedactions/{name}?nsfPath=` |
-| PUT | `/api/design-v1/sharedactions?nsfPath=` (`text/xml` sharedactions DXL) |
+| PUT | `/api/design-v1/sharedactions/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/sharedactions/{name}?nsfPath=` |
 
 ### Database Script
@@ -310,22 +359,60 @@ Kinds: `lotusscript` (default), `javascript` (client), `ssjs` (server JS), `java
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/databasescript?nsfPath=` |
-| PUT | `/api/design-v1/databasescript?nsfPath=` (`text/xml` databasescript DXL) |
+| POST | `/api/design-v1/databasescript?nsfPath=` (`text/xml`; empty → starter; **409** if exists) |
+| PUT | `/api/design-v1/databasescript?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/databasescript?nsfPath=` |
 
+### Application Properties
+
+Always present with the NSF — update only.
 
 | Method | Path |
 |--------|------|
+| GET | `/api/design-v1/applicationproperties?nsfPath=` |
+| PUT | `/api/design-v1/applicationproperties?nsfPath=` (`text/xml`; **404** if missing) |
 
+### Database icon (`$DBIcon`)
+
+Always present with the NSF — update only. Not listed under `/images`.
+
+| Method | Path |
+|--------|------|
+| GET | `/api/design-v1/dbicon?nsfPath=` |
+| PUT | `/api/design-v1/dbicon?nsfPath=` (`text/xml` imageresource; **404** if missing) |
+
+### Xsp Properties
+
+Optional `WEB-INF/xsp.properties` (not always present on classic NSF).
+
+| Method | Path |
+|--------|------|
+| GET | `/api/design-v1/xspproperties?nsfPath=` |
+| POST | `/api/design-v1/xspproperties?nsfPath=` (`text/xml`; empty → starter; **409** if exists) |
+| PUT | `/api/design-v1/xspproperties?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/design-v1/xspproperties?nsfPath=` |
 
 ### XPages
+
+Named type (many per NSF) — same CRUD shape as forms/pages, not a singleton. Creating an XPage also ensures a minimal XPages project skeleton when missing (`POST /xpagesproject`).
 
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/xpages?nsfPath=` |
-| PUT | `/api/design-v1/xpages?nsfPath=` (`text/xml`; prefer Designer-exported DXL) |
+| POST | `/api/design-v1/xpages?nsfPath=` (`text/xml`; prefer Designer-exported DXL; optional `?name=`; empty body + `?name=` → starter; auto-ensures project) |
 | GET | `/api/design-v1/xpages/{name}?nsfPath=` |
+| PUT | `/api/design-v1/xpages/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/xpages/{name}?nsfPath=` |
+
+### XPages project bootstrap
+
+For NSFs that never had XPages — creates missing project files only (idempotent).
+
+| Method | Path |
+|--------|------|
+| POST | `/api/design-v1/xpagesproject?nsfPath=` (no body; returns `created` / `skipped`) |
+
+Skeleton: `.project`, `.classpath`, `plugin.xml`, `build.properties`, `WEB-INF/faces-config.xml`, `WEB-INF/classes/plugin/Activator.class`, `WEB-INF/xsp.properties` (embedded from a known-good Designer export; Domino CD `$FileData` is not rewritten).
 
 ### Custom Controls
 
@@ -334,8 +421,9 @@ XPages Custom Controls (Designer "Custom Controls") — `.xsp` design notes with
 | Method | Path |
 |--------|------|
 | GET | `/api/design-v1/customcontrols?nsfPath=` |
-| PUT | `/api/design-v1/customcontrols?nsfPath=` (`text/xml`; Designer-exported DXL) |
+| POST | `/api/design-v1/customcontrols?nsfPath=` (`text/xml`; Designer-exported DXL; optional `?name=`) |
 | GET | `/api/design-v1/customcontrols/{name}?nsfPath=` |
+| PUT | `/api/design-v1/customcontrols/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/design-v1/customcontrols/{name}?nsfPath=` |
 
 ## Build
@@ -346,9 +434,29 @@ $env:DRAPI_HOME = "C:\Domino\restapi"
 .\build.ps1 -InstallToDrapi
 ```
 
-**Output:** `target/keep-design-*.jar` â†’ `$env:DRAPI_HOME\libs\`.
+**Output:** `target/keep-design-*.jar` → `$env:DRAPI_HOME\libs\`.
 
 Restart: Notes COM `tell restapi quit` then `load restapi` (or `tools/restart-restapi-com.ps1` / `build.ps1 -InstallToDrapi`). Do not rely on `tell restapi reload` when swapping JARs.
+
+## Tests
+
+Unit tests (JUnit 5, no Domino) live under `extension/src/test/java`. Covered: DXL helpers, kind adapters, classpath starters, alphabetical NSF pick helper, blank baseline resources, OpenAPI shape (incl. always-present GET/PUT-only).
+
+```powershell
+cd extension
+.\build.ps1   # runs mvn package (includes tests)
+# or:
+mvn test
+```
+
+Live smoke against DRAPI (defaults, not-found on missing, create/409, GET/PUT, always-present GET, XPages ensure + create, DELETE):
+
+```powershell
+.\tools\smoke-design-api.ps1
+# optional: -NsfPath my-smoke.nsf
+```
+
+Note: KEEP often maps `KeepExceptionNotFound` to HTTP **400** (message still says “not found”); OpenAPI documents 404. The smoke accepts either.
 
 ## Manual test
 
@@ -377,7 +485,7 @@ $formDxl = @"
 <item name='$$ScriptName' summary='false' sign='true'><text>HelloForm</text></item>
 </form>
 "@
-Invoke-RestMethod -Method PUT -Uri "$base/api/design-v1/forms?nsfPath=$nsf" `
+Invoke-RestMethod -Method POST -Uri "$base/api/design-v1/forms?nsfPath=$nsf" `
     -Headers $headers -ContentType "text/xml" -Body $formDxl
 
 # View
@@ -392,7 +500,7 @@ $viewDxl = @"
 <columnheader title='Subject'><font size='9pt'/></columnheader></column>
 </view>
 "@
-Invoke-RestMethod -Method PUT -Uri "$base/api/design-v1/views?nsfPath=$nsf" `
+Invoke-RestMethod -Method POST -Uri "$base/api/design-v1/views?nsfPath=$nsf" `
     -Headers $headers -ContentType "text/xml" -Body $viewDxl
 ```
 
@@ -400,9 +508,9 @@ Invoke-RestMethod -Method PUT -Uri "$base/api/design-v1/views?nsfPath=$nsf" `
 
 ```text
 extension/
-  src/main/java/se/KEEP/domino/keep/
-    dbrequests/design/       per-type CRUD + shared DesignDxl / DxlDesignPatch
-    handlers/design/         AbstractImportDxlHandler + Create{Page,Outline,Frameset,Form,View,Folder}
+  src/main/java/se/infoware/domino/keep/
+    dbrequests/design/       per-type CRUD + shared DesignDxl / DesignCrud
+    handlers/design/         AbstractImportDxlHandler + Create*/Update* for text/xml body
   src/main/resources/
     config/config.json       # OpenAPI tags design-element + design-handler (not design — avoids HCL Setup clash)
     openapi/openapi.design.json
@@ -410,9 +518,9 @@ extension/
 
 ## Adding another design type
 
-1. OpenAPI paths + `operationId`s (`getXNames`, `getX`, `createX`, `deleteX`) under tag **`design-element`**; `/defaults*` and bulk `/designdxl` under **`design-handler`**
-2. `dbrequests/design` handlers (JNX `getX` / `getXs` / `delete`, DXL import via `DesignDxl.requireRootName(dxl, "root")`)
-3. `handlers/design/CreateX extends AbstractImportDxlHandler` for `text/xml` PUT
+1. OpenAPI paths + `operationId`s (`listX`, `getX`, `createX`, `updateX`, `deleteX`) under tag **`design-element`**; `/defaults*` and bulk `/designdxl` under **`design-handler`**
+2. `dbrequests/design` handlers (JNX list/get/delete, DXL import via `DesignCrud` / `DesignDxl`)
+3. `handlers/design/CreateX` and `UpdateX` extending `AbstractImportDxlHandler` for `text/xml` **POST** (create) and **PUT** (update)
 4. Document the type in this README table
 
-Do **not** use OpenAPI tag `design` â€” that maps HCL Setupâ€™s Design verticle package.
+Do **not** use OpenAPI tag `design` — that maps HCL Setup's Design verticle package.

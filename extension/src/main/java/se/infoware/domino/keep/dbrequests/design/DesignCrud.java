@@ -80,7 +80,9 @@ final class DesignCrud {
         DesignElementLookup.normalizeImageNameCheck(name);
       }
       JsonObject starter = DesignDefaults.resolveOne(request.session(), t);
-      dxl = DesignDxl.withName(starter.getString("dxl", ""), name, dxlRoots);
+      dxl =
+          DesignDxl.forNewNote(
+              DesignDxl.withName(starter.getString("dxl", ""), name, dxlRoots));
       source = "default";
     } else {
       name =
@@ -105,6 +107,10 @@ final class DesignCrud {
     }
 
     Database db = request.db();
+    JsonObject xpagesProject = null;
+    if ("xpage".equals(t) && mode == DxlDesignPatch.Mode.CREATE) {
+      xpagesProject = XPagesProject.ensure(request.session(), db);
+    }
     if (mode == DxlDesignPatch.Mode.CREATE) {
       conflictIfExists(db, t, name);
     } else if (mode == DxlDesignPatch.Mode.REPLACE) {
@@ -133,6 +139,9 @@ final class DesignCrud {
             .put("source", source)
             .put("dxl", exported)
             .put("log", imported.getString("log", ""));
+    if (xpagesProject != null) {
+      out.put("xpagesProject", xpagesProject);
+    }
     if (imported.containsKey("signWarning")) {
       out.put("signWarning", imported.getString("signWarning"));
     }
@@ -188,7 +197,7 @@ final class DesignCrud {
       kind = kinds.normalize(kindParam);
       name = nameParam.trim();
       JsonObject starter = DesignDefaults.resolveOne(request.session(), t, kind);
-      dxl = kinds.withName(starter.getString("dxl", ""), name);
+      dxl = DesignDxl.forNewNote(kinds.withName(starter.getString("dxl", ""), name));
       source = "default";
     } else {
       name = DesignDxl.requireDesignName(dxl, dxlRoots);
@@ -324,33 +333,7 @@ final class DesignCrud {
 
   private static JsonObject resolveSingletonDefault(KeepJnxSession session, String type)
       throws KeepExceptionWrongDataRequest {
-    if ("dbicon".equals(type)) {
-      try {
-        return DesignDefaults.resolveOne(session, "dbicon");
-      } catch (KeepExceptionWrongDataRequest e) {
-        // Fall back to blank NSF baseline packaged under defaults/blank/
-        return loadClasspathDefault("/defaults/blank/image-DBIcon.dxl", "dbicon");
-      }
-    }
     return DesignDefaults.resolveOne(session, type);
-  }
-
-  private static JsonObject loadClasspathDefault(String resource, String type)
-      throws KeepExceptionWrongDataRequest {
-    try (var in = DesignCrud.class.getResourceAsStream(resource)) {
-      if (in == null) {
-        throw new KeepExceptionWrongDataRequest("No default DXL for type: " + type);
-      }
-      String dxl = new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
-      return new JsonObject()
-          .put("type", type)
-          .put("source", "classpath")
-          .put("dxl", dxl);
-    } catch (KeepExceptionWrongDataRequest e) {
-      throw e;
-    } catch (Exception e) {
-      throw new KeepExceptionWrongDataRequest("Cannot load default for " + type + ": " + e);
-    }
   }
 
   interface KindAdapter {

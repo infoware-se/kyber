@@ -1,22 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE sharedfield SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <sharedfield name='Default-SharedField' xmlns='http://www.lotus.com/dxl' version='14.5'
- maintenanceversion='1.0' replicaid='C1258E4300212830' designerversion='8.5.3'>
-<noteinfo noteid='31a' unid='991551B6D515CA30C1258E430043910F' sequence='8'>
-<created><datetime dst='true'>20260729T141800,47+02</datetime></created>
-<modified><datetime dst='true'>20260730T151441,31+02</datetime></modified>
-<revised><datetime dst='true'>20260730T151441,30+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260730T151441,30+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260729T141800,47+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby><field type='text'
- kind='editable' name='Default-SharedField'><code event='htmlattributes'><formula
->"title=\"Default shared field example\""</formula></code><code event='defaultvalue'><formula
->"Starter shared field"</formula></code><code event='inputtranslation'><formula
->@Trim(@ThisValue)</formula></code><code event='inputvalidation'><formula
->@If(@Length(@ThisValue) &gt; 80; @Failure("Max 80 characters"); @Success)</formula></code></field>
+ maintenanceversion='1.0' designerversion='8.5.3'>
+
+
+<field type='text'
+ kind='editable' name='Default-SharedField'/>
 <item name='$HTMLCode' sign='true'>
 <rawitemdata type='1'>
 </rawitemdata></item>
 <item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></sharedfield>
-

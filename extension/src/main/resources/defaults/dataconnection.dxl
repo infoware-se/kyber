@@ -1,15 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE dataconnection SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <dataconnection name='Default-DataConnection' xmlns='http://www.lotus.com/dxl'
- version='14.5' maintenanceversion='1.0' replicaid='C1258E4300212830' nocompose='true'
+ version='14.5' maintenanceversion='1.0' nocompose='true'
  class='rdbms' type='odbc2' datasource='DefaultDSN' objectname='DefaultTable'
  objecttype='table'>
-<noteinfo noteid='2f6' unid='B969CA62EEDA2840C1258E430040FBBB' sequence='9'>
-<created><datetime dst='true'>20260729T134947,47+02</datetime></created>
-<modified><datetime dst='true'>20260730T152933,12+02</datetime></modified>
-<revised><datetime dst='true'>20260730T152933,11+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260730T152933,11+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260729T134947,47+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby></dataconnection>
 
+
+</dataconnection>

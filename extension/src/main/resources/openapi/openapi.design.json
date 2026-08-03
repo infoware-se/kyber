@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Infoware Domino REST API design",
-    "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (only bulk import); per-type CRUD requires an existing database. This API never deletes databases.",
-    "version": "0.21.0"
+    "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (bulk import only); per-type CRUD requires an existing database. This API never deletes databases. Starter DXL resolution: if keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl.",
+    "version": "0.22.14"
   },
   "servers": [
     {
@@ -13,24 +13,24 @@
   "tags": [
     {
       "name": "design-element",
-      "description": "Database design element CRUD. Create/update accepts raw DXL (text/xml) with a typed root element"
+      "description": "Per-type and singleton design-element CRUD against an NSF (?nsfPath=). Create/update bodies are raw DXL (text/xml) with a typed root. Named collections support list/create on the collection path and get/update/delete on /{name}. Application Properties and the database icon are always present (GET/PUT only)."
     },
     {
       "name": "design-handler",
-      "description": "Starter DXL defaults (GET /defaults, GET /defaults/{type}?kind= for script libraries) and bulk export/import (GET/PUT /designdxl). PUT creates the NSF if missing (bulk-only)."
+      "description": "Starter DXL defaults (GET /defaults, GET /defaults/{type}?kind=) and bulk export/import (GET/PUT /designdxl). If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. PUT /designdxl creates the NSF if missing (bulk-only). POST /xpagesproject ensures the minimal XPages project skeleton."
     }
   ],
   "paths": {
     "/defaults": {
-      "summary": "Starter design DXL from keepdesign.nsf or embedded JAR defaults",
-      "description": "Starter DXL per type. Script libraries and agents emit one entry per kind.",
+      "summary": "List starter design DXL from keepdesign.nsf or embedded JAR",
+      "description": "Starter DXL catalog. If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Kinded types (agents, script libraries, Java sources) emit one entry per kind.",
       "get": {
         "tags": [
           "design-handler"
         ],
         "operationId": "getDefaults",
         "summary": "List starter design DXL",
-        "description": "Returns { defaultNsf, elements: [{ type, name, dxl, source, kind? }] }. Script libraries appear once per kind.",
+        "description": "Returns { defaultNsf, elements: [{ type, name, dxl, source, kind? }] }. Per type/kind: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Agents, script libraries, and Java sources appear once per kind.",
         "x-keep-version": 1,
         "security": [
           {
@@ -95,11 +95,11 @@
       }
     },
     "/defaults/{type}": {
-      "summary": "Starter DXL for one design type",
+      "summary": "Get starter DXL for one design type",
       "parameters": [
         {
           "name": "type",
-          "description": "Design type key (view, form, page, ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦) or plural (views, forms)",
+          "description": "Design type key (view, form, page, …) or plural (views, forms, …).",
           "schema": {
             "type": "string"
           },
@@ -108,7 +108,7 @@
         },
         {
           "name": "kind",
-          "description": "Kind when type=scriptlibrary (lotusscript|javascript|ssjs|java), type=agent (lotusscript|formula|simpleaction|java), or type=javasource (class|interface|enum). Ignored for other types.",
+          "description": "Kind when type is agent (lotusscript|formula|simpleaction|java|importedjava), scriptlibrary (lotusscript|javascript|ssjs|java), or javasource (class|interface|enum). Ignored for other types.",
           "schema": {
             "type": "string",
             "enum": [
@@ -118,6 +118,7 @@
               "java",
               "formula",
               "simpleaction",
+              "importedjava",
               "class",
               "interface",
               "enum"
@@ -133,7 +134,7 @@
         ],
         "operationId": "getDefault",
         "summary": "Get starter design DXL for a type",
-        "description": "Returns starter DXL. For scriptlibrary/agent, pass kind= to select the variant.",
+        "description": "Returns starter DXL for one design type. If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. For kinded types pass ?kind=: agents (lotusscript|formula|simpleaction|java|importedjava); scriptlibraries (lotusscript|javascript|ssjs|java); javasources (class|interface|enum - name is a Java path ending in .java).",
         "x-keep-version": 1,
         "security": [
           {
@@ -187,11 +188,12 @@
             "$ref": "#/components/responses/500InternalServerError"
           }
         }
-      }
+      },
+      "description": "Returns starter DXL for the given type. If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Pass ?kind= for agents, script libraries, and Java sources."
     },
     "/designdxl": {
-      "summary": "Bulk export or import all supported design elements as CRUD-identical DXL",
-      "description": "GET exports every supported design element. PUT imports an elements array (same DXL as per-type CRUD). Missing NSF is created on PUT only. PUT remaps connection via KeepConfig.nsf internally.",
+      "summary": "Bulk export or import all supported design elements as DXL",
+      "description": "GET exports every supported design element as CRUD-identical DXL. PUT imports an elements array (same DXL as per-type CRUD). Missing NSF is created on PUT only. Requires ?nsfPath=.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -209,7 +211,7 @@
         ],
         "operationId": "getDesignDxl",
         "summary": "Bulk export design DXL",
-        "description": "Returns { nsfPath, elements: [{ type, name?, dxl }] } for all supported design types.",
+        "description": "Returns { nsfPath, elements: [{ type, name?, dxl }] } for all supported design types. Requires ?nsfPath=. NSF must already exist.",
         "x-keep-version": 1,
         "security": [
           {
@@ -270,7 +272,7 @@
         ],
         "operationId": "importDesignDxl",
         "summary": "Bulk import design DXL",
-        "description": "Import elements with REPLACE_ELSE_CREATE, sign after each import, then compile LotusScript (fixes Notes 'use list module' errors). Creates the NSF when missing.",
+        "description": "Import elements with REPLACE_ELSE_CREATE, sign after each import, then compile LotusScript. Creates the NSF when missing (bulk import only). Requires ?nsfPath=.",
         "x-keep-version": 1,
         "security": [
           {
@@ -365,8 +367,8 @@
       }
     },
     "/pages": {
-      "summary": "Create or replace a page",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create pages",
+      "description": "List page names (GET) or create a page (POST) in the target NSF (?nsfPath=). Get/update/delete use /pages/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -383,8 +385,8 @@
           "design-element"
         ],
         "operationId": "createPage",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a page (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -475,8 +477,8 @@
           "design-element"
         ],
         "operationId": "listPages",
-        "summary": "List in the database",
-        "description": "Returns the titles of design pages in the database.",
+        "summary": "List page names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of pages in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -515,8 +517,8 @@
       }
     },
     "/pages/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino page",
+      "summary": "Get, update, or delete a page",
+      "description": "Retrieve, replace, or remove one named page in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -542,8 +544,8 @@
           "design-element"
         ],
         "operationId": "getPage",
-        "summary": "Retrieve a page as DXL",
-        "description": "Export the page design note as DXL.",
+        "summary": "Get page as DXL",
+        "description": "Export one page as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -586,8 +588,8 @@
           "design-element"
         ],
         "operationId": "deletePage",
-        "summary": "Delete a page",
-        "description": "Delete the page from the database.",
+        "summary": "Delete page",
+        "description": "Remove the named page from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -629,8 +631,8 @@
           "design-element"
         ],
         "operationId": "updatePage",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update page from DXL (404 if missing)",
+        "description": "Replace the existing page with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -695,8 +697,8 @@
       }
     },
     "/outlines": {
-      "summary": "Create or replace an outline",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create outlines",
+      "description": "List outline names (GET) or create an outline (POST) in the target NSF (?nsfPath=). Get/update/delete use /outlines/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -713,8 +715,8 @@
           "design-element"
         ],
         "operationId": "createOutline",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create an outline (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -805,8 +807,8 @@
           "design-element"
         ],
         "operationId": "listOutlines",
-        "summary": "List in the database",
-        "description": "Returns the titles of design outlines in the database.",
+        "summary": "List outline names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of outlines in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -845,8 +847,8 @@
       }
     },
     "/outlines/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino outline",
+      "summary": "Get, update, or delete an outline",
+      "description": "Retrieve, replace, or remove one named outline in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -872,8 +874,8 @@
           "design-element"
         ],
         "operationId": "getOutline",
-        "summary": "Retrieve an outline as DXL",
-        "description": "Export the outline design note as DXL.",
+        "summary": "Get outline as DXL",
+        "description": "Export one outline as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -916,8 +918,8 @@
           "design-element"
         ],
         "operationId": "deleteOutline",
-        "summary": "Delete an outline",
-        "description": "Delete the outline from the database.",
+        "summary": "Delete outline",
+        "description": "Remove the named outline from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -959,8 +961,8 @@
           "design-element"
         ],
         "operationId": "updateOutline",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update outline from DXL (404 if missing)",
+        "description": "Replace the existing outline with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1025,8 +1027,8 @@
       }
     },
     "/framesets": {
-      "summary": "Create or replace a frameset",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create framesets",
+      "description": "List frameset names (GET) or create a frameset (POST) in the target NSF (?nsfPath=). Get/update/delete use /framesets/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -1043,8 +1045,8 @@
           "design-element"
         ],
         "operationId": "createFrameset",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a frameset (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1135,8 +1137,8 @@
           "design-element"
         ],
         "operationId": "listFramesets",
-        "summary": "List in the database",
-        "description": "Returns the titles of design framesets in the database.",
+        "summary": "List frameset names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of framesets in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1175,8 +1177,8 @@
       }
     },
     "/framesets/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino frameset",
+      "summary": "Get, update, or delete a frameset",
+      "description": "Retrieve, replace, or remove one named frameset in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -1202,8 +1204,8 @@
           "design-element"
         ],
         "operationId": "getFrameset",
-        "summary": "Retrieve a frameset as DXL",
-        "description": "Export the frameset design note as DXL.",
+        "summary": "Get frameset as DXL",
+        "description": "Export one frameset as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1246,8 +1248,8 @@
           "design-element"
         ],
         "operationId": "deleteFrameset",
-        "summary": "Delete a frameset",
-        "description": "Delete the frameset from the database.",
+        "summary": "Delete frameset",
+        "description": "Remove the named frameset from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1289,8 +1291,8 @@
           "design-element"
         ],
         "operationId": "updateFrameset",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update frameset from DXL (404 if missing)",
+        "description": "Replace the existing frameset with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1355,8 +1357,8 @@
       }
     },
     "/forms": {
-      "summary": "Create or replace a form",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create forms",
+      "description": "List form names (GET) or create a form (POST) in the target NSF (?nsfPath=). Get/update/delete use /forms/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -1373,8 +1375,8 @@
           "design-element"
         ],
         "operationId": "createForm",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a form (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1465,8 +1467,8 @@
           "design-element"
         ],
         "operationId": "listForms",
-        "summary": "List in the database",
-        "description": "Returns the titles of design forms in the database.",
+        "summary": "List form names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of forms in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1505,8 +1507,8 @@
       }
     },
     "/forms/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino form",
+      "summary": "Get, update, or delete a form",
+      "description": "Retrieve, replace, or remove one named form in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -1532,8 +1534,8 @@
           "design-element"
         ],
         "operationId": "getForm",
-        "summary": "Retrieve a form as DXL",
-        "description": "Export the form design note as DXL.",
+        "summary": "Get form as DXL",
+        "description": "Export one form as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1576,8 +1578,8 @@
           "design-element"
         ],
         "operationId": "deleteForm",
-        "summary": "Delete a form",
-        "description": "Delete the form from the database.",
+        "summary": "Delete form",
+        "description": "Remove the named form from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1619,8 +1621,8 @@
           "design-element"
         ],
         "operationId": "updateForm",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update form from DXL (404 if missing)",
+        "description": "Replace the existing form with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1685,8 +1687,8 @@
       }
     },
     "/views": {
-      "summary": "Create or replace a view",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create views",
+      "description": "List view names (GET) or create a view (POST) in the target NSF (?nsfPath=). Get/update/delete use /views/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -1703,8 +1705,8 @@
           "design-element"
         ],
         "operationId": "createView",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a view (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1795,8 +1797,8 @@
           "design-element"
         ],
         "operationId": "listViews",
-        "summary": "List in the database",
-        "description": "Returns the titles of design views in the database.",
+        "summary": "List view names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of views in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1835,8 +1837,8 @@
       }
     },
     "/views/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino view",
+      "summary": "Get, update, or delete a view",
+      "description": "Retrieve, replace, or remove one named view in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -1862,8 +1864,8 @@
           "design-element"
         ],
         "operationId": "getView",
-        "summary": "Retrieve a view as DXL",
-        "description": "Export the view design note as DXL.",
+        "summary": "Get view as DXL",
+        "description": "Export one view as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1906,8 +1908,8 @@
           "design-element"
         ],
         "operationId": "deleteView",
-        "summary": "Delete a view",
-        "description": "Delete the view from the database.",
+        "summary": "Delete view",
+        "description": "Remove the named view from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1949,8 +1951,8 @@
           "design-element"
         ],
         "operationId": "updateView",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update view from DXL (404 if missing)",
+        "description": "Replace the existing view with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2015,8 +2017,8 @@
       }
     },
     "/folders": {
-      "summary": "Create or replace a folder",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create folders",
+      "description": "List folder names (GET) or create a folder (POST) in the target NSF (?nsfPath=). Get/update/delete use /folders/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -2033,8 +2035,8 @@
           "design-element"
         ],
         "operationId": "createFolder",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a folder (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2125,8 +2127,8 @@
           "design-element"
         ],
         "operationId": "listFolders",
-        "summary": "List in the database",
-        "description": "Returns the titles of design folders in the database.",
+        "summary": "List folder names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of folders in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2165,8 +2167,8 @@
       }
     },
     "/folders/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino folder",
+      "summary": "Get, update, or delete a folder",
+      "description": "Retrieve, replace, or remove one named folder in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -2192,8 +2194,8 @@
           "design-element"
         ],
         "operationId": "getFolder",
-        "summary": "Retrieve a folder as DXL",
-        "description": "Export the folder design note as DXL.",
+        "summary": "Get folder as DXL",
+        "description": "Export one folder as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2236,8 +2238,8 @@
           "design-element"
         ],
         "operationId": "deleteFolder",
-        "summary": "Delete a folder",
-        "description": "Delete the folder from the database.",
+        "summary": "Delete folder",
+        "description": "Remove the named folder from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2279,8 +2281,8 @@
           "design-element"
         ],
         "operationId": "updateFolder",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update folder from DXL (404 if missing)",
+        "description": "Replace the existing folder with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2345,8 +2347,8 @@
       }
     },
     "/subforms": {
-      "summary": "Create or replace a subform",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create subforms",
+      "description": "List subform names (GET) or create a subform (POST) in the target NSF (?nsfPath=). Get/update/delete use /subforms/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -2363,8 +2365,8 @@
           "design-element"
         ],
         "operationId": "createSubform",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a subform (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2455,8 +2457,8 @@
           "design-element"
         ],
         "operationId": "listSubforms",
-        "summary": "List in the database",
-        "description": "Returns the titles of design subforms in the database.",
+        "summary": "List subform names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of subforms in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2495,8 +2497,8 @@
       }
     },
     "/subforms/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino subform",
+      "summary": "Get, update, or delete a subform",
+      "description": "Retrieve, replace, or remove one named subform in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -2522,8 +2524,8 @@
           "design-element"
         ],
         "operationId": "getSubform",
-        "summary": "Retrieve a subform as DXL",
-        "description": "Export the subform design note as DXL.",
+        "summary": "Get subform as DXL",
+        "description": "Export one subform as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2565,8 +2567,8 @@
           "design-element"
         ],
         "operationId": "deleteSubform",
-        "summary": "Delete a subform",
-        "description": "Delete the subform from the database.",
+        "summary": "Delete subform",
+        "description": "Remove the named subform from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2608,8 +2610,8 @@
           "design-element"
         ],
         "operationId": "updateSubform",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update subform from DXL (404 if missing)",
+        "description": "Replace the existing subform with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2674,8 +2676,8 @@
       }
     },
     "/sharedfields": {
-      "summary": "Create or replace a sharedfield",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create shared fields",
+      "description": "List shared field names (GET) or create a shared field (POST) in the target NSF (?nsfPath=). Get/update/delete use /sharedfields/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -2692,8 +2694,8 @@
           "design-element"
         ],
         "operationId": "createSharedField",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a shared field (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2784,8 +2786,8 @@
           "design-element"
         ],
         "operationId": "listSharedFields",
-        "summary": "List in the database",
-        "description": "Returns the titles of design sharedfields in the database.",
+        "summary": "List shared field names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of shared fields in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2824,8 +2826,8 @@
       }
     },
     "/sharedfields/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino sharedfield",
+      "summary": "Get, update, or delete a shared field",
+      "description": "Retrieve, replace, or remove one named shared field in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -2851,8 +2853,8 @@
           "design-element"
         ],
         "operationId": "getSharedField",
-        "summary": "Retrieve a sharedfield as DXL",
-        "description": "Export the sharedfield design note as DXL.",
+        "summary": "Get shared field as DXL",
+        "description": "Export one shared field as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2894,8 +2896,8 @@
           "design-element"
         ],
         "operationId": "deleteSharedField",
-        "summary": "Delete a sharedfield",
-        "description": "Delete the sharedfield from the database.",
+        "summary": "Delete shared field",
+        "description": "Remove the named shared field from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2937,8 +2939,8 @@
           "design-element"
         ],
         "operationId": "updateSharedField",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update shared field from DXL (404 if missing)",
+        "description": "Replace the existing shared field with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3003,8 +3005,8 @@
       }
     },
     "/sharedcolumns": {
-      "summary": "Create or replace a sharedcolumn",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create shared columns",
+      "description": "List shared column names (GET) or create a shared column (POST) in the target NSF (?nsfPath=). Get/update/delete use /sharedcolumns/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -3021,8 +3023,8 @@
           "design-element"
         ],
         "operationId": "createSharedColumn",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a shared column (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3113,8 +3115,8 @@
           "design-element"
         ],
         "operationId": "listSharedColumns",
-        "summary": "List in the database",
-        "description": "Returns the titles of design sharedcolumns in the database.",
+        "summary": "List shared column names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of shared columns in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3153,8 +3155,8 @@
       }
     },
     "/sharedcolumns/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino sharedcolumn",
+      "summary": "Get, update, or delete a shared column",
+      "description": "Retrieve, replace, or remove one named shared column in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -3180,8 +3182,8 @@
           "design-element"
         ],
         "operationId": "getSharedColumn",
-        "summary": "Retrieve a sharedcolumn as DXL",
-        "description": "Export the sharedcolumn design note as DXL.",
+        "summary": "Get shared column as DXL",
+        "description": "Export one shared column as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3223,8 +3225,8 @@
           "design-element"
         ],
         "operationId": "deleteSharedColumn",
-        "summary": "Delete a sharedcolumn",
-        "description": "Delete the sharedcolumn from the database.",
+        "summary": "Delete shared column",
+        "description": "Remove the named shared column from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3266,8 +3268,8 @@
           "design-element"
         ],
         "operationId": "updateSharedColumn",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update shared column from DXL (404 if missing)",
+        "description": "Replace the existing shared column with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3332,8 +3334,8 @@
       }
     },
     "/images": {
-      "summary": "Create or replace a Image",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create image resources",
+      "description": "List image resource names (GET) or create an image resource (POST) in the target NSF (?nsfPath=). Get/update/delete use /images/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -3350,8 +3352,8 @@
           "design-element"
         ],
         "operationId": "createImage",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create an image resource (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3442,8 +3444,8 @@
           "design-element"
         ],
         "operationId": "listImages",
-        "summary": "List in the database",
-        "description": "Returns the titles of design images in the database.",
+        "summary": "List image resource names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of image resources in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3482,8 +3484,8 @@
       }
     },
     "/images/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino Image",
+      "summary": "Get, update, or delete an image resource",
+      "description": "Retrieve, replace, or remove one named image resource in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -3509,8 +3511,8 @@
           "design-element"
         ],
         "operationId": "getImage",
-        "summary": "Retrieve a Image as DXL",
-        "description": "Export the Image design note as DXL.",
+        "summary": "Get image resource as DXL",
+        "description": "Export one image resource as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3552,8 +3554,8 @@
           "design-element"
         ],
         "operationId": "deleteImage",
-        "summary": "Delete a Image",
-        "description": "Delete the Image from the database.",
+        "summary": "Delete image resource",
+        "description": "Remove the named image resource from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3595,8 +3597,8 @@
           "design-element"
         ],
         "operationId": "updateImage",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update image resource from DXL (404 if missing)",
+        "description": "Replace the existing image resource with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3661,8 +3663,8 @@
       }
     },
     "/fileresources": {
-      "summary": "Create or replace a FileResource",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create file resources",
+      "description": "List file resource names (GET) or create a file resource (POST) in the target NSF (?nsfPath=). Get/update/delete use /fileresources/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -3679,8 +3681,8 @@
           "design-element"
         ],
         "operationId": "createFileResource",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a file resource (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3771,8 +3773,8 @@
           "design-element"
         ],
         "operationId": "listFileResources",
-        "summary": "List in the database",
-        "description": "Returns the titles of design fileresources in the database.",
+        "summary": "List file resource names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of file resources in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3811,8 +3813,8 @@
       }
     },
     "/fileresources/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino FileResource",
+      "summary": "Get, update, or delete a file resource",
+      "description": "Retrieve, replace, or remove one named file resource in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -3838,8 +3840,8 @@
           "design-element"
         ],
         "operationId": "getFileResource",
-        "summary": "Retrieve a FileResource as DXL",
-        "description": "Export the FileResource design note as DXL.",
+        "summary": "Get file resource as DXL",
+        "description": "Export one file resource as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3881,8 +3883,8 @@
           "design-element"
         ],
         "operationId": "deleteFileResource",
-        "summary": "Delete a FileResource",
-        "description": "Delete the FileResource from the database.",
+        "summary": "Delete file resource",
+        "description": "Remove the named file resource from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3924,8 +3926,8 @@
           "design-element"
         ],
         "operationId": "updateFileResource",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update file resource from DXL (404 if missing)",
+        "description": "Replace the existing file resource with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3990,8 +3992,8 @@
       }
     },
     "/stylesheets": {
-      "summary": "Create or replace a StyleSheet",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create style sheets",
+      "description": "List style sheet names (GET) or create a style sheet (POST) in the target NSF (?nsfPath=). Get/update/delete use /stylesheets/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -4008,8 +4010,8 @@
           "design-element"
         ],
         "operationId": "createStyleSheet",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a style sheet (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4100,8 +4102,8 @@
           "design-element"
         ],
         "operationId": "listStyleSheets",
-        "summary": "List in the database",
-        "description": "Returns the titles of design stylesheets in the database.",
+        "summary": "List style sheet names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of style sheets in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4140,8 +4142,8 @@
       }
     },
     "/stylesheets/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino StyleSheet",
+      "summary": "Get, update, or delete a style sheet",
+      "description": "Retrieve, replace, or remove one named style sheet in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -4167,8 +4169,8 @@
           "design-element"
         ],
         "operationId": "getStyleSheet",
-        "summary": "Retrieve a StyleSheet as DXL",
-        "description": "Export the StyleSheet design note as DXL.",
+        "summary": "Get style sheet as DXL",
+        "description": "Export one style sheet as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4210,8 +4212,8 @@
           "design-element"
         ],
         "operationId": "deleteStyleSheet",
-        "summary": "Delete a StyleSheet",
-        "description": "Delete the StyleSheet from the database.",
+        "summary": "Delete style sheet",
+        "description": "Remove the named style sheet from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4253,8 +4255,8 @@
           "design-element"
         ],
         "operationId": "updateStyleSheet",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update style sheet from DXL (404 if missing)",
+        "description": "Replace the existing style sheet with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4319,8 +4321,8 @@
       }
     },
     "/themes": {
-      "summary": "Create or replace a Theme",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create themes",
+      "description": "List theme names (GET) or create a theme (POST) in the target NSF (?nsfPath=). Get/update/delete use /themes/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -4337,8 +4339,8 @@
           "design-element"
         ],
         "operationId": "createTheme",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a theme (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4429,8 +4431,8 @@
           "design-element"
         ],
         "operationId": "listThemes",
-        "summary": "List in the database",
-        "description": "Returns the titles of design themes in the database.",
+        "summary": "List theme names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of themes in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4469,8 +4471,8 @@
       }
     },
     "/themes/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino Theme",
+      "summary": "Get, update, or delete a theme",
+      "description": "Retrieve, replace, or remove one named theme in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -4496,8 +4498,8 @@
           "design-element"
         ],
         "operationId": "getTheme",
-        "summary": "Retrieve a Theme as DXL",
-        "description": "Export the Theme design note as DXL.",
+        "summary": "Get theme as DXL",
+        "description": "Export one theme as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4539,8 +4541,8 @@
           "design-element"
         ],
         "operationId": "deleteTheme",
-        "summary": "Delete a Theme",
-        "description": "Delete the Theme from the database.",
+        "summary": "Delete theme",
+        "description": "Remove the named theme from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4582,8 +4584,8 @@
           "design-element"
         ],
         "operationId": "updateTheme",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update theme from DXL (404 if missing)",
+        "description": "Replace the existing theme with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4648,8 +4650,8 @@
       }
     },
     "/acl": {
-      "summary": "Retrieve or replace the database ACL",
-      "description": "Singleton database ACL as DXL (no name path parameter). No DELETE Ã¢â‚¬â€ ACL always exists. PUT requires Manager.",
+      "summary": "Get or replace the database ACL",
+      "description": "Singleton database ACL as DXL (no name path parameter). No DELETE - the ACL always exists. PUT requires Manager access. Requires ?nsfPath=.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -4666,8 +4668,8 @@
           "design-element"
         ],
         "operationId": "getAcl",
-        "summary": "Retrieve the ACL as DXL",
-        "description": "Export the database ACL via DxlExporter.exportACL.",
+        "summary": "Get ACL as DXL",
+        "description": "Export the database ACL via DxlExporter.exportACL. Requires ?nsfPath=.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4710,8 +4712,8 @@
           "design-element"
         ],
         "operationId": "createAcl",
-        "summary": "Replace the ACL from DXL",
-        "description": "Upload DXL with root <acl>. Full ACL replace (overwrite/drop). Then ensures LocalDomainAdmins/LocalDomainServers as Manager.",
+        "summary": "Replace ACL from DXL",
+        "description": "Upload DXL with root <acl>. Full ACL replace (overwrite/drop). Then ensures LocalDomainAdmins/LocalDomainServers as Manager. Requires ?nsfPath=.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4765,8 +4767,8 @@
       }
     },
     "/about": {
-      "summary": "Retrieve, create/replace, or delete the About",
-      "description": "Singleton Domino About (no name path parameter)",
+      "summary": "Get, create, update, or delete the About document",
+      "description": "Singleton About document (no name path parameter). Requires ?nsfPath=. Create-only on POST (409 if exists); update-only on PUT (404 if missing).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -4783,8 +4785,8 @@
           "design-element"
         ],
         "operationId": "getAbout",
-        "summary": "Retrieve the About as DXL",
-        "description": "Export the About design note as DXL.",
+        "summary": "Get About document as DXL",
+        "description": "Export the About document as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4827,8 +4829,8 @@
           "design-element"
         ],
         "operationId": "updateAbout",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing singleton. Returns dxl.",
+        "summary": "Update About document (404 if missing)",
+        "description": "Replace the About document with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4893,8 +4895,8 @@
           "design-element"
         ],
         "operationId": "deleteAbout",
-        "summary": "Delete the About",
-        "description": "Delete the About from the database.",
+        "summary": "Delete About document",
+        "description": "Remove the About document from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4937,8 +4939,8 @@
           "design-element"
         ],
         "operationId": "createAbout",
-        "summary": "Create singleton only (409 if exists); empty body uses default",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create About document (409 if exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Empty body creates from starter DXL. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if it already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5014,8 +5016,8 @@
       }
     },
     "/using": {
-      "summary": "Retrieve, create/replace, or delete the Using",
-      "description": "Singleton Domino Using (no name path parameter)",
+      "summary": "Get, create, update, or delete the Using document",
+      "description": "Singleton Using document (no name path parameter). Requires ?nsfPath=. Create-only on POST (409 if exists); update-only on PUT (404 if missing).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -5032,8 +5034,8 @@
           "design-element"
         ],
         "operationId": "getUsing",
-        "summary": "Retrieve the Using as DXL",
-        "description": "Export the Using design note as DXL.",
+        "summary": "Get Using document as DXL",
+        "description": "Export the Using document as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5076,8 +5078,8 @@
           "design-element"
         ],
         "operationId": "updateUsing",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing singleton. Returns dxl.",
+        "summary": "Update Using document (404 if missing)",
+        "description": "Replace the Using document with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5142,8 +5144,8 @@
           "design-element"
         ],
         "operationId": "deleteUsing",
-        "summary": "Delete the Using",
-        "description": "Delete the Using from the database.",
+        "summary": "Delete Using document",
+        "description": "Remove the Using document from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5186,8 +5188,8 @@
           "design-element"
         ],
         "operationId": "createUsing",
-        "summary": "Create singleton only (409 if exists); empty body uses default",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create Using document (409 if exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Empty body creates from starter DXL. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if it already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5263,8 +5265,8 @@
       }
     },
     "/agents": {
-      "summary": "Create or replace a Agent",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create agents",
+      "description": "List agent names (GET) or create an agent (POST) in the target NSF (?nsfPath=). Get/update/delete use /agents/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -5277,14 +5279,15 @@
         },
         {
           "name": "kind",
-          "description": "Agent kind. Required when body is empty: lotusscript|formula|simpleaction|java.",
+          "description": "Agent kind. Required when body is empty: lotusscript|formula|simpleaction|java|importedjava.",
           "schema": {
             "type": "string",
             "enum": [
               "lotusscript",
               "formula",
               "simpleaction",
-              "java"
+              "java",
+              "importedjava"
             ]
           },
           "in": "query",
@@ -5305,8 +5308,8 @@
           "design-element"
         ],
         "operationId": "createAgent",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create an agent (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set (also ?kind= for the variant). Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. For agents, pass optional ?kind=lotusscript|formula|simpleaction|java|importedjava when creating from starter DXL.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5383,14 +5386,15 @@
           },
           {
             "name": "kind",
-            "description": "Agent kind. Required when body is empty: lotusscript|formula|simpleaction|java.",
+            "description": "Agent kind. Required when body is empty: lotusscript|formula|simpleaction|java|importedjava.",
             "schema": {
               "type": "string",
               "enum": [
                 "lotusscript",
                 "formula",
                 "simpleaction",
-                "java"
+                "java",
+                "importedjava"
               ]
             },
             "in": "query",
@@ -5412,8 +5416,8 @@
           "design-element"
         ],
         "operationId": "listAgents",
-        "summary": "List in the database",
-        "description": "Returns the titles of design agents in the database.",
+        "summary": "List agent names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of agents in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5452,8 +5456,8 @@
       }
     },
     "/agents/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino Agent",
+      "summary": "Get, update, or delete an agent",
+      "description": "Retrieve, replace, or remove one named agent in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -5479,8 +5483,8 @@
           "design-element"
         ],
         "operationId": "getAgent",
-        "summary": "Retrieve a Agent as DXL",
-        "description": "Export the Agent design note as DXL.",
+        "summary": "Get agent as DXL",
+        "description": "Export one agent as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5522,8 +5526,8 @@
           "design-element"
         ],
         "operationId": "deleteAgent",
-        "summary": "Delete a Agent",
-        "description": "Delete the Agent from the database.",
+        "summary": "Delete agent",
+        "description": "Remove the named agent from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5565,8 +5569,8 @@
           "design-element"
         ],
         "operationId": "updateAgent",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update agent from DXL (404 if missing)",
+        "description": "Replace the existing agent with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5631,8 +5635,8 @@
       }
     },
     "/scriptlibraries": {
-      "summary": "Create or replace a ScriptLibrary",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create script libraries",
+      "description": "List script library names (GET) or create a script library (POST) in the target NSF (?nsfPath=). Get/update/delete use /scriptlibraries/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -5673,8 +5677,8 @@
           "design-element"
         ],
         "operationId": "createScriptLibrary",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a script library (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set (also ?kind= for the variant). Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. For script libraries, pass optional ?kind=lotusscript|javascript|ssjs|java when creating from starter DXL.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5780,8 +5784,8 @@
           "design-element"
         ],
         "operationId": "listScriptLibraries",
-        "summary": "List in the database",
-        "description": "Returns the titles of design scriptlibraries in the database.",
+        "summary": "List script library names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of script libraries in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5820,8 +5824,8 @@
       }
     },
     "/scriptlibraries/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino ScriptLibrary",
+      "summary": "Get, update, or delete a script library",
+      "description": "Retrieve, replace, or remove one named script library in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -5847,8 +5851,8 @@
           "design-element"
         ],
         "operationId": "getScriptLibrary",
-        "summary": "Retrieve a ScriptLibrary as DXL",
-        "description": "Export the ScriptLibrary design note as DXL.",
+        "summary": "Get script library as DXL",
+        "description": "Export one script library as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5890,8 +5894,8 @@
           "design-element"
         ],
         "operationId": "deleteScriptLibrary",
-        "summary": "Delete a ScriptLibrary",
-        "description": "Delete the ScriptLibrary from the database.",
+        "summary": "Delete script library",
+        "description": "Remove the named script library from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5933,8 +5937,8 @@
           "design-element"
         ],
         "operationId": "updateScriptLibrary",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update script library from DXL (404 if missing)",
+        "description": "Replace the existing script library with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5999,8 +6003,8 @@
       }
     },
     "/sharedactions": {
-      "summary": "Create or replace a Shared Actions note",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create Shared Actions notes",
+      "description": "List Shared Actions note names (GET) or create a Shared Actions note (POST) in the target NSF (?nsfPath=). Get/update/delete use /sharedactions/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -6017,8 +6021,8 @@
           "design-element"
         ],
         "operationId": "createSharedActions",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a Shared Actions note (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6109,8 +6113,8 @@
           "design-element"
         ],
         "operationId": "listSharedActions",
-        "summary": "List in the database",
-        "description": "Returns the names of Shared Actions design notes ($TITLE or $ScriptName).",
+        "summary": "List Shared Actions note names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of Shared Actions notes in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6149,8 +6153,8 @@
       }
     },
     "/sharedactions/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino Shared Actions design note by name",
+      "summary": "Get, update, or delete a Shared Actions note",
+      "description": "Retrieve, replace, or remove one named Shared Actions note in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -6176,8 +6180,8 @@
           "design-element"
         ],
         "operationId": "getSharedActions",
-        "summary": "Retrieve Shared Actions as DXL",
-        "description": "Export the Shared Actions design note as DXL.",
+        "summary": "Get Shared Actions note as DXL",
+        "description": "Export one Shared Actions note as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6223,8 +6227,8 @@
           "design-element"
         ],
         "operationId": "deleteSharedActions",
-        "summary": "Delete Shared Actions",
-        "description": "Delete the Shared Actions design note from the database.",
+        "summary": "Delete Shared Actions note",
+        "description": "Remove the named Shared Actions note from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6270,8 +6274,8 @@
           "design-element"
         ],
         "operationId": "updateSharedActions",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update Shared Actions note from DXL (404 if missing)",
+        "description": "Replace the existing Shared Actions note with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6336,8 +6340,8 @@
       }
     },
     "/applicationproperties": {
-      "summary": "Retrieve or create/replace Application Properties",
-      "description": "Singleton Application Properties (no name path parameter). No DELETE Ã¢â‚¬â€ always present with the NSF.",
+      "summary": "Get or update Application Properties",
+      "description": "Singleton Application Properties - always present when the NSF is created. GET/PUT only; no create or DELETE. Requires ?nsfPath=.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -6354,8 +6358,8 @@
           "design-element"
         ],
         "operationId": "getApplicationProperties",
-        "summary": "Retrieve Application Properties as DXL",
-        "description": "Export the Application Properties design note as DXL.",
+        "summary": "Get Application Properties as DXL",
+        "description": "Export Application Properties as Domino DXL. Always present on a normal NSF. Requires ?nsfPath=.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6397,9 +6401,9 @@
         "tags": [
           "design-element"
         ],
-        "operationId": "createApplicationProperties",
-        "summary": "Create or replace Application Properties from DXL",
-        "description": "Upload Application Properties DXL (note class=icon or database root). Uses REPLACE_ELSE_CREATE and signs after import. No DELETE.",
+        "operationId": "updateApplicationProperties",
+        "summary": "Update Application Properties (404 if missing)",
+        "description": "Replace existing Application Properties with the request body DXL. Always present on a normal NSF - use GET then PUT, not create. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6445,6 +6449,9 @@
           "403": {
             "$ref": "#/components/responses/403Forbidden"
           },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
           "500": {
             "$ref": "#/components/responses/500InternalServerError"
           }
@@ -6452,8 +6459,8 @@
       }
     },
     "/xspproperties": {
-      "summary": "Retrieve or create/replace Xsp Properties",
-      "description": "Singleton Xsp Properties WEB-INF/xsp.properties (no name path parameter). No DELETE.",
+      "summary": "Get, create, update, or delete XPages xsp.properties",
+      "description": "Singleton XPages xsp.properties (no name path parameter). Requires ?nsfPath=. Create-only on POST (409 if exists); update-only on PUT (404 if missing).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -6470,8 +6477,8 @@
           "design-element"
         ],
         "operationId": "getXspProperties",
-        "summary": "Retrieve Xsp Properties as DXL",
-        "description": "Export WEB-INF/xsp.properties as DXL.",
+        "summary": "Get XPages xsp.properties as DXL",
+        "description": "Export XPages xsp.properties as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6518,8 +6525,8 @@
           "design-element"
         ],
         "operationId": "updateXspProperties",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing singleton. Returns dxl.",
+        "summary": "Update XPages xsp.properties (404 if missing)",
+        "description": "Replace XPages xsp.properties with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6578,8 +6585,8 @@
           "design-element"
         ],
         "operationId": "createXspProperties",
-        "summary": "Create singleton only (409 if exists); empty body uses default",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create XPages xsp.properties (409 if exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Empty body creates from starter DXL. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if it already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6653,7 +6660,7 @@
         ],
         "operationId": "deleteXspProperties",
         "summary": "Delete XPages xsp.properties",
-        "description": "Delete the WEB-INF/xsp.properties design note.",
+        "description": "Remove XPages xsp.properties from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6674,8 +6681,8 @@
       }
     },
     "/databasescript": {
-      "summary": "Retrieve, create/replace, or delete the DatabaseScript",
-      "description": "Singleton Domino DatabaseScript (no name path parameter)",
+      "summary": "Get, create, update, or delete the Database Script",
+      "description": "Singleton Database Script (no name path parameter). Requires ?nsfPath=. Create-only on POST (409 if exists); update-only on PUT (404 if missing).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -6692,8 +6699,8 @@
           "design-element"
         ],
         "operationId": "getDatabaseScript",
-        "summary": "Retrieve the DatabaseScript as DXL",
-        "description": "Export the DatabaseScript design note as DXL.",
+        "summary": "Get Database Script as DXL",
+        "description": "Export the Database Script as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6736,8 +6743,8 @@
           "design-element"
         ],
         "operationId": "updateDatabaseScript",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing singleton. Returns dxl.",
+        "summary": "Update Database Script (404 if missing)",
+        "description": "Replace the Database Script with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6802,8 +6809,8 @@
           "design-element"
         ],
         "operationId": "deleteDatabaseScript",
-        "summary": "Delete the DatabaseScript",
-        "description": "Delete the DatabaseScript from the database.",
+        "summary": "Delete Database Script",
+        "description": "Remove the Database Script from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6846,8 +6853,8 @@
           "design-element"
         ],
         "operationId": "createDatabaseScript",
-        "summary": "Create singleton only (409 if exists); empty body uses default",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create Database Script (409 if exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Empty body creates from starter DXL. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if it already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6922,9 +6929,82 @@
         ]
       }
     },
+    "/xpagesproject": {
+      "summary": "Ensure minimal XPages project skeleton",
+      "description": "Creates missing XPages project files (plugin.xml, .project, .classpath, build.properties, faces-config, Activator, xsp.properties) if absent. Idempotent create-if-absent. Also runs automatically on POST /xpages. Requires ?nsfPath=.",
+      "parameters": [
+        {
+          "name": "nsfPath",
+          "description": "Domino database filepath",
+          "schema": {
+            "type": "string"
+          },
+          "in": "query",
+          "required": true
+        }
+      ],
+      "post": {
+        "tags": [
+          "design-handler"
+        ],
+        "operationId": "ensureXPagesProject",
+        "summary": "Ensure XPages project skeleton files exist",
+        "description": "Import the embedded minimal XPages application skeleton for NSFs that never had XPages. Skips titles that already exist. Requires ?nsfPath=.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "ensured": {
+                      "type": "boolean"
+                    },
+                    "projectName": {
+                      "type": "string"
+                    },
+                    "created": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "skipped": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
+      }
+    },
     "/xpages": {
-      "summary": "Create or replace an XPage",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create XPages",
+      "description": "List XPage names (GET) or create an XPage (POST) in the target NSF (?nsfPath=). Get/update/delete use /xpages/{name}. POST also ensures a minimal XPages project skeleton when missing.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -6941,8 +7021,8 @@
           "design-element"
         ],
         "operationId": "createXPage",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create an XPage (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. Also auto-ensures the minimal XPages project skeleton on create (see POST /xpagesproject).",
         "x-keep-version": 1,
         "security": [
           {
@@ -7033,8 +7113,8 @@
           "design-element"
         ],
         "operationId": "listXPages",
-        "summary": "List in the database",
-        "description": "Returns the titles of XPages in the database. Custom Controls are listed separately via /customcontrolnames.",
+        "summary": "List XPage names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of XPages in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7073,8 +7153,8 @@
       }
     },
     "/xpages/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino XPage",
+      "summary": "Get, update, or delete an XPage",
+      "description": "Retrieve, replace, or remove one named XPage in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -7100,8 +7180,8 @@
           "design-element"
         ],
         "operationId": "getXPage",
-        "summary": "Retrieve an XPage as DXL",
-        "description": "Export the XPage design note as DXL.",
+        "summary": "Get XPage as DXL",
+        "description": "Export one XPage as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7143,8 +7223,8 @@
           "design-element"
         ],
         "operationId": "deleteXPage",
-        "summary": "Delete an XPage",
-        "description": "Delete the XPage from the database.",
+        "summary": "Delete XPage",
+        "description": "Remove the named XPage from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7186,8 +7266,8 @@
           "design-element"
         ],
         "operationId": "updateXPage",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update XPage from DXL (404 if missing)",
+        "description": "Replace the existing XPage with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7252,8 +7332,8 @@
       }
     },
     "/customcontrols": {
-      "summary": "Create or replace a Custom Control",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create custom controls",
+      "description": "List custom control names (GET) or create a custom control (POST) in the target NSF (?nsfPath=). Get/update/delete use /customcontrols/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -7270,8 +7350,8 @@
           "design-element"
         ],
         "operationId": "createCustomControl",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a custom control (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7357,8 +7437,8 @@
           "design-element"
         ],
         "operationId": "listCustomControls",
-        "summary": "List",
-        "description": "Returns $TITLE values of XPages Custom Controls (.xsp notes without the XPage K flag). Not the same as Composite Components.",
+        "summary": "List custom control names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of custom controls in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7397,8 +7477,8 @@
       }
     },
     "/customcontrols/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino XPages Custom Control",
+      "summary": "Get, update, or delete a custom control",
+      "description": "Retrieve, replace, or remove one named custom control in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -7424,8 +7504,8 @@
           "design-element"
         ],
         "operationId": "getCustomControl",
-        "summary": "Retrieve a Custom Control as DXL",
-        "description": "Export the Custom Control design note as DXL.",
+        "summary": "Get custom control as DXL",
+        "description": "Export one custom control as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7467,8 +7547,8 @@
           "design-element"
         ],
         "operationId": "deleteCustomControl",
-        "summary": "Delete a Custom Control",
-        "description": "Delete the Custom Control from the database.",
+        "summary": "Delete custom control",
+        "description": "Remove the named custom control from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7510,8 +7590,8 @@
           "design-element"
         ],
         "operationId": "updateCustomControl",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update custom control from DXL (404 if missing)",
+        "description": "Replace the existing custom control with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7571,8 +7651,8 @@
       }
     },
     "/webservices": {
-      "summary": "Create or replace a Web Service Provider",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create web service providers",
+      "description": "List web service provider names (GET) or create a web service provider (POST) in the target NSF (?nsfPath=). Get/update/delete use /webservices/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -7589,8 +7669,8 @@
           "design-element"
         ],
         "operationId": "createWebService",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a web service provider (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7676,8 +7756,8 @@
           "design-element"
         ],
         "operationId": "listWebServices",
-        "summary": "List",
-        "description": "Returns $TITLE of design notes whose $Flags contain the Web Service Provider flag '{'.",
+        "summary": "List web service provider names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of web service providers in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7716,8 +7796,8 @@
       }
     },
     "/webservices/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino Web Service Provider",
+      "summary": "Get, update, or delete a web service provider",
+      "description": "Retrieve, replace, or remove one named web service provider in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -7743,8 +7823,8 @@
           "design-element"
         ],
         "operationId": "getWebService",
-        "summary": "Retrieve a Web Service Provider as DXL",
-        "description": "Export the Web Service Provider design note as DXL.",
+        "summary": "Get web service provider as DXL",
+        "description": "Export one web service provider as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7786,8 +7866,8 @@
           "design-element"
         ],
         "operationId": "deleteWebService",
-        "summary": "Delete a Web Service Provider",
-        "description": "Delete the Web Service Provider from the database.",
+        "summary": "Delete web service provider",
+        "description": "Remove the named web service provider from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7829,8 +7909,8 @@
           "design-element"
         ],
         "operationId": "updateWebService",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update web service provider from DXL (404 if missing)",
+        "description": "Replace the existing web service provider with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7890,8 +7970,8 @@
       }
     },
     "/webserviceconsumers": {
-      "summary": "Create or replace a Web Service Consumer",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create web service consumers",
+      "description": "List web service consumer names (GET) or create a web service consumer (POST) in the target NSF (?nsfPath=). Get/update/delete use /webserviceconsumers/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -7908,8 +7988,8 @@
           "design-element"
         ],
         "operationId": "createWebServiceConsumer",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a web service consumer (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7995,8 +8075,8 @@
           "design-element"
         ],
         "operationId": "listWebServiceConsumers",
-        "summary": "List",
-        "description": "Returns $TITLE of script-library notes whose $FlagsExt contains W (WEBSERVICELIB). Listed separately from /scriptlibrarynames.",
+        "summary": "List web service consumer names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of web service consumers in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8035,8 +8115,8 @@
       }
     },
     "/webserviceconsumers/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino Web Service Consumer",
+      "summary": "Get, update, or delete a web service consumer",
+      "description": "Retrieve, replace, or remove one named web service consumer in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -8062,8 +8142,8 @@
           "design-element"
         ],
         "operationId": "getWebServiceConsumer",
-        "summary": "Retrieve a Web Service Consumer as DXL",
-        "description": "Export the Web Service Consumer design note as DXL.",
+        "summary": "Get web service consumer as DXL",
+        "description": "Export one web service consumer as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8105,8 +8185,8 @@
           "design-element"
         ],
         "operationId": "deleteWebServiceConsumer",
-        "summary": "Delete a Web Service Consumer",
-        "description": "Delete the Web Service Consumer from the database.",
+        "summary": "Delete web service consumer",
+        "description": "Remove the named web service consumer from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8148,8 +8228,8 @@
           "design-element"
         ],
         "operationId": "updateWebServiceConsumer",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update web service consumer from DXL (404 if missing)",
+        "description": "Replace the existing web service consumer with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8209,8 +8289,8 @@
       }
     },
     "/navigators": {
-      "summary": "Create or replace a Navigator from DXL",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create navigators",
+      "description": "List navigator names (GET) or create a navigator (POST) in the target NSF (?nsfPath=). Get/update/delete use /navigators/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -8227,8 +8307,8 @@
           "design-element"
         ],
         "operationId": "createNavigator",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a navigator (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8314,8 +8394,8 @@
           "design-element"
         ],
         "operationId": "listNavigators",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
+        "summary": "List navigator names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of navigators in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8354,8 +8434,8 @@
       }
     },
     "/navigators/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino Navigator",
+      "summary": "Get, update, or delete a navigator",
+      "description": "Retrieve, replace, or remove one named navigator in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -8381,8 +8461,8 @@
           "design-element"
         ],
         "operationId": "getNavigator",
-        "summary": "Retrieve a Navigator as DXL",
-        "description": "Export the Navigator design note as DXL.",
+        "summary": "Get navigator as DXL",
+        "description": "Export one navigator as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8424,8 +8504,8 @@
           "design-element"
         ],
         "operationId": "deleteNavigator",
-        "summary": "Delete a Navigator",
-        "description": "Delete the Navigator from the database.",
+        "summary": "Delete navigator",
+        "description": "Remove the named navigator from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8467,8 +8547,8 @@
           "design-element"
         ],
         "operationId": "updateNavigator",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update navigator from DXL (404 if missing)",
+        "description": "Replace the existing navigator with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8528,8 +8608,8 @@
       }
     },
     "/dataconnections": {
-      "summary": "Create or replace a DataConnection from DXL",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create data connections",
+      "description": "List data connection names (GET) or create a data connection (POST) in the target NSF (?nsfPath=). Get/update/delete use /dataconnections/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -8546,8 +8626,8 @@
           "design-element"
         ],
         "operationId": "createDataConnection",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a data connection (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8633,8 +8713,8 @@
           "design-element"
         ],
         "operationId": "listDataConnections",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
+        "summary": "List data connection names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of data connections in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8673,8 +8753,8 @@
       }
     },
     "/dataconnections/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino DataConnection",
+      "summary": "Get, update, or delete a data connection",
+      "description": "Retrieve, replace, or remove one named data connection in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -8700,8 +8780,8 @@
           "design-element"
         ],
         "operationId": "getDataConnection",
-        "summary": "Retrieve a DataConnection as DXL",
-        "description": "Export the DataConnection design note as DXL.",
+        "summary": "Get data connection as DXL",
+        "description": "Export one data connection as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8743,8 +8823,8 @@
           "design-element"
         ],
         "operationId": "deleteDataConnection",
-        "summary": "Delete a DataConnection",
-        "description": "Delete the DataConnection from the database.",
+        "summary": "Delete data connection",
+        "description": "Remove the named data connection from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8786,8 +8866,8 @@
           "design-element"
         ],
         "operationId": "updateDataConnection",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update data connection from DXL (404 if missing)",
+        "description": "Replace the existing data connection with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8847,8 +8927,8 @@
       }
     },
     "/jars": {
-      "summary": "Create or replace a Jar from DXL",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create JARs",
+      "description": "List JAR names (GET) or create a JAR (POST) in the target NSF (?nsfPath=). Get/update/delete use /jars/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -8865,8 +8945,8 @@
           "design-element"
         ],
         "operationId": "createJar",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a JAR (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8952,8 +9032,8 @@
           "design-element"
         ],
         "operationId": "listJars",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
+        "summary": "List JAR names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of JARs in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8992,8 +9072,8 @@
       }
     },
     "/jars/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino Jar",
+      "summary": "Get, update, or delete a JAR",
+      "description": "Retrieve, replace, or remove one named JAR in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -9019,8 +9099,8 @@
           "design-element"
         ],
         "operationId": "getJar",
-        "summary": "Retrieve a Jar as DXL",
-        "description": "Export the Jar design note as DXL.",
+        "summary": "Get JAR as DXL",
+        "description": "Export one JAR as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9062,8 +9142,8 @@
           "design-element"
         ],
         "operationId": "deleteJar",
-        "summary": "Delete a Jar",
-        "description": "Delete the Jar from the database.",
+        "summary": "Delete JAR",
+        "description": "Remove the named JAR from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9105,8 +9185,8 @@
           "design-element"
         ],
         "operationId": "updateJar",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update JAR from DXL (404 if missing)",
+        "description": "Replace the existing JAR with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9166,8 +9246,8 @@
       }
     },
     "/applets": {
-      "summary": "Create or replace a Applet from DXL",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create applets",
+      "description": "List applet names (GET) or create an applet (POST) in the target NSF (?nsfPath=). Get/update/delete use /applets/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -9184,8 +9264,8 @@
           "design-element"
         ],
         "operationId": "createApplet",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create an applet (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9271,8 +9351,8 @@
           "design-element"
         ],
         "operationId": "listApplets",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
+        "summary": "List applet names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of applets in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9311,8 +9391,8 @@
       }
     },
     "/applets/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino Applet",
+      "summary": "Get, update, or delete an applet",
+      "description": "Retrieve, replace, or remove one named applet in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -9338,8 +9418,8 @@
           "design-element"
         ],
         "operationId": "getApplet",
-        "summary": "Retrieve a Applet as DXL",
-        "description": "Export the Applet design note as DXL.",
+        "summary": "Get applet as DXL",
+        "description": "Export one applet as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9381,8 +9461,8 @@
           "design-element"
         ],
         "operationId": "deleteApplet",
-        "summary": "Delete a Applet",
-        "description": "Delete the Applet from the database.",
+        "summary": "Delete applet",
+        "description": "Remove the named applet from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9424,8 +9504,8 @@
           "design-element"
         ],
         "operationId": "updateApplet",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update applet from DXL (404 if missing)",
+        "description": "Replace the existing applet with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9485,8 +9565,8 @@
       }
     },
     "/javasources": {
-      "summary": "Create or replace a JavaSource from DXL",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create Java sources",
+      "description": "List Java source names (GET) or create a Java source (POST) in the target NSF (?nsfPath=). Get/update/delete use /javasources/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -9526,8 +9606,8 @@
           "design-element"
         ],
         "operationId": "createJavaSource",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a Java source (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set (also ?kind= for the variant). Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. For Java sources, pass optional ?kind=class|interface|enum. The name is the Java path ending in .java (e.g. se/infoware/keep/NewJava.java).",
         "x-keep-version": 1,
         "security": [
           {
@@ -9627,8 +9707,8 @@
           "design-element"
         ],
         "operationId": "listJavaSources",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
+        "summary": "List Java source names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of Java sources in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9667,8 +9747,8 @@
       }
     },
     "/javasources/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino JavaSource",
+      "summary": "Get, update, or delete a Java source",
+      "description": "Retrieve, replace, or remove one named Java source in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -9694,8 +9774,8 @@
           "design-element"
         ],
         "operationId": "getJavaSource",
-        "summary": "Retrieve a JavaSource as DXL",
-        "description": "Export the JavaSource design note as DXL.",
+        "summary": "Get Java source as DXL",
+        "description": "Export one Java source as Domino DXL. Requires ?nsfPath=. 404 if missing. Name is the Java path ending in .java (e.g. se/infoware/keep/NewJava.java).",
         "x-keep-version": 1,
         "security": [
           {
@@ -9737,8 +9817,8 @@
           "design-element"
         ],
         "operationId": "deleteJavaSource",
-        "summary": "Delete a JavaSource",
-        "description": "Delete the JavaSource from the database.",
+        "summary": "Delete Java source",
+        "description": "Remove the named Java source from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9780,8 +9860,8 @@
           "design-element"
         ],
         "operationId": "updateJavaSource",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update Java source from DXL (404 if missing)",
+        "description": "Replace the existing Java source with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9841,8 +9921,8 @@
       }
     },
     "/wiringproperties": {
-      "summary": "Create or replace a WiringProperties from DXL",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create wiring properties",
+      "description": "List wiring properties names (GET) or create a wiring properties (POST) in the target NSF (?nsfPath=). Get/update/delete use /wiringproperties/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -9859,8 +9939,8 @@
           "design-element"
         ],
         "operationId": "createWiringProperties",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a wiring properties (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9946,8 +10026,8 @@
           "design-element"
         ],
         "operationId": "listWiringProperties",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
+        "summary": "List wiring properties names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of wiring properties in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9986,8 +10066,8 @@
       }
     },
     "/wiringproperties/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino WiringProperties",
+      "summary": "Get, update, or delete a wiring properties",
+      "description": "Retrieve, replace, or remove one named wiring properties in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -10013,8 +10093,8 @@
           "design-element"
         ],
         "operationId": "getWiringProperties",
-        "summary": "Retrieve a WiringProperties as DXL",
-        "description": "Export the WiringProperties design note as DXL.",
+        "summary": "Get wiring properties as DXL",
+        "description": "Export one wiring properties as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10056,8 +10136,8 @@
           "design-element"
         ],
         "operationId": "deleteWiringProperties",
-        "summary": "Delete a WiringProperties",
-        "description": "Delete the WiringProperties from the database.",
+        "summary": "Delete wiring properties",
+        "description": "Remove the named wiring properties from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10099,8 +10179,8 @@
           "design-element"
         ],
         "operationId": "updateWiringProperties",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update wiring properties from DXL (404 if missing)",
+        "description": "Replace the existing wiring properties with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10160,8 +10240,8 @@
       }
     },
     "/compositeapplications": {
-      "summary": "Create or replace a CompositeApplication from DXL",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create composite applications",
+      "description": "List composite application names (GET) or create a composite application (POST) in the target NSF (?nsfPath=). Get/update/delete use /compositeapplications/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -10178,8 +10258,8 @@
           "design-element"
         ],
         "operationId": "createCompositeApplication",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a composite application (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10265,8 +10345,8 @@
           "design-element"
         ],
         "operationId": "listCompositeApplications",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
+        "summary": "List composite application names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of composite applications in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10305,8 +10385,8 @@
       }
     },
     "/compositeapplications/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino CompositeApplication",
+      "summary": "Get, update, or delete a composite application",
+      "description": "Retrieve, replace, or remove one named composite application in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -10332,8 +10412,8 @@
           "design-element"
         ],
         "operationId": "getCompositeApplication",
-        "summary": "Retrieve a CompositeApplication as DXL",
-        "description": "Export the CompositeApplication design note as DXL.",
+        "summary": "Get composite application as DXL",
+        "description": "Export one composite application as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10375,8 +10455,8 @@
           "design-element"
         ],
         "operationId": "deleteCompositeApplication",
-        "summary": "Delete a CompositeApplication",
-        "description": "Delete the CompositeApplication from the database.",
+        "summary": "Delete composite application",
+        "description": "Remove the named composite application from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10418,8 +10498,8 @@
           "design-element"
         ],
         "operationId": "updateCompositeApplication",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update composite application from DXL (404 if missing)",
+        "description": "Replace the existing composite application with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10479,8 +10559,8 @@
       }
     },
     "/compositecomponents": {
-      "summary": "Create or replace a CompositeComponent from DXL",
-      "description": "List names (GET) or create (POST). Update/delete use /{name}.",
+      "summary": "List or create composite components",
+      "description": "List composite component names (GET) or create a composite component (POST) in the target NSF (?nsfPath=). Get/update/delete use /compositecomponents/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -10497,8 +10577,8 @@
           "design-element"
         ],
         "operationId": "createCompositeComponent",
-        "summary": "Create only (409 if exists); empty body uses default when name/kind provided",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
+        "summary": "Create a composite component (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10584,8 +10664,8 @@
           "design-element"
         ],
         "operationId": "listCompositeComponents",
-        "summary": "List in the database",
-        "description": "Returns the titles of these design elements in the database.",
+        "summary": "List composite component names in the NSF",
+        "description": "Requires ?nsfPath=. Returns the name list of composite components in the target database.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10624,8 +10704,8 @@
       }
     },
     "/compositecomponents/{name}": {
-      "summary": "Retrieve, update, or delete",
-      "description": "Retrieve or delete a Domino CompositeComponent",
+      "summary": "Get, update, or delete a composite component",
+      "description": "Retrieve, replace, or remove one named composite component in the NSF (?nsfPath=).",
       "parameters": [
         {
           "name": "nsfPath",
@@ -10651,8 +10731,8 @@
           "design-element"
         ],
         "operationId": "getCompositeComponent",
-        "summary": "Retrieve a CompositeComponent as DXL",
-        "description": "Export the CompositeComponent design note as DXL.",
+        "summary": "Get composite component as DXL",
+        "description": "Export one composite component as Domino DXL. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10694,8 +10774,8 @@
           "design-element"
         ],
         "operationId": "deleteCompositeComponent",
-        "summary": "Delete a CompositeComponent",
-        "description": "Delete the CompositeComponent from the database.",
+        "summary": "Delete composite component",
+        "description": "Remove the named composite component from the NSF. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10737,8 +10817,8 @@
           "design-element"
         ],
         "operationId": "updateCompositeComponent",
-        "summary": "Update only (404 if missing)",
-        "description": "Replace existing design element. Returns dxl.",
+        "summary": "Update composite component from DXL (404 if missing)",
+        "description": "Replace the existing composite component with the request body DXL. Update-only - does not create. Requires ?nsfPath=. 404 if the named element is missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10798,8 +10878,8 @@
       }
     },
     "/dbicon": {
-      "summary": "Database icon ($DBIcon)",
-      "description": "Singleton image resource named $DBIcon (not listed under /imagenames)",
+      "summary": "Get or update database icon ($DBIcon)",
+      "description": "Singleton $DBIcon - always present when the NSF is created. GET/PUT only; no create or DELETE. Not listed under /images. Requires ?nsfPath=.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -10816,8 +10896,8 @@
           "design-element"
         ],
         "operationId": "getDbIcon",
-        "summary": "Retrieve database icon as DXL",
-        "description": "Export the About design note as DXL.",
+        "summary": "Get database icon as DXL",
+        "description": "Export the $DBIcon image resource as Domino DXL. Always present on a normal NSF. Requires ?nsfPath=.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10834,7 +10914,7 @@
                   "properties": {
                     "type": {
                       "type": "string",
-                      "example": "helpaboutdocument"
+                      "example": "dbicon"
                     },
                     "dxl": {
                       "type": "string"
@@ -10860,8 +10940,8 @@
           "design-element"
         ],
         "operationId": "updateDbIcon",
-        "summary": "Update database icon",
-        "description": "Replace existing singleton. Returns dxl.",
+        "summary": "Update database icon (404 if missing)",
+        "description": "Replace existing $DBIcon with the request body DXL. Always present on a normal NSF - use GET then PUT, not create. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10870,7 +10950,7 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "About DXL (text/xml)",
+          "description": "$DBIcon imageresource DXL (text/xml)",
           "content": {
             "text/xml": {
               "schema": {
@@ -10878,7 +10958,7 @@
               },
               "examples": {
                 "minimal": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE helpaboutdocument SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<helpaboutdocument xmlns='http://www.lotus.com/dxl' version='14.5'>\n<body><richtext><pardef id='1'/><par def='1'>About</par></richtext></body>\n</helpaboutdocument>"
+                  "value": "<?xml version='1.0'?>\n<!DOCTYPE imageresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<imageresource name='$DBIcon' xmlns='http://www.lotus.com/dxl' version='14.5' hide='design'>\n<gif>R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7</gif>\n</imageresource>"
                 }
               }
             }
@@ -10897,7 +10977,7 @@
                     },
                     "type": {
                       "type": "string",
-                      "example": "helpaboutdocument"
+                      "example": "dbicon"
                     },
                     "log": {
                       "type": "string"
@@ -10914,136 +10994,12 @@
             "$ref": "#/components/responses/403Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "$ref": "#/components/responses/404NotFound"
           },
           "500": {
             "$ref": "#/components/responses/500InternalServerError"
           }
         }
-      },
-      "delete": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "deleteDbIcon",
-        "summary": "Delete database icon",
-        "description": "Delete the About from the database.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "helpaboutdocument"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "design-element"
-        ],
-        "operationId": "createDbIcon",
-        "summary": "Create database icon",
-        "description": "Create-only. Returns dxl. Responds with conflict if the element already exists.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "description": "About DXL (text/xml)",
-          "content": {
-            "text/xml": {
-              "schema": {
-                "type": "string"
-              },
-              "examples": {
-                "minimal": {
-                  "value": "<?xml version='1.0'?>\n<!DOCTYPE helpaboutdocument SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n<helpaboutdocument xmlns='http://www.lotus.com/dxl' version='14.5'>\n<body><richtext><pardef id='1'/><par def='1'>About</par></richtext></body>\n</helpaboutdocument>"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "helpaboutdocument"
-                    },
-                    "log": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "409": {
-            "description": "Already exists"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        },
-        "parameters": [
-          {
-            "name": "nsfPath",
-            "description": "Domino database filepath",
-            "schema": {
-              "type": "string"
-            },
-            "in": "query",
-            "required": true
-          }
-        ]
       }
     }
   },
@@ -11107,6 +11063,24 @@
           }
         },
         "description": "Forbidden"
+      },
+      "404NotFound": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorMessage"
+            },
+            "examples": {
+              "NotFound": {
+                "value": {
+                  "message": "Not found",
+                  "status": 404
+                }
+              }
+            }
+          }
+        },
+        "description": "Resource not found"
       },
       "500InternalServerError": {
         "content": {

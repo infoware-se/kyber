@@ -3,18 +3,16 @@
 <helpusingdocument xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258E4300212830' publicaccess='false' designerversion='8.5.3'
  default='true' renderpassthrough='true'>
-<noteinfo noteid='1d2' unid='A23F0D25AABF841AC1258E430024C5FC' sequence='6'>
+<noteinfo noteid='1d2' unid='A23F0D25AABF841AC1258E430024C5FC' sequence='12'>
 <created><datetime dst='true'>20260729T084139,80+02</datetime></created>
-<modified><datetime dst='true'>20260729T170552,49+02</datetime></modified>
-<revised><datetime dst='true'>20260729T170552,48+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T170552,48+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260803T140616,03+02</datetime></modified>
+<revised><datetime dst='true'>20260803T140616,02+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T140616,02+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T084139,99+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
 <body><richtext>
 <pardef id='1'/>
-<par def='1'>Keep Design - Using this database</par>
-<par def='1'>1. Open elements named Default-* in Domino Designer.</par>
-<par def='1'>2. Export or update them via /api/design-v1 typed CRUD or bulk /designdxl.</par>
-<par def='1'>3. Starters fall back to embedded JAR defaults when NSF is missing.</par></richtext></body></helpusingdocument>
+<par def='1'>Using</par></richtext></body>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></helpusingdocument>
 

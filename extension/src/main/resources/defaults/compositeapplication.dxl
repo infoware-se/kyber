@@ -1,15 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
- replicaid='C1258E4300212830'>
-<noteinfo noteid='352' unid='84FED139E0DDF801C1258E43004391BB' sequence='7'>
-<created><datetime dst='true'>20260729T141802,19+02</datetime></created>
-<modified><datetime dst='true'>20260730T153045,12+02</datetime></modified>
-<revised><datetime dst='true'>20260730T153045,11+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260730T153045,11+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260729T141802,19+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'>
+
+
+
 <item name='$TITLE'><text>Default-CompositeApplication.xml</text></item>
 <item name='$FlagsExt' sign='true'><text>1</text></item>
 <item name='$FileSize' sign='true'><number>13300</number></item>
@@ -254,4 +248,3 @@ Ym0tcG9ydGFsLWNvbXBvc2l0ZT4KCg==
 <item name='$DesignerVersion' sign='true'><text>8.5.3</text></item>
 <item name='$Flags'><text>34567C|Q</text></item>
 <item name='$FileNames' sign='true'><text>DefaultCompositeApplication.xml</text></item></note>
-

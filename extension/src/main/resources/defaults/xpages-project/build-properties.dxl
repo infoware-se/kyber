@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'>
+
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<item name='$Flags'><text>~C4gP</text></item>
+<item name='$TITLE'><text>build.properties</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='$FileSize' sign='true'><number>84</number></item>
+<item name='$FileData' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAABUAAAAAQAAAAAAAAAAAAAAYABmAAAAVABUAAAAAAAAAAAAc291cmNlLi4gPSBMb2Nh
+bC8sXA0KICAgICAgICAgICBDb2RlL0phdmEvDQpvdXRwdXQuLiA9IFdlYkNvbnRlbnQvV0VCLUlO
+Ri9jbGFzc2VzLw0K
+</rawitemdata></item>
+<item name='$FileNames' sign='true'><text>build.properties</text></item></note>

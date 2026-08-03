@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE agent SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<agent name='newagentimportedjava' xmlns='http://www.lotus.com/dxl' version='14.5'
+ maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3' publicaccess='false'
+ designerversion='8.5.3'>
+<noteinfo noteid='80a' unid='32D080DB69E97E8DC1258E480040859A' sequence='5'>
+<created><datetime dst='true'>20260803T134445,06+02</datetime></created>
+<modified><datetime dst='true'>20260803T141925,14+02</datetime></modified>
+<revised><datetime dst='true'>20260803T141925,13+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T141925,13+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260803T134445,07+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
+<designchange><datetime dst='true'>20260803T141925,12+02</datetime></designchange>
+<trigger type='actionsmenu'/>
+<documentset type='selected'/><code event='action'><javaproject imported='true'
+ class='JavaAgent.class' codepath='c:\Program Files\HCL\Notes\Data'><javaresource
+ name='%%resource%%.jar'>
+UEsDBBQACAgIALdxA10AAAAAAAAAAAAAAAAPAAAASmF2YUFnZW50LmNsYXNzjVNbTxNBFP6GS6dd
+FopcykWBKhcLKPV+K5pAI0FT0KQIMb44tGNZuruz2ZkS+Sf+A5/xASMP/gB/lPHstiKEatxk58y5
+fd+Zc2Z+/Dz5DmAFTy10oJOjy0Y3EgwZV5mGzleV5/gqv1KTvlkVWjIklh3fMc8YOnPz2xaSSHFY
+NnpgM6ReigMRxzJYNWnKUmtH+QyjufnSOcCWp5BCH9Ic/TYuYYChf58A8q7wa/nyoTbSIxrVILTh
+UuxxVP516PimbEIpvEIPhjDMkbExglGGoXYUDD1UyRstw03hUf1DVMoZFkNwtcIA9WDcxmVcYRjx
+RF0WlV8RZscxe7TTRvhGM8zlLma2AbMwiSmOrI2ruMYw2KZyBh5EmkvlDbdD3eaY+Z0aO55/rMjA
+0HksTGPOxvVoSOmgCSkq9a1QVOh0XUVVJZEuOb7cbHi7MtwSuy5ZUpvKSL0hHGLsjTM2RNDyWWXV
+CCtyzYmUvtMZLkXsNJNVpYw2oQg2pNlTVZ3ELYaBdem6KrujQrea/RAqL8vSCdyxcBf3OO5HvXzA
+MPPnAI5/oOqydcBme9dExajwkOHT2Ra0Aptk68KvulLPlJSqN4LCxU79LXHrMJBtwt+dMb3a3ZcV
+c26CLYiicN2yY2SBwX7h+zIsukJrqTkeM8z+V6kclDz571B6TM1guihJen7R1wEWPUBac6RNkGQk
+uxe+gh3RhmGe1kRsjEIXTkPfkx5BTC0cg5e+oHfxGwYZTjAGHGPiM5KlxWPMHsWpGbJOU3gENk4Q
+xBCzZpAiDydbki6xhUXycHS85ZjuQiduxKw3sUQySUC36c/jIWkW7R7hCZYx9gtQSwcI2K/nXnUC
+AABTBAAAUEsBAhQAFAAICAgAt3EDXdiv5151AgAAUwQAAA8AAAAAAAAAAAAAAAAAAAAAAEphdmFB
+Z2VudC5jbGFzc1BLBQYAAAAAAQABAD0AAACyAgAAAAA=
+</javaresource></javaproject></code>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></agent>
+

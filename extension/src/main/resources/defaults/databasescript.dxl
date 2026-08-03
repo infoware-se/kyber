@@ -1,39 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE databasescript SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<databasescript xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
- replicaid='C1258E4300212830' designerversion='8.5.3'>
-<noteinfo noteid='1be' unid='776F441F075F23B7C1258E430023C993' sequence='119'>
-<created><datetime dst='true'>20260729T083053,63+02</datetime></created>
-<modified><datetime dst='true'>20260730T144630,45+02</datetime></modified>
-<revised><datetime dst='true'>20260730T144630,44+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260730T144630,44+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260729T083053,65+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby><code event='options'><lotusscript
->%REM
-	Database Script
-	Description: Example Options + Postopen / Queryclose (no Option Public here)
-%END REM
-Option Declare
-</lotusscript></code><code event='declarations'><lotusscript>%REM
-	Declarations
-	Description: Shared state for database UI events
-%END REM
-Dim g_openCount As Integer
-</lotusscript></code><code event='postopen'><lotusscript>%REM
-	Sub Postopen
-	Description: Runs when the database is opened in the Notes client
-%END REM
-Sub Postopen(Source As Notesuidatabase)
-	g_openCount = g_openCount + 1
-	Print "Default Database Script - opened: " &amp; Source.Database.Title &amp; " (#" &amp; Cstr(g_openCount) &amp; ")"
-End Sub
-</lotusscript></code><code event='queryclose'><lotusscript>%REM
-	Sub Queryclose
-	Description: Runs before the database window closes; set Continue=False to cancel
-%END REM
-Sub Queryclose(Source As Notesuidatabase, Continue As Variant)
-	Print "Default Database Script - closing"
-End Sub
-</lotusscript></code></databasescript>
+<databasescript xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0' designerversion='8.5.3'>
 
+<code event='postopen'><lotusscript
+>Sub Postopen(Source As Notesuidatabase)
+	Print "Hello World"
+End Sub</lotusscript></code>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></databasescript>

@@ -2,13 +2,13 @@
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258E4300212830'>
-<noteinfo noteid='1ee' unid='9344B1EEEA2885D6C1258E4300252D80' sequence='2'>
+<noteinfo noteid='1ee' unid='9344B1EEEA2885D6C1258E4300252D80' sequence='5'>
 <created><datetime dst='true'>20260729T084604,80+02</datetime></created>
-<modified><datetime dst='true'>20260729T084604,83+02</datetime></modified>
-<revised><datetime dst='true'>20260729T084604,82+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T084604,82+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260803T141924,98+02</datetime></modified>
+<revised><datetime dst='true'>20260803T141924,97+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T141924,97+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260729T084604,80+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
 <item name='$Flags'><text>~C4g</text></item>
 <item name='$TITLE'><text>AppProperties/xspdesign.properties</text></item>

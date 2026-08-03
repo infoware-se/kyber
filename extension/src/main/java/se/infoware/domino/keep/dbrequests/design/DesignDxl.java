@@ -102,34 +102,53 @@ final class DesignDxl {
     setItemText(root, "$TITLE", wanted);
     setItemText(root, "$$ScriptName", wanted);
     try {
-      var transformer = TransformerFactory.newInstance().newTransformer();
-      transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-      transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-      transformer.setOutputProperty(OutputKeys.INDENT, "no");
-      StringWriter sw = new StringWriter();
-      transformer.transform(new DOMSource(doc), new StreamResult(sw));
-      String out = sw.toString();
-      if (!out.toLowerCase(Locale.ROOT).contains("<!doctype")
-          && dxl.toLowerCase(Locale.ROOT).contains("<!doctype")) {
-        String local = root.getLocalName() != null ? root.getLocalName() : root.getTagName();
-        String doctype =
-            "<!DOCTYPE " + local + " SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n";
-        int xmlEnd = out.indexOf("?>");
-        if (xmlEnd >= 0) {
-          out =
-              out.substring(0, xmlEnd + 2)
-                  + "\n"
-                  + doctype
-                  + out.substring(xmlEnd + 2).stripLeading();
-        } else {
-          out = doctype + out;
-        }
-      }
-      return out;
+      return serializePreservingDoctype(doc, root, dxl);
     } catch (Exception e) {
       String message = e.getMessage() == null ? e.toString() : e.getMessage();
       throw new KeepExceptionWrongDataRequest("cannot set design name: " + message);
     }
+  }
+
+  /**
+   * Remove note identity ({@code <noteinfo>}, root {@code replicaid}) so a starter DXL creates a
+   * new design note instead of UPSERT-replacing the source note by UNID.
+   *
+   * <p>String-based (no DOM round-trip) so binary items like {@code $FileData} stay intact.
+   */
+  static String forNewNote(String dxl) throws KeepExceptionWrongDataRequest {
+    if (dxl == null || dxl.isBlank()) {
+      throw new KeepExceptionWrongDataRequest("dxl body is required");
+    }
+    String out = dxl.replaceAll("(?is)<noteinfo\\b[^>]*>.*?</noteinfo>", "");
+    out = out.replaceAll("(?i)\\s+replicaid=(['\"])[^'\"]*\\1", "");
+    return out;
+  }
+
+  private static String serializePreservingDoctype(Document doc, Element root, String originalDxl)
+      throws Exception {
+    var transformer = TransformerFactory.newInstance().newTransformer();
+    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+    transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+    transformer.setOutputProperty(OutputKeys.INDENT, "no");
+    StringWriter sw = new StringWriter();
+    transformer.transform(new DOMSource(doc), new StreamResult(sw));
+    String out = sw.toString();
+    if (!out.toLowerCase(Locale.ROOT).contains("<!doctype")
+        && originalDxl.toLowerCase(Locale.ROOT).contains("<!doctype")) {
+      String local = root.getLocalName() != null ? root.getLocalName() : root.getTagName();
+      String doctype = "<!DOCTYPE " + local + " SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n";
+      int xmlEnd = out.indexOf("?>");
+      if (xmlEnd >= 0) {
+        out =
+            out.substring(0, xmlEnd + 2)
+                + "\n"
+                + doctype
+                + out.substring(xmlEnd + 2).stripLeading();
+      } else {
+        out = doctype + out;
+      }
+    }
+    return out;
   }
 
   private static void setItemText(Element root, String itemName, String value) {
