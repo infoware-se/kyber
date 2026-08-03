@@ -2,22 +2,5 @@
 <!DOCTYPE scriptlibrary SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <scriptlibrary name='Default-Ssjs' xmlns='http://www.lotus.com/dxl'
  version='14.5' maintenanceversion='1.0' hide='v3 v4strict'
- designerversion='8.5.3'>
-
-
-
-<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item>
-<item name='$ServerJavaScriptLibrary' sign='true'>
-<rawitemdata type='1'>
-+f8gAAAAAAAWAAQAKgIAAAAAAAAAAAAAAAAAAAAAAADc/zwC+f8qAiBOAAAAAAAAAAAvKioKICog
-U2VydmVyIEphdmFTY3JpcHQgKFNTSlMpIHN0YXJ0ZXIgLSBuZXdzY3JpcHRsaWJyYXJ5c3Nqcwog
-KiBIZWxwZXJzIHRoYXQgdXNlIHRoZSBYUGFnZXMgcnVudGltZSAoZGF0YWJhc2UgLyBzZXNzaW9u
-KS4KICovCgpmdW5jdGlvbiBoZWxsbyh3aG8pIHsKCWlmICghd2hvKSB7IHdobyA9ICJXb3JsZCI7
-IH0KCXJldHVybiAiSGVsbG8sICIgKyB3aG8gKyAiISI7Cn0gICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgAA==
-</rawitemdata></item></scriptlibrary>
+ designerversion='8.5.3' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></scriptlibrary>

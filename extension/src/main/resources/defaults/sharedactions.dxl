@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE sharedactions SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<sharedactions xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0' hide='v3 v4strict' designerversion='8.5.3' maxid='3'>
-
-<action title='newsharedaction' id='3'/>
-<item name='$$ScriptName' summary='false' sign='true'><text>$ACTIONS</text></item>
-<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></sharedactions>
+<sharedactions comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html' name='$ACTIONS' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ hide='v3 v4strict' designerversion='8.5.3' maxid='1'>
+<action title='newsharedaction' id='1'/>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item>
+<item name='$Comment'><text>https://help.hcl-software.com/dom_designer/14.5.1/index.html</text></item>
+<item name='$$ScriptName' summary='false' sign='true'><text>$ACTIONS</text></item></sharedactions>

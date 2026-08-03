@@ -2,14 +2,14 @@
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258E4300212830'>
-<noteinfo noteid='113e' unid='3B98C6C67C0D4312C1258E4800449FC2' sequence='2'>
+<noteinfo noteid='113e' unid='3B98C6C67C0D4312C1258E4800449FC2' sequence='11'>
 <created><datetime dst='true'>20260803T142933,46+02</datetime></created>
-<modified><datetime dst='true'>20260803T142933,50+02</datetime></modified>
-<revised><datetime dst='true'>20260803T142933,49+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260803T142933,49+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260803T163452,78+02</datetime></modified>
+<revised><datetime dst='true'>20260803T163452,77+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T163452,77+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260803T142933,46+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
 <item name='$Flags'><text>34567Cg~[</text></item>
 <item name='$TITLE'><text>se/infoware/keep/NewJavaEnum.java</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
@@ -20,5 +20,31 @@ YQAYAAAAAAB2AAAAAQAAAAAAAAAAAAAAYACIAAAAdgAAAAAAAAAAAAAAcGFja2FnZSBzZS5pbmZv
 d2FyZS5rZWVwOw0KDQovKiogTWluaW1hbCBKYXZhIGVudW0gc3RhcnRlci4gKi8NCnB1YmxpYyBl
 bnVtIE5ld0phdmFFbnVtIHsNCglEUkFGVCwNCglPUEVOLA0KCUNMT1NFRA0KfQ==
 </rawitemdata></item>
-<item name='$FileNames' sign='true'><text>se/infoware/keep/NewJavaEnum.java</text></item></note>
+<item name='$FileNames' sign='true'><text>se/infoware/keep/NewJavaEnum.java</text></item>
+<item name='$ClassIndexItem'><text>WEB-INF/classes/se/infoware/keep/NewJavaEnum.class</text></item>
+<item name='$ClassSize0' sign='true'><number>1067</number></item>
+<item name='$ClassData0' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAAArBAAAAQAAAAAAAAAAAAAAYAA9BAAAKwQsBAAAAAAAAAAAyv66vgAAAD0AMgcAAgEA
+HHNlL2luZm93YXJlL2tlZXAvTmV3SmF2YUVudW0HAAQBAA5qYXZhL2xhbmcvRW51bQEABURSQUZU
+AQAeTHNlL2luZm93YXJlL2tlZXAvTmV3SmF2YUVudW07AQAET1BFTgEABkNMT1NFRAEAC0VOVU0k
+VkFMVUVTAQAfW0xzZS9pbmZvd2FyZS9rZWVwL05ld0phdmFFbnVtOwEACDxjbGluaXQ+AQADKClW
+AQAEQ29kZQgABQoAAQAQDAARABIBAAY8aW5pdD4BABYoTGphdmEvbGFuZy9TdHJpbmc7SSlWCQAB
+ABQMAAUABggABwkAAQAXDAAHAAYIAAgJAAEAGgwACAAGCQABABwMAAkACgEAD0xpbmVOdW1iZXJU
+YWJsZQEAEkxvY2FsVmFyaWFibGVUYWJsZQoAAwAQAQAEdGhpcwEABnZhbHVlcwEAISgpW0xzZS9p
+bmZvd2FyZS9rZWVwL05ld0phdmFFbnVtOwoAJAAmBwAlAQAQamF2YS9sYW5nL1N5c3RlbQwAJwAo
+AQAJYXJyYXljb3B5AQAqKExqYXZhL2xhbmcvT2JqZWN0O0lMamF2YS9sYW5nL09iamVjdDtJSSlW
+AQAHdmFsdWVPZgEAMihMamF2YS9sYW5nL1N0cmluZzspTHNlL2luZm93YXJlL2tlZXAvTmV3SmF2
+YUVudW07CgADACwMACkALQEANShMamF2YS9sYW5nL0NsYXNzO0xqYXZhL2xhbmcvU3RyaW5nOylM
+amF2YS9sYW5nL0VudW07AQAKU291cmNlRmlsZQEAEE5ld0phdmFFbnVtLmphdmEBAAlTaWduYXR1
+cmUBADBMamF2YS9sYW5nL0VudW08THNlL2luZm93YXJlL2tlZXAvTmV3SmF2YUVudW07PjtAMQAB
+AAMAAAAEQBkABQAGAABAGQAHAAYAAEAZAAgABgAAEBoACQAKAAAABAAIAAsADAABAA0AAABtAAQA
+AAAAAEG7AAFZEg4DtwAPswATuwABWRIVBLcAD7MAFrsAAVkSGAW3AA+zABkGvQABWQOyABNTWQSy
+ABZTWQWyABlTswAbsQAAAAIAHQAAABIABAAAAAUADQAGABoABwAnAAQAHgAAAAIAAAACABEAEgAB
+AA0AAAAxAAMAAwAAAAcqKxy3AB+xAAAAAgAdAAAABgABAAAABAAeAAAADAABAAAABwAgAAYAAAAJ
+ACEAIgABAA0AAAA2AAUAAwAAABayABtZSwMqvlk8vQABWU0DG7gAIyywAAAAAgAdAAAABgABAAAA
+AQAeAAAAAgAAAAkAKQAqAAEADQAAACoAAgABAAAAChIBKrgAK8AAAbAAAAACAB0AAAAGAAEAAAAB
+AB4AAAACAAAAAgAuAAAAAgAvADAAAAACADEz
+</rawitemdata></item>
+<item name='$Comment'><text>https://help.hcl-software.com/dom_designer/14.5.1/index.html</text></item></note>
 

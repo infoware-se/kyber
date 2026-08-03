@@ -35,7 +35,7 @@ All paths are under `/api/design-v1` and require `?nsfPath=`.
 | Method | Path | Purpose |
 |--------|------|---------|
 | GET | `/designdxl?nsfPath=` | Export all supported elements as `{ nsfPath, elements: [{ type, name?, dxl }] }` |
-| PUT | `/designdxl?nsfPath=` | Import that array; **create NSF if missing**; same import/sign as per-type `Create*` |
+| PUT | `/designdxl?nsfPath=&dbTitle=` | Import that array; **create NSF if missing**; optional `dbTitle` sets DB title on create |
 
 Swagger tag: **`design-handler`** for `/defaults`, `/defaults/{type}`, and `/designdxl` (per-type CRUD stays under **`design-element`**).
 

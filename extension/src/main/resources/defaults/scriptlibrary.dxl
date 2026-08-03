@@ -2,31 +2,16 @@
 <!DOCTYPE scriptlibrary SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <scriptlibrary name='Default-LotusScript' xmlns='http://www.lotus.com/dxl'
  version='14.5' maintenanceversion='1.0' hide='v3 v4strict'
- designerversion='8.5.3'>
-
-
+ designerversion='8.5.3' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'>
 <code event='options'><lotusscript
 >%REM
 	Library newscriptlibrarylotusscript
-	Description: Example LotusScript library - Options, Class, Function, Sub
+	Created Aug 3, 2026 by Designer/Infoware
+	Description: Comments for Library
 %END REM
 Option Public
 Option Declare
 
-</lotusscript></code><code event='Hello'><lotusscript>%REM
-	Function Hello
-	Description: Convenience wrapper around Greeting
-%END REM
-Function Hello(who As String) As String
-	If who = "" Then who = "World"
-	Hello = "Hello, " &amp; who &amp; "!"
-End Function
 
-</lotusscript></code><code event='LogMessage'><lotusscript>%REM
-	Sub LogMessage
-	Description: Write a message to the status bar / console
-%END REM
-Sub LogMessage(msg As String)
-	If msg = "" Then Exit Sub
-	Print msg
-End Sub</lotusscript></code></scriptlibrary>
+</lotusscript></code>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></scriptlibrary>

@@ -2,8 +2,5 @@
 <!DOCTYPE outline SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <outline name='Default-Outline' xmlns='http://www.lotus.com/dxl' version='14.5'
  maintenanceversion='1.0' publicaccess='false'
- designerversion='8.5.3'>
-
-
-<outlineentry label='newentry' type='namedelementlink'><namedelementlink type='view'
- name='Default-Outline'/></outlineentry></outline>
+ designerversion='8.5.3' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'>
+</outline>

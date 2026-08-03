@@ -2,14 +2,15 @@
 <!DOCTYPE imageresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <imageresource name='newimage.png' xmlns='http://www.lotus.com/dxl' version='14.5'
  maintenanceversion='1.0' replicaid='C1258E4300212830' publicaccess='false'
- designerversion='8.5.3' imagename='projectkeep.png'>
-<noteinfo noteid='83a' unid='5219B50BF2CA6AF2C1258E4800408636' sequence='3'>
+ designerversion='8.5.3' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'
+ imagename='projectkeep.png'>
+<noteinfo noteid='83a' unid='5219B50BF2CA6AF2C1258E4800408636' sequence='10'>
 <created><datetime dst='true'>20260803T134446,62+02</datetime></created>
-<modified><datetime dst='true'>20260803T141925,58+02</datetime></modified>
-<revised><datetime dst='true'>20260803T141925,57+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260803T141925,57+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260803T163511,40+02</datetime></modified>
+<revised><datetime dst='true'>20260803T163511,39+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T163511,39+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260803T134446,62+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Designer/O=Infoware</name></wassignedby><png>
 iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fY51AABhRElEQVR4nO3dB3wcxdk/cJHQu3G3
 inuRCyaQhDQS8pIESCiBkAA2zQYDxjTbYFu600ly7733pmLZki3JtmRLluQiV7kDtsGYmjcJeZO8

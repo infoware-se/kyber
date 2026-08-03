@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE scriptlibrary SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<scriptlibrary name='newscriptlibraryjava' xmlns='http://www.lotus.com/dxl'
+ version='14.5' maintenanceversion='1.0' replicaid='C1258E4300212830' hide='v3 v4strict'
+ designerversion='8.5.3' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'>
+<noteinfo noteid='124e' unid='7209C52DB6F1FB9EC1258E48004ED6A3' sequence='4'>
+<created><datetime dst='true'>20260803T162107,55+02</datetime></created>
+<modified><datetime dst='true'>20260803T163429,85+02</datetime></modified>
+<revised><datetime dst='true'>20260803T163429,84+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T163429,84+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260803T162107,59+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby><code event='library'><javaproject
+ class='' codepath='C:\Domino\Data'/></code>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></scriptlibrary>
+

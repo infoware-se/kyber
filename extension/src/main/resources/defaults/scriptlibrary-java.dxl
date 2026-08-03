@@ -2,43 +2,7 @@
 <!DOCTYPE scriptlibrary SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <scriptlibrary name='Default-Java' xmlns='http://www.lotus.com/dxl'
  version='14.5' maintenanceversion='1.0' hide='v3 v4strict'
- designerversion='8.5.3'>
-
-
+ designerversion='8.5.3' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'>
 <code event='library'><javaproject
- class='DefaultJava.class' codepath='c:\Program Files\HCL\Notes\Data'><java
- name='DefaultJava.java'>/**
- * Example Java script library (newscriptlibraryjava).
- */
-public class DefaultJava {
-	public static String hello(String who) {
-		if (who == null || who.equals("")) {
-			who = "World";
-		}
-		return "Hello, " + who + "!";
-	}
-
-	public static String formatTitle(String title) {
-		if (title == null || title.trim().equals("")) {
-			return "(untitled)";
-		}
-		return title.trim();
-	}
-}</java><javaresource name='DefaultJava.class'>
-yv66vgAAADQALwoAAgADBwAEDAAFAAYBABBqYXZhL2xhbmcvT2JqZWN0AQAGPGluaXQ+AQADKClW
-CAAIAQAACgAKAAsHAAwMAA0ADgEAEGphdmEvbGFuZy9TdHJpbmcBAAZlcXVhbHMBABUoTGphdmEv
-bGFuZy9PYmplY3Q7KVoIABABAAVXb3JsZAcAEgEAF2phdmEvbGFuZy9TdHJpbmdCdWlsZGVyCgAR
-AAMIABUBAAdIZWxsbywgCgARABcMABgAGQEABmFwcGVuZAEALShMamF2YS9sYW5nL1N0cmluZzsp
-TGphdmEvbGFuZy9TdHJpbmdCdWlsZGVyOwgAGwEAASEKABEAHQwAHgAfAQAIdG9TdHJpbmcBABQo
-KUxqYXZhL2xhbmcvU3RyaW5nOwoACgAhDAAiAB8BAAR0cmltCAAkAQAKKHVudGl0bGVkKQcAJgEA
-C0RlZmF1bHRKYXZhAQAEQ29kZQEAD0xpbmVOdW1iZXJUYWJsZQEABWhlbGxvAQAmKExqYXZhL2xh
-bmcvU3RyaW5nOylMamF2YS9sYW5nL1N0cmluZzsBAA1TdGFja01hcFRhYmxlAQALZm9ybWF0VGl0
-bGUBAApTb3VyY2VGaWxlAQAQRGVmYXVsdEphdmEuamF2YQAhACUAAgAAAAAAAwABAAUABgABACcA
-AAAdAAEAAQAAAAUqtwABsQAAAAEAKAAAAAYAAQAAAAEACQApACoAAQAnAAAAUwACAAEAAAApKsYA
-DCoSB7YACZkABhIPS7sAEVm3ABMSFLYAFiq2ABYSGrYAFrYAHLAAAAACACgAAAAOAAMAAAADAA0A
-BAAQAAYAKwAAAAQAAg0CAAkALAAqAAEAJwAAAEIAAgABAAAAGCrGAA8qtgAgEge2AAmZAAYSI7Aq
-tgAgsAAAAAIAKAAAAA4AAwAAAAoAEAALABMADQArAAAABAACEAIAAQAtAAAAAgAu
-</javaresource></javaproject></code>
-<item name='$JavaCompilerSource'><text>1.8</text></item>
-<item name='$JavaCompilerTarget'><text>1.8</text></item>
+ class='' codepath='C:\Domino\Data'/></code>
 <item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></scriptlibrary>

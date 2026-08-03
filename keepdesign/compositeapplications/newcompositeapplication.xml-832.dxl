@@ -2,13 +2,13 @@
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258E4300212830'>
-<noteinfo noteid='832' unid='7F08A0A251A7F97DC1258E48004085BE' sequence='3'>
+<noteinfo noteid='832' unid='7F08A0A251A7F97DC1258E48004085BE' sequence='12'>
 <created><datetime dst='true'>20260803T134445,42+02</datetime></created>
-<modified><datetime dst='true'>20260803T141925,29+02</datetime></modified>
-<revised><datetime dst='true'>20260803T141925,28+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260803T141925,28+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260803T163601,57+02</datetime></modified>
+<revised><datetime dst='true'>20260803T163601,56+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T163601,56+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260803T134445,42+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
 <item name='$TITLE'><text>newcompositeapplication.xml</text></item>
 <item name='$FlagsExt' sign='true'><text>1</text></item>
@@ -253,5 +253,6 @@ Ym0tcG9ydGFsLWNvbXBvc2l0ZT4KCg==
 </rawitemdata></item>
 <item name='$DesignerVersion' sign='true'><text>8.5.3</text></item>
 <item name='$Flags'><text>34567C|Q</text></item>
-<item name='$FileNames' sign='true'><text>DefaultCompositeApplication.xml</text></item></note>
+<item name='$FileNames' sign='true'><text>DefaultCompositeApplication.xml</text></item>
+<item name='$Comment'><text>https://help.hcl-software.com/dom_designer/14.5.1/index.html</text></item></note>
 

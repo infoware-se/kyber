@@ -1,11 +1,53 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE sharedcolumn SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <sharedcolumn name='Default-SharedColumn' xmlns='http://www.lotus.com/dxl' version='14.5'
- maintenanceversion='1.0' noreplace='true' designerversion='8.5.3'>
-
-
-
-<column hidedetailrows='false' itemname='newfield' width='12' resizable='true'
- separatemultiplevalues='false' sortnoaccent='true' sortnocase='true' showaslinks='false'><columnheader
- title='newsharedcolumn'><font size='9pt' style='bold'/></columnheader></column>
-<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></sharedcolumn>
+ maintenanceversion='1.0' noreplace='true' designerversion='8.5.3'
+ default='true' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'>
+<column hidedetailrows='false' itemname='$0' width='10' resizable='true' separatemultiplevalues='false'
+ sortnoaccent='true' sortnocase='true' showaslinks='false'><columnheader title='#'><font
+ size='9pt' style='bold'/></columnheader><code event='value'><formula>@DocNumber</formula></code></column>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item>
+<item name='$Collection' summary='true'>
+<rawitemdata type='3'>
+BgAIAAAAAQBmEgAAzMxyAwBAAAABABYALgAAAAAAAAASAAAABgABAAAAAAAAAAAEAAAAAgAAAAC2
+hU4ASI4lwbaFTgBIjiXBMCghAEOOJcH//wAAAAAAAAAAAAAAAAAALwMAAAAAAABlbgAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAsoVOAHWOJcEAAAAAAAAAAAEAAAAAAAAAAAAA
+AAAAAAAPADIAOX5OAEiOJcEAAAAAAAAAADsFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAuAAUAIAAbAAMACQAEAAQAJENvbmZsaWN0JFJFRiRDMSQABAAEAAAACABmAAMABgAB
+AAAAAAAAAAAAAAAAAAYAAAAARAQAAAAAAAAAQQAAAAAAAAAAAKqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqg==
+</rawitemdata></item>
+<item name='$Collection' summary='true'>
+<rawitemdata type='3'>
+BgAIAAAAAQDuEQAAzMxyAwBAAAABABYALgAAAAAAAAASAAAABgABAAAAAAAAAAAEAAAAAgAAAAC2
+hU4ASI4lwbaFTgBIjiXBMCghAEOOJcH//wAAAAAAAAAAAAAAAAAALwMAAAAAAABlbgAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAsoVOAHWOJcEAAAAAAAAAAAEAAAAAAAAAAAAA
+AAAAAAAPADIAOX5OAEiOJcEAAAAAAAAAADsFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAuAAUAIAAbAAMACQAEAAQAJENvbmZsaWN0JFJFRiRDMSQABAAEAAAACABmAAMABgAB
+AAAAAAAAAAAAAAAAAAYAAAAARAQAAAAAAAAAQQAAAAAAAAAAAKqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqg==
+</rawitemdata></item></sharedcolumn>

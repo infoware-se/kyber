@@ -2,36 +2,19 @@
 <!DOCTYPE agent SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <agent name='Default-LotusScriptAgent' xmlns='http://www.lotus.com/dxl' version='14.5'
  maintenanceversion='1.0' hide='v3' publicaccess='false'
- designerversion='8.5.3'>
-
-
-
-
+ designerversion='8.5.3' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'>
+<designchange><datetime dst='true'>20260803T163419,35+02</datetime></designchange>
 <trigger type='actionsmenu'/>
 <documentset type='selected'/><code event='options'><lotusscript>%REM
 	Agent newagentlotusscript
-	Description: Standalone agent template - Options / Initialize / Terminate (no Use)
+	Created Aug 3, 2026 by Designer/Infoware
+	Description: Comments for Agent
 %END REM
 Option Public
 Option Declare
 
-</lotusscript></code><code event='declarations'><lotusscript>%REM
-	Declarations
-	Description: Module-level variables for the agent run
-%END REM
 
-</lotusscript></code><code event='initialize'><lotusscript>%REM
-	Sub Initialize
-	Description: Entry point when the agent runs
-%END REM
-Sub Initialize
-	Print "Hello World"
-End Sub
-
-</lotusscript></code><code event='terminate'><lotusscript>%REM
-	Sub Terminate
-	Description: Cleanup when the agent finishes
-%END REM
-Sub Terminate
-
-End Sub</lotusscript></code></agent>
+</lotusscript></code>
+<rundata processeddocs='0' exitcode='0'>
+<agentmodified><datetime dst='true'>20260803T163419,35+02</datetime></agentmodified></rundata>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></agent>

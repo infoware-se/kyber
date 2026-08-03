@@ -2,13 +2,13 @@
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258E4300212830'>
-<noteinfo noteid='842' unid='39458340D0BC34E1C1258E4800408641' sequence='3'>
+<noteinfo noteid='842' unid='39458340D0BC34E1C1258E4800408641' sequence='10'>
 <created><datetime dst='true'>20260803T134446,73+02</datetime></created>
-<modified><datetime dst='true'>20260803T141925,62+02</datetime></modified>
-<revised><datetime dst='true'>20260803T141925,61+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260803T141925,61+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260803T163455,98+02</datetime></modified>
+<revised><datetime dst='true'>20260803T163455,97+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T163455,97+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260803T134446,73+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
 <item name='$TITLE'><text>newjar.jar</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
@@ -30,5 +30,6 @@ AMJ8/VxlcurGOwAAADoAAAAUAAAAAAAAAAAAAAAAACsAAABNRVRBLUlORi9NQU5JRkVTVC5NRlBL
 AQIUABQACAgIAMJ8/Vxo1yAq2AAAABQBAAAcAAAAAAAAAAAAAAAAAKgAAABzZS9pbmZvd2FyZS9r
 ZWVwL0hlbGxvLmNsYXNzUEsFBgAAAAADAAMAxwAAAMoBAAAAACQ=
 </rawitemdata></item>
-<item name='$FileNames' sign='true'><text>Default-Jar.jar</text></item></note>
+<item name='$FileNames' sign='true'><text>Default-Jar.jar</text></item>
+<item name='$Comment'><text>https://help.hcl-software.com/dom_designer/14.5.1/index.html</text></item></note>
 

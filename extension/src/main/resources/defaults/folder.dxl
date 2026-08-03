@@ -1,21 +1,17 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE folder SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<folder name='Default-Folder' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0' showinmenu='false' noreplace='true' publicaccess='false'
- designerversion='8.5.3' unreadmarks='none' onopengoto='lastopened' onrefresh='displayindicator'
- headers='beveled' opencollapsed='false' showresponsehierarchy='true' showmargin='true'
- shrinkrows='false' extendlastcolumn='false' showhierarchies='false' unreadcolor='black'
- rowlinecount='1' headerlinecount='1' rowspacing='1' bgcolor='white' totalscolor='black'
- headerbgcolor='white' boldunreadrows='false' evaluateactions='false' allownewdocuments='false'
- allowcustomizations='false' hidemarginborder='false' marginwidth='0px' marginbgcolor='white'
- uniquekeys='false' formatnoteid='DEEEAE2BF6A26632C1258E430021283C'>
-
-
-
-<actionbar bgcolor='#f0f0f0' bordercolor='black'>
-<actionbuttonstyle bgcolor='#f0f0f0'/><font color='system'/><border style='solid'
- width='0px 0px 1px'/></actionbar>
-<column hidedetailrows='false' itemname='newfield' width='10' resizable='true'
- separatemultiplevalues='false' sortnoaccent='true' sortnocase='true' showaslinks='false'><columnheader
- title='newcolumn'><font size='9pt' style='bold'/></columnheader></column>
+<folder name='Default-Folder' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ showinmenu='false' publicaccess='false' designerversion='8.5.3'
+ comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html' unreadmarks='none'
+ onopengoto='lastopened' onrefresh='displayindicator' headers='beveled' opencollapsed='false'
+ showresponsehierarchy='true' showmargin='true' shrinkrows='false' extendlastcolumn='false'
+ showhierarchies='false' unreadcolor='black' rowlinecount='1' headerlinecount='1'
+ rowspacing='1' bgcolor='white' totalscolor='black' headerbgcolor='white'
+ boldunreadrows='false' evaluateactions='false' allownewdocuments='false'
+ allowcustomizations='true' hidemarginborder='false' marginwidth='0px' marginbgcolor='white'
+ uniquekeys='false'>
+<column hidedetailrows='false' itemname='$0' width='10' resizable='true' separatemultiplevalues='false'
+ sortnoaccent='true' sortnocase='true' showaslinks='false'><columnheader title='#'><font
+ size='9pt' style='bold'/></columnheader><code event='value'><formula>@DocNumber</formula></code></column>
 <item name='$Name' sign='true'><text>newfolder</text></item>
 <item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></folder>

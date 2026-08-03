@@ -2,8 +2,6 @@
 <!DOCTYPE dataconnection SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <dataconnection name='Default-DataConnection' xmlns='http://www.lotus.com/dxl'
  version='14.5' maintenanceversion='1.0' nocompose='true'
- class='rdbms' type='odbc2' datasource='DefaultDSN' objectname='DefaultTable'
- objecttype='table'>
-
-
+ comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html' class='rdbms'
+ type='odbc2' datasource='DefaultDSN' objectname='DefaultTable' objecttype='table'>
 </dataconnection>

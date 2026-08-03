@@ -3,7 +3,7 @@
   "info": {
     "title": "Infoware Domino REST API design",
     "description": "CRUD for Domino design elements via Domino REST API. Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (bulk import only); per-type CRUD requires an existing database. This API never deletes databases. Starter DXL resolution: if keepdesign.nsf (or keep.design.defaultNsf) exists and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl.",
-    "version": "0.22.14"
+    "version": "0.22.22"
   },
   "servers": [
     {
@@ -193,7 +193,7 @@
     },
     "/designdxl": {
       "summary": "Bulk export or import all supported design elements as DXL",
-      "description": "GET exports every supported design element as CRUD-identical DXL. PUT imports an elements array (same DXL as per-type CRUD). Missing NSF is created on PUT only. Requires ?nsfPath=.",
+      "description": "GET exports every supported design element as CRUD-identical DXL. PUT imports an elements array (same DXL as per-type CRUD). Missing NSF is created on PUT only. Optional ?dbTitle= sets the database title when the NSF is created. Requires ?nsfPath=.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -203,6 +203,15 @@
           },
           "in": "query",
           "required": true
+        },
+        {
+          "name": "dbTitle",
+          "description": "Database title to set when PUT creates a missing NSF (ignored if the NSF already exists). Prefer dbTitle over title — KEEP may already populate title from the bootstrap database.",
+          "schema": {
+            "type": "string"
+          },
+          "in": "query",
+          "required": false
         }
       ],
       "get": {
@@ -272,7 +281,7 @@
         ],
         "operationId": "importDesignDxl",
         "summary": "Bulk import design DXL",
-        "description": "Import elements with REPLACE_ELSE_CREATE, sign after each import, then compile LotusScript. Creates the NSF when missing (bulk import only). Requires ?nsfPath=.",
+        "description": "Import elements with REPLACE_ELSE_CREATE, sign after each import, then compile LotusScript. Creates the NSF when missing (bulk import only). Optional ?dbTitle= sets Database.setTitle when created. Requires ?nsfPath=.",
         "x-keep-version": 1,
         "security": [
           {
@@ -336,6 +345,10 @@
                     },
                     "created": {
                       "type": "boolean"
+                    },
+                    "dbTitle": {
+                      "type": "string",
+                      "description": "Present when the NSF was created and ?dbTitle= was set"
                     },
                     "nsfPath": {
                       "type": "string"

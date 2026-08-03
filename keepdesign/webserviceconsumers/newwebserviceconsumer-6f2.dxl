@@ -2,13 +2,13 @@
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <note class='filter' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258E4300212830'>
-<noteinfo noteid='6f2' unid='94C6695AEAD0D090C1258E480038635E' sequence='53'>
+<noteinfo noteid='6f2' unid='94C6695AEAD0D090C1258E480038635E' sequence='70'>
 <created><datetime dst='true'>20260803T121554,54+02</datetime></created>
-<modified><datetime dst='true'>20260803T141926,26+02</datetime></modified>
-<revised><datetime dst='true'>20260803T141926,25+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260803T141926,25+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260803T163446,34+02</datetime></modified>
+<revised><datetime dst='true'>20260803T163446,33+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T163446,33+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260803T121554,54+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
 <item name='$TITLE' sign='true'><text>newwebserviceconsumer</text></item>
 <item name='$Flags'><text>s34Q</text></item>
@@ -16,6 +16,7 @@
 <item name='$DesignerVersion'><text>8.5.3</text></item>
 <item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item>
 <item name='$FlagsExt'><text>W</text></item>
+<item name='$Comment'><text>https://help.hcl-software.com/dom_designer/14.5.1/index.html</text></item>
 <item name='$FILE' summary='true' sign='true' seal='true'><object><file hosttype='msdos'
  compression='none' flags='sign' encoding='none' name='%%webserviceresource%%.jar'
  size='2063'>

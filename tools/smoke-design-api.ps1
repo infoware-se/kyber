@@ -4,7 +4,7 @@
 
 .DESCRIPTION
   Auth via C:\Git\install-domino-restapi\.env (or DOMINO_REST_* / REST_ADMIN_*).
-  Creates a throwaway NSF (PUT /designdxl), then asserts:
+  Creates a throwaway NSF (PUT /designdxl?dbTitle=...), then asserts:
 
   - GET /defaults/{type} (named + kinded)
   - PUT/GET/DELETE missing named element → not found (HTTP 404 or KEEP-mapped 400)
@@ -119,14 +119,33 @@ foreach ($q in @(
 }
 
 # --- Ensure NSF ---
+$smokeTitle = "Smoke Design API"
 $bulkFile = Join-Path $env:TEMP "smoke-bulk.json"
 [IO.File]::WriteAllText($bulkFile, (@{ nsfPath = $NsfPath; elements = @() } | ConvertTo-Json -Compress -Depth 5))
-$code = Invoke-Design PUT (Design-Url "designdxl") -BodyFile $bulkFile `
-  -ContentType "application/json" -OutFile $out
+$code = Invoke-Design PUT (Design-Url "designdxl" "dbTitle=$([uri]::EscapeDataString($smokeTitle))") `
+  -BodyFile $bulkFile -ContentType "application/json" -OutFile $out
 if ($code -notin @("200", "201")) {
   Fail "PUT /designdxl (ensure NSF) -> HTTP $code $(Get-Content $out -Raw)"
 }
-Ok "nsf ready"
+$bulkResp = Get-Content $out -Raw | ConvertFrom-Json
+if ($bulkResp.created -and $bulkResp.dbTitle -ne $smokeTitle) {
+  Fail "expected dbTitle=$smokeTitle on create, got $($bulkResp.dbTitle)"
+}
+Ok "nsf ready created=$($bulkResp.created) dbTitle=$($bulkResp.dbTitle)"
+
+# Verify title on application properties when freshly created
+if ($bulkResp.created) {
+  $code = Invoke-Design GET (Design-Url "applicationproperties") -OutFile $out
+  if ($code -ne "200") { Fail "GET /applicationproperties -> HTTP $code" }
+  $ap = Get-Content $out -Raw | ConvertFrom-Json
+  if ($ap.dxl -notmatch [regex]::Escape($smokeTitle)) {
+    Fail "appprops DXL missing title '$smokeTitle'"
+  }
+  if ($ap.dxl -match '<item name=.\$TITLE.><text/>') {
+    Fail "appprops still has empty `$TITLE"
+  }
+  Ok "applicationproperties title=$smokeTitle"
+}
 
 # --- Always-present: GET on keepdesign.nsf (fresh empty NSF may lack $DBIcon) ---
 $defaultNsf = "keepdesign.nsf"

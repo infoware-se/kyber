@@ -2,25 +2,29 @@
 <!DOCTYPE agent SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <agent name='Default-JavaAgent' xmlns='http://www.lotus.com/dxl' version='14.5'
  maintenanceversion='1.0' hide='v3' publicaccess='false'
- designerversion='8.5.3'>
-
-
-
+ designerversion='8.5.3' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'>
+<designchange><datetime dst='true'>20260803T163419,31+02</datetime></designchange>
 <trigger type='actionsmenu'/>
 <documentset type='selected'/><code event='action'><javaproject class='JavaAgent.class'
  codepath='c:\Program Files\HCL\Notes\Data'><java name='JavaAgent.java'>import lotus.domino.*;
 
-/**
- * Example Java agent (newagentjava).
- */
 public class JavaAgent extends AgentBase {
 
-	public void NotesMain() {
-		try {
-			System.out.println("Hello World");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-}
-</java></javaproject></code></agent>
+    public void NotesMain() {
+
+      try {
+          Session session = getSession();
+          AgentContext agentContext = session.getAgentContext();
+
+          // (Your code goes here)
+
+      } catch(Exception e) {
+          e.printStackTrace();
+       }
+   }
+}</java></javaproject></code>
+<rundata processeddocs='0' exitcode='0'>
+<agentmodified><datetime dst='true'>20260803T163419,31+02</datetime></agentmodified></rundata>
+<item name='$JavaCompilerSource'><text>1.8</text></item>
+<item name='$JavaCompilerTarget'><text>1.8</text></item>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></agent>

@@ -1,9 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'>
-
-
-
+<note comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html' name='Default-Theme.theme' class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+>
 <item name='$TITLE'><text>Default-Theme.theme</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
 <item name='$Flags'><text>34567Cg~`</text></item>
@@ -28,4 +26,5 @@ PltDb250cm9sIE5hbWVdPC9uYW1lPgoJCTxwcm9wZXJ0eT4KCQkJPG5hbWU+W3Byb3BlcnR5IE5h
 bWVdPC9uYW1lPgoJCQk8dmFsdWU+W3Byb3BlcnR5IFZhbHVlXTwvdmFsdWU+CgkJPC9wcm9wZXJ0
 eT4KCTwvY29udHJvbD4KCS0tPgo8L3RoZW1lPg0K
 </rawitemdata></item>
-<item name='$FileNames' sign='true'><text>Theme.theme</text></item></note>
+<item name='$FileNames' sign='true'><text>newtheme.theme</text></item>
+<item name='$Comment'><text>https://help.hcl-software.com/dom_designer/14.5.1/index.html</text></item></note>

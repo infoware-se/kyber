@@ -2,12 +2,7 @@
 <!DOCTYPE fileresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <fileresource name='Default-FileResource.txt' xmlns='http://www.lotus.com/dxl'
  version='14.5' maintenanceversion='1.0' publicaccess='false'
- designerversion='8.5.3' mimetype='text/plain' charset='UTF-8'>
-
-<filedata
->
-RGVmYXVsdC1GaWxlUmVzb3VyY2UudHh0Cj09PT09PT09PT09PT09PT09PT09PT09PQpTdGFydGVy
-IGZpbGUgcmVzb3VyY2UgZm9yIERvbWlubyBSRVNUIEFQSSBkZXNpZ24gRFhMIGV4YW1wbGVzLgoK
-VGlwczoKLSBQVVQgL2ZpbGVyZXNvdXJjZXMgd2l0aCA8ZmlsZXJlc291cmNlPiBEWEwKLSBmaWxl
-ZGF0YSBpcyBCYXNlNjQtZW5jb2RlZCBVVEYtOA==
+ designerversion='8.5.3' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'
+ mimetype='text/plain' charset='UTF-8'>
+<filedata>
 </filedata></fileresource>

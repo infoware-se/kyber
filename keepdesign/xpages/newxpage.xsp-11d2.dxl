@@ -2,29 +2,27 @@
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258E4300212830'>
-<noteinfo noteid='512' unid='5993315EC4B6F4E1C1258E4400477B91' sequence='42'>
-<created><datetime dst='true'>20260730T150046,89+02</datetime></created>
-<modified><datetime dst='true'>20260803T141926,31+02</datetime></modified>
-<revised><datetime dst='true'>20260803T141926,30+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260803T141926,30+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260730T150046,89+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
+<noteinfo noteid='11d2' unid='676C9462E334A7B7C1258E48004E5D6E' sequence='9'>
+<created><datetime dst='true'>20260803T161557,26+02</datetime></created>
+<modified><datetime dst='true'>20260803T163328,65+02</datetime></modified>
+<revised><datetime dst='true'>20260803T163328,64+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T163328,64+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260803T161557,26+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
 <item name='$Flags'><text>gC~4K</text></item>
 <item name='$TITLE'><text>newxpage.xsp</text></item>
-<item name='$ClassIndexItem'><textlist><text/><text>WEB-INF/classes/xsp/Newxpage.class</text><text
->WEB-INF/classes/xsp/Newxpage$NewxpagePage.class</text></textlist></item>
-<item name='$FileSize' sign='true'><number>99</number></item>
+<item name='$FileSize' sign='true'><number>101</number></item>
 <item name='$FileData' sign='true'>
 <rawitemdata type='1'>
-YQAYAAAAAABjAAAAAQAAAAAAAAAAAAAAYAB1AAAAYwBkAAAAAAAAAAAAPD94bWwgdmVyc2lvbj0i
+YQAYAAAAAABlAAAAAQAAAAAAAAAAAAAAYAB3AAAAZQBmAAAAAAAAAAAAPD94bWwgdmVyc2lvbj0i
 MS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHhwOnZpZXcgeG1sbnM6eHA9Imh0dHA6Ly93d3cuaWJt
-LmNvbS94c3AvY29yZSI+PC94cDp2aWV3Pg0KAA==
+LmNvbS94c3AvY29yZSI+Cgo8L3hwOnZpZXc+DQoA
 </rawitemdata></item>
 <item name='$FileNames' sign='true'><text>newxpage.xsp</text></item>
 <item name='$DesignerVersion'><text>8.5</text></item>
-<item name='$ClassSize2' sign='true'><number>2056</number></item>
-<item name='$ClassData2' sign='true'>
+<item name='$ClassSize0' sign='true'><number>2056</number></item>
+<item name='$ClassData0' sign='true'>
 <rawitemdata type='1'>
 YQAYAAAAAAAICAAAAQAAAAAAAAAAAAAAYAAaCAAACAgICAAAAAAAAAAAyv66vgAAAD0ARAcAAgEA
 GXhzcC9OZXd4cGFnZSROZXd4cGFnZVBhZ2UHAAQBAC5jb20vaWJtL3hzcC9wYWdlL2NvbXBpbGVk
@@ -64,6 +62,8 @@ ACYAAQAJAAAAbAACAAUAAAASuwAyWbcANDoEKhkEtgA2GQSwAAAAAgASAAAADgADAAAANgAJADcA
 DwA4ABMAAAA0AAUAAAASABgAGQAAAAAAEgArACwAAQAAABIALQAuAAIAAAASAC8AMAADAAkACQA6
 ADsABAADADwAAAACAD0APgAAABIAAgAKAAMAPwAJAAEAQABCAAkAQwAAAAIAQA==
 </rawitemdata></item>
+<item name='$ClassIndexItem'><textlist><text>WEB-INF/classes/xsp/Newxpage$NewxpagePage.class</text><text
+>WEB-INF/classes/xsp/Newxpage.class</text></textlist></item>
 <item name='$ClassSize1' sign='true'><number>604</number></item>
 <item name='$ClassData1' sign='true'>
 <rawitemdata type='1'>
@@ -79,5 +79,6 @@ cwAhAAEAAwAAAAAAAgABAAUABgABAAcAAAA1AAIAAQAAAAcqEgi3AAqxAAAAAgANAAAACgACAAAA
 FQAGABYADgAAAAwAAQAAAAcADwAQAAAABAARABIAAQAHAAAAPAACAAIAAAAIuwATWbcAFbAAAAAC
 AA0AAAAGAAEAAAAZAA4AAAAWAAIAAAAIAA8AEAAAAAAACAAXABgAAQADABkAAAACABoAGwAAAAoA
 AQATAAEAHAAJAB0AAAAEAAEAEw==
-</rawitemdata></item></note>
+</rawitemdata></item>
+<item name='$Comment'><text>https://help.hcl-software.com/dom_designer/14.5.1/index.html</text></item></note>
 

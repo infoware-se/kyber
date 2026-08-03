@@ -1,9 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE appletresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <appletresource name='Default-Applet' xmlns='http://www.lotus.com/dxl' version='14.5'
- maintenanceversion='1.0' nocompose='true' designerversion='8.5.3'>
-
-
+ maintenanceversion='1.0' nocompose='true' designerversion='8.5.3'
+ comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'>
 <code event='action'><javaproject
 ><java name='DefaultApplet.java'>public class DefaultApplet {
   public String hello() { return "hello"; }

@@ -2,9 +2,8 @@
 <!DOCTYPE imageresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <imageresource name='Default-ImageResource.png' xmlns='http://www.lotus.com/dxl' version='14.5'
  maintenanceversion='1.0' publicaccess='false'
- designerversion='8.5.3' imagename='projectkeep.png'>
-
-
+ designerversion='8.5.3' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'
+ imagename='projectkeep.png'>
 <png>
 iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fY51AABhRElEQVR4nO3dB3wcxdk/cJHQu3G3
 inuRCyaQhDQS8pIESCiBkAA2zQYDxjTbYFu600ly7733pmLZki3JtmRLluQiV7kDtsGYmjcJeZO8

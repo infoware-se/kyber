@@ -2,20 +2,14 @@
 <!DOCTYPE stylesheetresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <stylesheetresource name='newstylesheet.css' xmlns='http://www.lotus.com/dxl'
  version='14.5' maintenanceversion='1.0' replicaid='C1258E4300212830' publicaccess='false'
- designerversion='8.5.3' charset='UTF-8'>
-<noteinfo noteid='86a' unid='53D609F608473683C1258E480040870C' sequence='3'>
+ designerversion='8.5.3' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'
+ charset='UTF-8'>
+<noteinfo noteid='86a' unid='53D609F608473683C1258E480040870C' sequence='12'>
 <created><datetime dst='true'>20260803T134448,76+02</datetime></created>
-<modified><datetime dst='true'>20260803T141926,06+02</datetime></modified>
-<revised><datetime dst='true'>20260803T141926,05+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260803T141926,05+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260803T163523,45+02</datetime></modified>
+<revised><datetime dst='true'>20260803T163523,44+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T163523,44+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260803T134448,76+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby><filedata
->
-LyogRGVmYXVsdC1TdHlsZVNoZWV0LmNzcyDigJQgbWluaW1hbCBzdGFydGVyICovCmJvZHkgewog
-IGZvbnQtZmFtaWx5OiBBcmlhbCwgSGVsdmV0aWNhLCBzYW5zLXNlcmlmOwogIGZvbnQtc2l6ZTog
-MTJwdDsKICBjb2xvcjogIzIyMjsKICBtYXJnaW46IDFlbTsKfQoKaDEgewogIGZvbnQtc2l6ZTog
-MS41ZW07CiAgY29sb3I6ICMwMDMzNjY7Cn0KCmEgewogIGNvbG9yOiAjMDA2NmNjOwogIHRleHQt
-ZGVjb3JhdGlvbjogbm9uZTsKfQoKYTpob3ZlciB7CiAgdGV4dC1kZWNvcmF0aW9uOiB1bmRlcmxp
-bmU7Cn0=
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby><filedata>
 </filedata></stylesheetresource>
 

@@ -2,10 +2,11 @@
 <!DOCTYPE agent SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <agent name='Default-SimpleAgent' xmlns='http://www.lotus.com/dxl' version='14.5'
  maintenanceversion='1.0' hide='v3' publicaccess='false'
- designerversion='8.5.3'>
-
-
-
+ designerversion='8.5.3' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'
+ agenttype='simpleaction'>
+<designchange><datetime dst='true'>20260803T163419,45+02</datetime></designchange>
 <trigger type='actionsmenu'/>
-<documentset type='selected'/><code event='action'>
-<simpleaction action='modifyfield' field='Subject' value='Hello World'/></code></agent>
+<documentset type='selected'/>
+<rundata processeddocs='0' exitcode='0'>
+<agentmodified><datetime dst='true'>20260803T163419,45+02</datetime></agentmodified></rundata>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></agent>

@@ -1,9 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'>
-
-
-
+<note comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html' name='Default-CompositeComponent.component' class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+>
 <item name='$TITLE'><text>Default-CompositeComponent.component</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
 <item name='$Flags'><text>345CgQ_</text></item>
@@ -18,4 +16,5 @@ ZXIgY29tcG9zaXRlIGNvbXBvbmVudCBmb3IgRFhMIENSVUQgZXhhbXBsZXMuPC9kZXNjcmlwdGlv
 bj4KICA8cHJvcGVydHkgbmFtZT0idGl0bGUiIHR5cGU9InN0cmluZyIgZGVmYXVsdD0iSGVsbG8i
 Lz4KPC9jb21wb25lbnQ+DQoA
 </rawitemdata></item>
-<item name='$FileNames' sign='true'><text>Default-CompositeComponent.component</text></item></note>
+<item name='$FileNames' sign='true'><text>Default-CompositeComponent.component</text></item>
+<item name='$Comment'><text>https://help.hcl-software.com/dom_designer/14.5.1/index.html</text></item></note>

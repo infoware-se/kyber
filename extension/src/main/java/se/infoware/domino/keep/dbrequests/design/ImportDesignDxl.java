@@ -14,13 +14,16 @@ import io.vertx.core.json.JsonObject;
 import java.util.List;
 
 /**
- * Bulk import design DXL - PUT /designdxl?nsfPath=
+ * Bulk import design DXL - PUT /designdxl?nsfPath=&dbTitle=
  *
  * <p>HTTP handler remaps query {@code nsfPath} (target) to {@code targetNsfPath} and opens
  * {@code KeepConfig.nsf} as the KEEP connection DB so a missing NSF can be created first.
  *
  * <p>This is the only endpoint that may create an NSF. Per-type CRUD requires an existing database.
  * The API never deletes databases.
+ *
+ * <p>Optional query {@code dbTitle} sets the database title when the NSF is created (ignored if
+ * the NSF already exists). Do not use {@code title} — KEEP may populate that from the bootstrap DB.
  *
  * <p>On create, ensures LocalDomainAdmins / LocalDomainServers as Manager (add or overwrite).
  * When the payload includes {@code type=acl}, that ACL DXL fully replaces the database ACL
@@ -43,6 +46,16 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
     }
     target = target.trim();
 
+    // Prefer dbTitle — KEEP request params often already contain "title" (bootstrap NSF title).
+    String title =
+        firstNonBlank(request.incoming.getString("dbTitle"), request.incoming.getString("databaseTitle"));
+    if (title != null) {
+      title = title.trim();
+      if (title.isEmpty()) {
+        title = null;
+      }
+    }
+
     JsonObject payload = request.incoming.getJsonObject("body", request.incoming);
     JsonArray elements = payload.getJsonArray("elements");
     if (elements == null) {
@@ -58,6 +71,9 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
     boolean created = openOrCreate(session, target);
 
     Database db = session.getDatabaseDomino(target);
+    if (created && title != null) {
+      db.setTitle(title);
+    }
     DxlImporter importer = session.getDxlImporter();
 
     List<JsonObject> ordered = DesignElementIO.sortForImport(elements);
@@ -116,7 +132,7 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
 
     JsonObject compile = DesignLotusScriptCompile.compileAll(db);
 
-    request.emit(
+    JsonObject out =
         new JsonObject()
             .put("success", failed == 0)
             .put("created", created)
@@ -125,7 +141,11 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
             .put("failed", failed)
             .put("aclApplied", hasAcl)
             .put("results", results)
-            .put("lotusscript", compile));
+            .put("lotusscript", compile);
+    if (created && title != null) {
+      out.put("dbTitle", title);
+    }
+    request.emit(out);
   }
 
   private static boolean containsType(JsonArray elements, String type) {

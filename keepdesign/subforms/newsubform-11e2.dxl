@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE subform SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<subform name='newsubform' xmlns='http://www.lotus.com/dxl' version='14.5'
+ maintenanceversion='1.0' replicaid='C1258E4300212830' designerversion='8.5.3'
+ comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html' renderpassthrough='true'>
+<noteinfo noteid='11e2' unid='2A6057708D06513CC1258E48004E73F0' sequence='8'>
+<created><datetime dst='true'>20260803T161654,88+02</datetime></created>
+<modified><datetime dst='true'>20260803T163353,20+02</datetime></modified>
+<revised><datetime dst='true'>20260803T163353,19+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T163353,19+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260803T161655,11+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+<body><richtext>
+<pardef id='1'/>
+<par def='1'/></richtext></body>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item>
+<item name='$$ScriptName' summary='false' sign='true'><text>newsubform</text></item></subform>
+

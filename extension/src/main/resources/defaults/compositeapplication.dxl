@@ -1,9 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'>
-
-
-
+<note comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html' name='Default-CompositeApplication.xml' class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+>
 <item name='$TITLE'><text>Default-CompositeApplication.xml</text></item>
 <item name='$FlagsExt' sign='true'><text>1</text></item>
 <item name='$FileSize' sign='true'><number>13300</number></item>
@@ -247,4 +245,5 @@ Ym0tcG9ydGFsLWNvbXBvc2l0ZT4KCg==
 </rawitemdata></item>
 <item name='$DesignerVersion' sign='true'><text>8.5.3</text></item>
 <item name='$Flags'><text>34567C|Q</text></item>
-<item name='$FileNames' sign='true'><text>DefaultCompositeApplication.xml</text></item></note>
+<item name='$FileNames' sign='true'><text>DefaultCompositeApplication.xml</text></item>
+<item name='$Comment'><text>https://help.hcl-software.com/dom_designer/14.5.1/index.html</text></item></note>

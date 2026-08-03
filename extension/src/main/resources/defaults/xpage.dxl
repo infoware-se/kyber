@@ -1,24 +1,20 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'>
-
-
-
+<note comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html' name='Default-XPage.xsp' class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+>
 <item name='$Flags'><text>gC~4K</text></item>
 <item name='$TITLE'><text>Default-XPage.xsp</text></item>
-<item name='$ClassIndexItem'><textlist><text/><text>WEB-INF/classes/xsp/Newxpage.class</text><text
->WEB-INF/classes/xsp/Newxpage$NewxpagePage.class</text></textlist></item>
-<item name='$FileSize' sign='true'><number>99</number></item>
+<item name='$FileSize' sign='true'><number>101</number></item>
 <item name='$FileData' sign='true'>
 <rawitemdata type='1'>
-YQAYAAAAAABjAAAAAQAAAAAAAAAAAAAAYAB1AAAAYwBkAAAAAAAAAAAAPD94bWwgdmVyc2lvbj0i
+YQAYAAAAAABlAAAAAQAAAAAAAAAAAAAAYAB3AAAAZQBmAAAAAAAAAAAAPD94bWwgdmVyc2lvbj0i
 MS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHhwOnZpZXcgeG1sbnM6eHA9Imh0dHA6Ly93d3cuaWJt
-LmNvbS94c3AvY29yZSI+PC94cDp2aWV3Pg0KAA==
+LmNvbS94c3AvY29yZSI+Cgo8L3hwOnZpZXc+DQoA
 </rawitemdata></item>
 <item name='$FileNames' sign='true'><text>newxpage.xsp</text></item>
 <item name='$DesignerVersion'><text>8.5</text></item>
-<item name='$ClassSize2' sign='true'><number>2056</number></item>
-<item name='$ClassData2' sign='true'>
+<item name='$ClassSize0' sign='true'><number>2056</number></item>
+<item name='$ClassData0' sign='true'>
 <rawitemdata type='1'>
 YQAYAAAAAAAICAAAAQAAAAAAAAAAAAAAYAAaCAAACAgICAAAAAAAAAAAyv66vgAAAD0ARAcAAgEA
 GXhzcC9OZXd4cGFnZSROZXd4cGFnZVBhZ2UHAAQBAC5jb20vaWJtL3hzcC9wYWdlL2NvbXBpbGVk
@@ -58,6 +54,8 @@ ACYAAQAJAAAAbAACAAUAAAASuwAyWbcANDoEKhkEtgA2GQSwAAAAAgASAAAADgADAAAANgAJADcA
 DwA4ABMAAAA0AAUAAAASABgAGQAAAAAAEgArACwAAQAAABIALQAuAAIAAAASAC8AMAADAAkACQA6
 ADsABAADADwAAAACAD0APgAAABIAAgAKAAMAPwAJAAEAQABCAAkAQwAAAAIAQA==
 </rawitemdata></item>
+<item name='$ClassIndexItem'><textlist><text>WEB-INF/classes/xsp/Newxpage$NewxpagePage.class</text><text
+>WEB-INF/classes/xsp/Newxpage.class</text></textlist></item>
 <item name='$ClassSize1' sign='true'><number>604</number></item>
 <item name='$ClassData1' sign='true'>
 <rawitemdata type='1'>
@@ -73,4 +71,5 @@ cwAhAAEAAwAAAAAAAgABAAUABgABAAcAAAA1AAIAAQAAAAcqEgi3AAqxAAAAAgANAAAACgACAAAA
 FQAGABYADgAAAAwAAQAAAAcADwAQAAAABAARABIAAQAHAAAAPAACAAIAAAAIuwATWbcAFbAAAAAC
 AA0AAAAGAAEAAAAZAA4AAAAWAAIAAAAIAA8AEAAAAAAACAAXABgAAQADABkAAAACABoAGwAAAAoA
 AQATAAEAHAAJAB0AAAAEAAEAEw==
-</rawitemdata></item></note>
+</rawitemdata></item>
+<item name='$Comment'><text>https://help.hcl-software.com/dom_designer/14.5.1/index.html</text></item></note>

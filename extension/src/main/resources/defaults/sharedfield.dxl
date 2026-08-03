@@ -1,11 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE sharedfield SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <sharedfield name='Default-SharedField' xmlns='http://www.lotus.com/dxl' version='14.5'
- maintenanceversion='1.0' designerversion='8.5.3'>
-
-
+ maintenanceversion='1.0' designerversion='8.5.3'
+ comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'>
 <field type='text'
- kind='editable' name='Default-SharedField'/>
+ kind='editable' name='newsharedfield'/>
 <item name='$HTMLCode' sign='true'>
 <rawitemdata type='1'>
 </rawitemdata></item>

@@ -1,28 +1,44 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
- replicaid='C1258E4300212830'>
-<noteinfo noteid='44e' unid='3097AE828AE26E41C1258E43004DB57B' sequence='2'>
-<created><datetime dst='true'>20260729T160847,31+02</datetime></created>
-<modified><datetime dst='true'>20260729T160847,37+02</datetime></modified>
-<revised><datetime dst='true'>20260729T160847,36+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T160847,36+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260729T160847,31+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
-<item name='$Flags'><text>~C4g</text></item>
-<item name='$TITLE'><text>.classpath</text></item>
+>
+<item name='$TITLE'><text>.project</text></item>
+<item name='$Flags'><text>~C4gP</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
-<item name='$FileSize' sign='true'><number>330</number></item>
+<item name='$FileSize' sign='true'><number>1777</number></item>
 <item name='$FileData' sign='true'>
 <rawitemdata type='1'>
-YQAYAAAAAABKAQAAAQAAAAAAAAAAAAAAYABcAQAASgFKAQAAAAAAAAAAPD94bWwgdmVyc2lvbj0i
-MS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPGNsYXNzcGF0aD4KICA8Y2xhc3NwYXRoZW50cnkga2lu
-ZD0ic3JjIiBwYXRoPSJMb2NhbC8iLz4KICA8Y2xhc3NwYXRoZW50cnkga2luZD0iY29uIiBwYXRo
-PSJvcmcuZWNsaXBzZS5qZHQubGF1bmNoaW5nLkpSRV9DT05UQUlORVIiLz4KICA8Y2xhc3NwYXRo
-ZW50cnkga2luZD0iY29uIiBwYXRoPSJvcmcuZWNsaXBzZS5wZGUuY29yZS5yZXF1aXJlZFBsdWdp
-bnMiLz4KICA8Y2xhc3NwYXRoZW50cnkga2luZD0ib3V0cHV0IiBwYXRoPSJXZWJDb250ZW50L1dF
-Qi1JTkYvY2xhc3NlcyIvPgo8L2NsYXNzcGF0aD4K
+YQAYAAAAAADxBgAAAQAAAAAAAAAAAAAAYAADBwAA8QbyBgAAAAAAAAAAPD94bWwgdmVyc2lvbj0i
+MS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHByb2plY3REZXNjcmlwdGlvbj4KICA8bmFtZT5rZWVw
+ZGVzaWduLm5zZjwvbmFtZT4KICA8Y29tbWVudC8+CiAgPHByb2plY3RzLz4KICA8YnVpbGRTcGVj
+PgogICAgPGJ1aWxkQ29tbWFuZD4KICAgICAgPG5hbWU+Y29tLmlibS5kZXNpZ25lci5kb21pbm8u
+amF2YWxpYi5qYXZhbGlibWFya2VyYnVpbGRlcjwvbmFtZT4KICAgICAgPGFyZ3VtZW50cy8+CiAg
+ICA8L2J1aWxkQ29tbWFuZD4KICAgIDxidWlsZENvbW1hbmQ+CiAgICAgIDxuYW1lPmNvbS5pYm0u
+ZGVzaWduZXIuZG9taW5vLmlkZS5yZXNvdXJjZXMuZmFjZXNDb25maWdidWlsZGVyPC9uYW1lPgog
+ICAgICA8YXJndW1lbnRzLz4KICAgIDwvYnVpbGRDb21tYW5kPgogICAgPGJ1aWxkQ29tbWFuZD4K
+ICAgICAgPG5hbWU+Y29tLmlibS5kZXNpZ25lci5kb21pbm8uaWRlLnJlc291cmNlcy5CdWlsZFBy
+b3BlcnRpZXNCdWlsZGVyPC9uYW1lPgogICAgICA8YXJndW1lbnRzLz4KICAgIDwvYnVpbGRDb21t
+YW5kPgogICAgPGJ1aWxkQ29tbWFuZD4KICAgICAgPG5hbWU+Y29tLmlibS5kZXNpZ25lci5kb21p
+bm8uaWRlLnJlc291cmNlcy5wbHVnaW5YTUxidWlsZGVyPC9uYW1lPgogICAgICA8YXJndW1lbnRz
+Lz4KICAgIDwvYnVpbGRDb21tYW5kPgogICAgPGJ1aWxkQ29tbWFuZD4KICAgICAgPG5hbWU+Y29t
+LmlibS5kZXNpZ25lci5kb21pbm8ueHNwLmVkaXRvci54cGFnZXNidWlsZGVyPC9uYW1lPgogICAg
+ICA8YXJndW1lbnRzLz4KICAgIDwvYnVpbGRDb21tYW5kPgogICAgPGJ1aWxkQ29tbWFuZD4KICAg
+ICAgPG5hbWU+b3JnLmVjbGlwc2UuamR0LmNvcmUuamF2YWJ1aWxkZXI8L25hbWU+CiAgICAgIDxh
+cmd1bWVudHMvPgogICAgPC9idWlsZENvbW1hbmQ+CiAgICA8YnVpbGRDb21tYW5kPgogICAgICA8
+bmFtZT5jb20uaWJtLmRlc2lnbmVyLmRvbWluby5pZGUucmVzb3VyY2VzLkxXUERCdWlsZGVyPC9u
+YW1lPgogICAgICA8YXJndW1lbnRzLz4KICAgIDwvYnVpbGRDb21tYW5kPgogICAgPGJ1aWxkQ29t
+bWFuZD4KICAgICAgPG5hbWU+Y29tLmlibS5kZXNpZ25lci5kb21pbm8ubHNjcmlwdC5MU0J1aWxk
+ZXI8L25hbWU+CiAgICAgIDxhcmd1bWVudHMvPgogICAgPC9idWlsZENvbW1hbmQ+CiAgICA8YnVp
+bGRDb21tYW5kPgogICAgICA8bmFtZT5jb20uaWJtLmRlc2lnbmVyLmRvbWluby5kZXNpZ24uanN2
+YWxpZGF0aW9uYnVpbGRlcjwvbmFtZT4KICAgICAgPGFyZ3VtZW50cy8+CiAgICA8L2J1aWxkQ29t
+bWFuZD4KICAgIDxidWlsZENvbW1hbmQ+CiAgICAgIDxuYW1lPm9yZy5lY2xpcHNlLnBkZS5NYW5p
+ZmVzdEJ1aWxkZXI8L25hbWU+CiAgICAgIDxhcmd1bWVudHMvPgogICAgPC9idWlsZENvbW1hbmQ+
+CiAgICA8YnVpbGRDb21tYW5kPgogICAgICA8bmFtZT5vcmcuZWNsaXBzZS5wZGUuU2NoZW1hQnVp
+bGRlcjwvbmFtZT4KICAgICAgPGFyZ3VtZW50cy8+CiAgICA8L2J1aWxkQ29tbWFuZD4KICA8L2J1
+aWxkU3BlYz4KICA8bmF0dXJlcz4KICAgIDxuYXR1cmU+Y29tLmlibS53b3JrcGxhY2Uubm90ZXMu
+ZmlsZXN5c3RlbS5ERE5hdHVyZTwvbmF0dXJlPgogICAgPG5hdHVyZT5vcmcuZWNsaXBzZS5qZHQu
+Y29yZS5qYXZhbmF0dXJlPC9uYXR1cmU+CiAgICA8bmF0dXJlPm9yZy5lY2xpcHNlLnBkZS5QbHVn
+aW5OYXR1cmU8L25hdHVyZT4KICAgIDxuYXR1cmU+b3JnLmVjbGlwc2Uud3N0LmpzZHQuY29yZS5q
+c05hdHVyZTwvbmF0dXJlPgogIDwvbmF0dXJlcz4KPC9wcm9qZWN0RGVzY3JpcHRpb24+Cvw=
 </rawitemdata></item>
-<item name='$FileNames' sign='true'><text>.classpath</text></item></note>
-
+<item name='$FileNames' sign='true'><text>.project</text></item></note>

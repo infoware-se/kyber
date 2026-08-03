@@ -2,13 +2,13 @@
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258E4300212830'>
-<noteinfo noteid='89a' unid='CB0501E17F122D20C1258E4800408817' sequence='3'>
+<noteinfo noteid='89a' unid='CB0501E17F122D20C1258E4800408817' sequence='10'>
 <created><datetime dst='true'>20260803T134451,43+02</datetime></created>
-<modified><datetime dst='true'>20260803T141926,27+02</datetime></modified>
-<revised><datetime dst='true'>20260803T141926,26+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260803T141926,26+02</datetime></lastaccessed>
+<modified><datetime dst='true'>20260803T163558,80+02</datetime></modified>
+<revised><datetime dst='true'>20260803T163558,79+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T163558,79+02</datetime></lastaccessed>
 <addedtofile><datetime dst='true'>20260803T134451,43+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
 <item name='$TITLE'><text>newwiring.wsdl</text></item>
 <item name='$FileModDT' sign='true'><datetime dst='true'>20070530T220416,00-04</datetime></item>
@@ -264,5 +264,6 @@ dGlvbi5kZXNjcmlwdGlvbnNldHNlbGVjdGVkZGF0ZWFjdGlvbi5jYXB0aW9uU2VsZWN0ZWREYXRl
 AFb/ggAUACYAIgARAAAAAAAAAAAAU2V0U2Vjb25kYXJ5RGF0ZUxpc3RzZXRzZWNvbmRhcnlkYXRl
 bGlzdGFjdGlvbi5kZXNjcmlwdGlvbnNldHNlY29uZGFyeWRhdGVsaXN0YWN0aW9uLmNhcHRpb25T
 ZWNvbmRhcnlEYXRlTGlzdHU=
-</rawitemdata></item></note>
+</rawitemdata></item>
+<item name='$Comment'><text>https://help.hcl-software.com/dom_designer/14.5.1/index.html</text></item></note>
 

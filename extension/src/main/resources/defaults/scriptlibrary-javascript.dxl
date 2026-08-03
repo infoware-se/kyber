@@ -2,17 +2,5 @@
 <!DOCTYPE scriptlibrary SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <scriptlibrary name='Default-ClientJs' xmlns='http://www.lotus.com/dxl'
  version='14.5' maintenanceversion='1.0' hide='v3 v4strict'
- designerversion='8.5.3'>
-
-
-<code event='library'
- for='web'><javascript>/**
- * Client JS starter (newscriptlibraryjavascript)
- * Browser-side helpers for forms / pages.
- */
-
-function hello(who) {
-	who = who || 'World';
-	return 'Hello, ' + who + '!';
-}
-</javascript></code></scriptlibrary>
+ designerversion='8.5.3' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></scriptlibrary>

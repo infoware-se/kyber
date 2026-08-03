@@ -2,13 +2,13 @@
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258E4300212830'>
-<noteinfo noteid='86e' unid='AAEFB20419A4D076C1258E4800408711' sequence='3'>
-<created><datetime dst='true'>20260803T134448,81+02</datetime></created>
-<modified><datetime dst='true'>20260803T141926,12+02</datetime></modified>
-<revised><datetime dst='true'>20260803T141926,11+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260803T141926,11+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260803T134448,81+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
+<noteinfo noteid='125e' unid='A1DFBFA655E2DAACC1258E48004F1A0E' sequence='5'>
+<created><datetime dst='true'>20260803T162400,14+02</datetime></created>
+<modified><datetime dst='true'>20260803T163526,99+02</datetime></modified>
+<revised><datetime dst='true'>20260803T163526,98+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20260803T163526,98+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20260803T162400,14+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
 <item name='$TITLE'><text>newtheme.theme</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
@@ -34,5 +34,6 @@ PltDb250cm9sIE5hbWVdPC9uYW1lPgoJCTxwcm9wZXJ0eT4KCQkJPG5hbWU+W3Byb3BlcnR5IE5h
 bWVdPC9uYW1lPgoJCQk8dmFsdWU+W3Byb3BlcnR5IFZhbHVlXTwvdmFsdWU+CgkJPC9wcm9wZXJ0
 eT4KCTwvY29udHJvbD4KCS0tPgo8L3RoZW1lPg0K
 </rawitemdata></item>
-<item name='$FileNames' sign='true'><text>Theme.theme</text></item></note>
+<item name='$FileNames' sign='true'><text>newtheme.theme</text></item>
+<item name='$Comment'><text>https://help.hcl-software.com/dom_designer/14.5.1/index.html</text></item></note>
 

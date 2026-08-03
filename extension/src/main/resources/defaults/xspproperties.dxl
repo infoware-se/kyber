@@ -1,15 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
- replicaid='C1258E4300212830'>
-<noteinfo noteid='152' unid='FD323AD2895146C5C1258E43002142D7' sequence='6'>
-<created><datetime dst='true'>20260729T080317,99+02</datetime></created>
-<modified><datetime dst='true'>20260729T161458,79+02</datetime></modified>
-<revised><datetime dst='true'>20260729T161458,78+02</datetime></revised>
-<lastaccessed><datetime dst='true'>20260729T161458,78+02</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20260729T080317,99+02</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
-<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<note comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html' class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+>
 <item name='$Flags'><text>~C4g</text></item>
 <item name='$FlagsExt'><text>w</text></item>
 <item name='$TITLE'><text>WEB-INF/xsp.properties</text></item>
@@ -23,4 +15,3 @@ bmdlLnRyaWdnZXI9ZWFybHktb25jbGljaw0KeHNwLmNzcmYucHJvdGVjdGlvbj10cnVlDQp4c3Au
 cGVyc2lzdGVuY2UubW9kZT1maWxlDQp4c3AucmVzb3VyY2VzLmFnZ3JlZ2F0ZT10cnVlDQo=
 </rawitemdata></item>
 <item name='$FileNames' sign='true'><text>WEB-INF/xsp.properties</text></item></note>
-
