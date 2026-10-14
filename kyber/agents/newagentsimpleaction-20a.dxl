@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE agent SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<agent name='newagentsimpleaction' xmlns='http://www.lotus.com/dxl' version='14.5'
+ maintenanceversion='1.0' replicaid='C1258E90004E3F19' hide='v3' publicaccess='false'
+ designerversion='8.5.3' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'
+ agenttype='simpleaction'>
+<noteinfo noteid='20a' unid='896363CD601D91BAC1258E48004EC890' sequence='6'>
+<created><datetime dst='true'>20260803T162031,52+02</datetime></created>
+<modified><datetime dst='true'>20261014T161440,28+02</datetime></modified>
+<revised><datetime dst='true'>20260803T163419,45+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20261014T161440,27+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20261014T161440,27+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+<designchange><datetime dst='true'>20260803T163419,45+02</datetime></designchange>
+<trigger type='actionsmenu'/>
+<documentset type='selected'/>
+<rundata processeddocs='0' exitcode='0'>
+<agentmodified><datetime dst='true'>20260803T163419,45+02</datetime></agentmodified></rundata>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></agent>
+

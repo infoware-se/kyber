@@ -1,14 +1,15 @@
-# domino-keep-design
+# Kyber
 
-KEEP extension for Domino REST API: manage database **design elements** via `nsfPath` using typed DXL CRUD.
+Infoware Domino REST API extension for managing database **design elements** via `nsfPath` using typed DXL CRUD.
 
 | | |
 |--|--|
-| **JAR** | `keep-design-*.jar` |
+| **JAR** | `infoware-kyber.jar` |
 | **API** | `/api/design-v1` |
 | **Swagger** | tags **`design-element`** (typed CRUD), **`design-handler`** (`/defaults*` + bulk GET/PUT `/designdxl`) |
-| **Defaults NSF** | `keepdesign.nsf` (property `keep.design.defaultNsf`) |
-| **Version** | 0.22.22 |
+| **Defaults NSF** | `kyber.nsf` (property `kyber.defaultNsf`) |
+| **Version** | 0.23.0 |
+| **Repo** | https://github.com/infoware-se/kyber |
 
 Full endpoint tables and Designer coverage: **[extension/README.md](extension/README.md)**.
 
@@ -16,7 +17,7 @@ Full endpoint tables and Designer coverage: **[extension/README.md](extension/RE
 
 **In (CRUD):** Forms, Views, Folders, Framesets, Pages, Subforms, Shared Fields/Columns, Outlines, Navigators, Agents (**LotusScript / Formula / Simple action / Java / Imported Java**), Shared Actions, Script Libraries (**LotusScript / client JS / SSJS / Java**), Code → Java sources (**class / interface / enum**), Jars, Applets, **Web Service Providers/Consumers**, Data Connections, Database Script, Images, Files, Style Sheets, Themes, About/Using, XPages, **Custom Controls**, Wiring Properties, Composite Applications/Components, Application Properties, **DB icon (`$DBIcon`)**, Xsp Properties, ACL.
 
-**Starters:** `GET /defaults` and `GET /defaults/{type}` — if `keepdesign.nsf` has elements of that type, prefer `Default-*` names; else embedded DXL in the JAR (`resources/defaults/`). Script libraries: `?kind=lotusscript|javascript|ssjs|java`. Agents: `?kind=lotusscript|formula|simpleaction|java|importedjava`. Java sources: `?kind=class|interface|enum`. Create: raw DXL body, or empty body with `?kind=&name=` for script libraries, agents, and javasources.
+**Starters:** `GET /defaults` and `GET /defaults/{type}` — if `kyber.nsf` has elements of that type, prefer first match by name; else embedded DXL in the JAR (`resources/defaults/`). Script libraries: `?kind=lotusscript|javascript|ssjs|java`. Agents: `?kind=lotusscript|formula|simpleaction|java|importedjava`. Java sources: `?kind=class|interface|enum`. Create: raw DXL body, or empty body with `?kind=&name=` for script libraries, agents, and javasources.
 
 **Blank NSF baseline:** snapshot of what Domino puts in a new blank database lives under [`extension/src/main/resources/defaults/blank/`](extension/src/main/resources/defaults/blank/) (`acl`, `applicationproperties`, `$DBIcon`, untitled default view) + `manifest.json` — reference so sync does not treat these as removable app design.
 
@@ -34,8 +35,8 @@ $env:DRAPI_HOME = "C:\Domino\restapi"
 .\build.ps1 -InstallToDrapi
 ```
 
-Restart after install is automatic with `-InstallToDrapi`: Notes COM `tell restapi quit` → replace JAR in `libs/` → `load restapi` (see [`tools/restart-restapi-com.ps1`](tools/restart-restapi-com.ps1)). Prefer this over `tell restapi reload` / Windows service restart — JAR locks clear and COM stays available while restapi is down.
+Installs `infoware-kyber.jar` into `%DRAPI_HOME%\libs\` (replaces any previous Kyber/legacy design JARs). Restart with `-InstallToDrapi`: Notes COM `tell restapi quit` → replace JAR → `load restapi` (see [`tools/restart-restapi-com.ps1`](tools/restart-restapi-com.ps1)).
 
 ## Auth
 
-`POST /api/v1/auth` → Bearer on `/api/design-v1/*`.
+See Domino REST API admin docs / your site `.env` (`REST_ADMIN_USER` / `REST_ADMIN_PASSWORD`).

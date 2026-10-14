@@ -1,6 +1,6 @@
-# keep-design (Java KEEP extension)
+# Kyber (`infoware-kyber.jar`)
 
-**Custom KEEP extension — KEEP, not HCL.**
+**Infoware Domino design REST extension for KEEP/DRAPI — not an HCL product.**
 
 Manage database **design elements** via Domino REST API. Target database is selected with query param **`nsfPath`**. Standard collection CRUD:
 
@@ -39,7 +39,7 @@ All paths are under `/api/design-v1` and require `?nsfPath=`.
 
 Swagger tag: **`design-handler`** for `/defaults`, `/defaults/{type}`, and `/designdxl` (per-type CRUD stays under **`design-element`**).
 
-**Defaults resolution** (`GET /defaults/{type}`): if `keepdesign.nsf` (or `keep.design.defaultNsf`) is available and contains that type (and `?kind=` when kinded), use the **first** match by case-insensitive name; otherwise the embedded JAR starter under `resources/defaults/`.
+**Defaults resolution** (`GET /defaults/{type}`): if `kyber.nsf` (or `kyber.defaultNsf`) is available and contains that type (and `?kind=` when kinded), use the **first** match by case-insensitive name; otherwise the embedded JAR starter under `resources/defaults/`.
 
 Element `type` values match repo layout (`form`, `about`, `image`, …). Bridge scripts in repo root [`tools/`](../tools/):
 
@@ -434,7 +434,7 @@ $env:DRAPI_HOME = "C:\Domino\restapi"
 .\build.ps1 -InstallToDrapi
 ```
 
-**Output:** `target/keep-design-*.jar` → `$env:DRAPI_HOME\libs\`.
+**Output:** `target/infoware-kyber.jar` → `$env:DRAPI_HOME\libs\`.
 
 Restart: Notes COM `tell restapi quit` then `load restapi` (or `tools/restart-restapi-com.ps1` / `build.ps1 -InstallToDrapi`). Do not rely on `tell restapi reload` when swapping JARs.
 

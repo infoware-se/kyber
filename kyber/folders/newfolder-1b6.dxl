@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE folder SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<folder name='newfolder' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258E90004E3F19' showinmenu='false' publicaccess='false' designerversion='8.5.3'
+ comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html' unreadmarks='none'
+ onopengoto='lastopened' onrefresh='displayindicator' headers='beveled' opencollapsed='false'
+ showresponsehierarchy='true' showmargin='true' shrinkrows='false' extendlastcolumn='false'
+ showhierarchies='false' unreadcolor='black' rowlinecount='1' headerlinecount='1'
+ rowspacing='1' bgcolor='white' totalscolor='black' headerbgcolor='white'
+ boldunreadrows='false' evaluateactions='false' allownewdocuments='false'
+ allowcustomizations='true' hidemarginborder='false' marginwidth='0px' marginbgcolor='white'
+ uniquekeys='false'>
+<noteinfo noteid='1b6' unid='DAC023DFA5AD07CAC1258E48004E585E' sequence='11'>
+<created><datetime dst='true'>20260803T161544,30+02</datetime></created>
+<modified><datetime dst='true'>20261014T162143,77+02</datetime></modified>
+<revised><datetime dst='true'>20261014T162143,76+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20261014T162143,76+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20261014T161440,13+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<column hidedetailrows='false' itemname='$0' width='10' resizable='true' separatemultiplevalues='false'
+ sortnoaccent='true' sortnocase='true' showaslinks='false'><columnheader title='#'><font
+ size='9pt' style='bold'/></columnheader><code event='value'><formula>@DocNumber</formula></code></column>
+<item name='$Name' sign='true'><text>newfolder</text></item>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></folder>
+

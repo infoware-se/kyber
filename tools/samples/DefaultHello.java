@@ -1,5 +1,5 @@
 /**
- * Default Java class for Keep Design (Code > Java).
+ * Default Java class for Kyber (Code > Java).
  */
 public class DefaultHello {
   public static String hello() {

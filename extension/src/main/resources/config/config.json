@@ -8,14 +8,14 @@
   "verticles": {
     "Design": {
       "tags": {
-        "design-element": "se.infoware.domino.keep.dbrequests.design",
-        "design-handler": "se.infoware.domino.keep.dbrequests.design"
+        "design-element": "se.infoware.domino.kyber.dbrequests.design",
+        "design-handler": "se.infoware.domino.kyber.dbrequests.design"
       }
     },
     "RestAPI": {
       "versions": {
         "design": {
-          "package": "se.infoware.domino.keep.handlers.design",
+          "package": "se.infoware.domino.kyber.handlers.design",
           "route": "/api/design-v1",
           "defaultClass": "com.hcl.domino.keep.handlers.core.DefaultJsonHandler",
           "defaultDatabase": "keepconfigadmin"

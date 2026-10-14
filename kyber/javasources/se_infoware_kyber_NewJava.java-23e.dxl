@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258E90004E3F19'>
+<noteinfo noteid='23e' unid='C64418215F2FE8D6C1258E90004EE516' sequence='2'>
+<created><datetime dst='true'>20261014T162144,54+02</datetime></created>
+<modified><datetime dst='true'>20261014T162144,56+02</datetime></modified>
+<revised><datetime dst='true'>20261014T162144,55+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20261014T162144,55+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20261014T162144,54+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<item name='$Flags'><text>34567Cg~[</text></item>
+<item name='$TITLE'><text>se/infoware/kyber/NewJava.java</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='$FileSize' sign='true'><number>234</number></item>
+<item name='$FileData' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAADqAAAAAQAAAAAAAAAAAAAAYAD8AAAA6gAAAAAAAAAAAAAAcGFja2FnZSBzZS5pbmZv
+d2FyZS5reWJlcjsNCg0KLyoqIE1pbmltYWwgSmF2YSBjbGFzcyBzdGFydGVyLiAqLw0KcHVibGlj
+IGNsYXNzIE5ld0phdmEgew0KCXB1YmxpYyBzdGF0aWMgU3RyaW5nIGhlbGxvKFN0cmluZyB3aG8p
+IHsNCgkJaWYgKHdobyA9PSBudWxsIHx8IHdoby5pc0VtcHR5KCkpIHsNCgkJCXdobyA9ICJXb3Js
+ZCI7DQoJCX0NCgkJcmV0dXJuICJIZWxsbywgIiArIHdobyArICIhIjsNCgl9DQp9
+</rawitemdata></item>
+<item name='$FileNames' sign='true'><text>se/infoware/kyber/NewJava.java</text></item>
+<item name='$Comment'><text>https://help.hcl-software.com/dom_designer/14.5.1/index.html</text></item></note>
+

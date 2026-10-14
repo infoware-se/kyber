@@ -70,10 +70,10 @@ $fileHeader = New-Object byte[] 42
 
 $sources = @(
   @{
-    Name = 'se/infoware/keep/minimal/Minimal.java'
+    Name = 'se/infoware/kyber/minimal/Minimal.java'
     Flags = '34567Cg~['
     Source = @"
-package se.infoware.keep.minimal;
+package se.infoware.kyber.minimal;
 
 /** Minimal Java class starter. */
 public class Minimal {
@@ -87,10 +87,10 @@ public class Minimal {
 "@
   },
   @{
-    Name = 'se/infoware/keep/minimal/MinimalInterface.java'
+    Name = 'se/infoware/kyber/minimal/MinimalInterface.java'
     Flags = '34567Cg~['
     Source = @"
-package se.infoware.keep.minimal;
+package se.infoware.kyber.minimal;
 
 /** Minimal Java interface starter. */
 public interface MinimalInterface {
@@ -99,10 +99,10 @@ public interface MinimalInterface {
 "@
   },
   @{
-    Name = 'se/infoware/keep/minimal/MinimalEnum.java'
+    Name = 'se/infoware/kyber/minimal/MinimalEnum.java'
     Flags = '34567Cg~['
     Source = @"
-package se.infoware.keep.minimal;
+package se.infoware.kyber.minimal;
 
 /** Minimal Java enum starter. */
 public enum MinimalEnum {
@@ -121,7 +121,7 @@ $pass = Get-EnvFileValue $envFile "REST_ADMIN_PASSWORD"
 $auth = Invoke-RestMethod -Method POST -Uri "$base/api/v1/auth" -ContentType "application/json" `
   -Body (@{ username = $user; password = $pass } | ConvertTo-Json)
 $h = @{ Authorization = "Bearer $($auth.bearer)" }
-$nsfQ = "nsfPath=" + [uri]::EscapeDataString("keepdesign.nsf")
+$nsfQ = "nsfPath=" + [uri]::EscapeDataString("kyber.nsf")
 
 $deletePayload = @{
   elements = @(
@@ -154,9 +154,9 @@ $put.results | ForEach-Object {
 
 $env:REST_ADMIN_USER = $user
 $env:REST_ADMIN_PASSWORD = $pass
-& "c:\Git\drapi-iws-design\tools\export-to-repo.ps1" -RestUrl $base -NsfPath "keepdesign.nsf" -OutDir "c:\Git\drapi-iws-design\keepdesign"
+& "c:\Git\drapi-iws-design\tools\export-to-repo.ps1" -RestUrl $base -NsfPath "kyber.nsf" -OutDir "c:\Git\drapi-iws-design\kyber"
 
-Get-ChildItem "c:\Git\drapi-iws-design\keepdesign\javasources" -Filter "*minimal*.dxl" | ForEach-Object {
+Get-ChildItem "c:\Git\drapi-iws-design\kyber\javasources" -Filter "*minimal*.dxl" | ForEach-Object {
   $dxl = Get-Content -Raw $_.FullName
   if ($dxl -match '(?s)<item name=''\$FileData''[^>]*>\s*<rawitemdata[^>]*>\s*([A-Za-z0-9+/=\s]+)') {
     $raw = [Convert]::FromBase64String(($Matches[1] -replace '\s',''))

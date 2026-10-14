@@ -1,4 +1,4 @@
-﻿# Builds keep-design-*.jar (KEEP extension — NOT an HCL product).
+﻿# Builds infoware-kyber.jar (Kyber — Infoware Domino design REST extension for KEEP/DRAPI).
 # Requires: JDK 21, Maven 3.9+, HCL keep-core + keep-extension + keep-jnx-ext JARs.
 #
 # Usage (this PC):
@@ -241,21 +241,21 @@ Or set DRAPI_HOME:
 
 Push-Location $ExtensionRoot
 try {
-    Write-Host "`nBuilding KEEP keep-design.jar..."
+    Write-Host "`nBuilding Kyber infoware-kyber.jar..."
     & $mvn package -q
     if ($LASTEXITCODE -ne 0) { throw "mvn package failed (exit $LASTEXITCODE)" }
 
-    $jar = Get-ChildItem -Path "target" -Filter "keep-design-*.jar" -File |
+    $jar = Get-ChildItem -Path "target" -Filter "infoware-kyber*.jar" -File |
         Where-Object { $_.Name -notmatch "sources|javadoc" } |
         Sort-Object LastWriteTime -Descending |
         Select-Object -First 1
 
     if (-not $jar) {
-        throw "Build finished but no keep-design-*.jar in target/"
+        throw "Build finished but no infoware-kyber.jar in target/"
     }
 
     Write-Host ""
-    Write-Host "SUCCESS - KEEP extension JAR (install THIS on Domino REST):" -ForegroundColor Green
+    Write-Host "SUCCESS - Kyber extension JAR (install THIS on Domino REST):" -ForegroundColor Green
     Write-Host "  $($jar.FullName)" -ForegroundColor Green
     Write-Host ""
     Write-Host "Next steps:"
@@ -272,16 +272,14 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "restart-restapi-com.ps1 -QuitOnly failed" }
 
         $libs = Join-Path $installRoot "libs"
-        Get-ChildItem -Path $libs -Filter "iws-design-*.jar" -File -ErrorAction SilentlyContinue |
-            ForEach-Object {
-                Write-Host "Removing old JAR: $($_.FullName)" -ForegroundColor Yellow
-                Remove-Item $_.FullName -Force
-            }
-        Get-ChildItem -Path $libs -Filter "keep-design-*.jar" -File -ErrorAction SilentlyContinue |
-            ForEach-Object {
-                Write-Host "Removing previous keep-design JAR: $($_.FullName)" -ForegroundColor Yellow
-                Remove-Item $_.FullName -Force
-            }
+        # Remove previous Kyber builds and known legacy design-extension JAR names
+        foreach ($pattern in @("infoware-kyber*.jar", "keep-design-*.jar", "iws-design-*.jar")) {
+            Get-ChildItem -Path $libs -Filter $pattern -File -ErrorAction SilentlyContinue |
+                ForEach-Object {
+                    Write-Host "Removing previous JAR: $($_.FullName)" -ForegroundColor Yellow
+                    Remove-Item $_.FullName -Force
+                }
+        }
         $dest = Join-Path $libs $jar.Name
         Copy-Item $jar.FullName $dest -Force
         Write-Host "Copied to: $dest" -ForegroundColor Yellow

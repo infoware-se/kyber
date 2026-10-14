@@ -4,10 +4,10 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>se.infoware.domino</groupId>
-    <artifactId>keep-design</artifactId>
-    <version>0.22.22</version>
+    <artifactId>infoware-kyber</artifactId>
+    <version>0.23.0</version>
     <packaging>jar</packaging>
-    <name>KEEP Domino REST API design</name>
+    <name>Kyber — Infoware Domino design REST API</name>
 
     <properties>
         <domino.version>14.5.0</domino.version>
@@ -57,19 +57,20 @@
     </dependencies>
 
     <build>
+        <finalName>infoware-kyber</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
                 <includes>
-                    <include>keep-design.properties</include>
+                    <include>kyber.properties</include>
                 </includes>
             </resource>
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>false</filtering>
                 <excludes>
-                    <exclude>keep-design.properties</exclude>
+                    <exclude>kyber.properties</exclude>
                 </excludes>
             </resource>
         </resources>
@@ -104,4 +105,3 @@
         </plugins>
     </build>
 </project>
-

@@ -1,4 +1,4 @@
-# Fix minimal Java sources in keepdesign.nsf via bulk PUT (path CRUD cannot pass '/').
+# Fix minimal Java sources in kyber.nsf via bulk PUT (path CRUD cannot pass '/').
 $ErrorActionPreference = "Stop"
 
 function Get-EnvFileValue([string]$Path, [string]$Key) {
@@ -97,13 +97,13 @@ $pass = Get-EnvFileValue $envFile "REST_ADMIN_PASSWORD"
 $auth = Invoke-RestMethod -Method POST -Uri "$base/api/v1/auth" -ContentType "application/json" `
   -Body (@{ username = $user; password = $pass } | ConvertTo-Json)
 $headers = @{ Authorization = "Bearer $($auth.bearer)" }
-$nsfQ = "nsfPath=" + [uri]::EscapeDataString("keepdesign.nsf")
+$nsfQ = "nsfPath=" + [uri]::EscapeDataString("kyber.nsf")
 $defaults = "c:\Git\drapi-iws-design\extension\src\main\resources\defaults"
 
 $items = @(
-  (New-MinimalJavaDxl (Join-Path $defaults "javasource.dxl") "se/infoware/keep/minimal/Minimal.java"),
-  (New-MinimalJavaDxl (Join-Path $defaults "javasource-interface.dxl") "se/infoware/keep/minimal/MinimalInterface.java"),
-  (New-MinimalJavaDxl (Join-Path $defaults "javasource-enum.dxl") "se/infoware/keep/minimal/MinimalEnum.java")
+  (New-MinimalJavaDxl (Join-Path $defaults "javasource.dxl") "se/infoware/kyber/minimal/Minimal.java"),
+  (New-MinimalJavaDxl (Join-Path $defaults "javasource-interface.dxl") "se/infoware/kyber/minimal/MinimalInterface.java"),
+  (New-MinimalJavaDxl (Join-Path $defaults "javasource-enum.dxl") "se/infoware/kyber/minimal/MinimalEnum.java")
 )
 
 foreach ($it in $items) {
@@ -115,9 +115,9 @@ foreach ($it in $items) {
 # First try ImportDesignDxl delete: elements with delete:true
 $deletePayload = @{
   elements = @(
-    @{ type = "javasource"; name = "se/infoware/keep/minimal/Minimal.java"; delete = $true },
-    @{ type = "javasource"; name = "se/infoware/keep/minimal/MinimalInterface.java"; delete = $true },
-    @{ type = "javasource"; name = "se/infoware/keep/minimal/MinimalEnum.java"; delete = $true }
+    @{ type = "javasource"; name = "se/infoware/kyber/minimal/Minimal.java"; delete = $true },
+    @{ type = "javasource"; name = "se/infoware/kyber/minimal/MinimalInterface.java"; delete = $true },
+    @{ type = "javasource"; name = "se/infoware/kyber/minimal/MinimalEnum.java"; delete = $true }
   )
 } | ConvertTo-Json -Depth 5
 
@@ -145,14 +145,14 @@ $put.results | ForEach-Object {
   if ($_.log) { Write-Host "   log:" $_.log.Substring(0, [Math]::Min(200, $_.log.Length)) }
 }
 
-# Export keepdesign folder
+# Export kyber folder
 $env:REST_ADMIN_USER = $user
 $env:REST_ADMIN_PASSWORD = $pass
-& "c:\Git\drapi-iws-design\tools\export-to-repo.ps1" -RestUrl $base -NsfPath "keepdesign.nsf" `
-  -OutDir "c:\Git\drapi-iws-design\keepdesign"
+& "c:\Git\drapi-iws-design\tools\export-to-repo.ps1" -RestUrl $base -NsfPath "kyber.nsf" `
+  -OutDir "c:\Git\drapi-iws-design\kyber"
 
 # Verify decoded source from export
-$files = Get-ChildItem "c:\Git\drapi-iws-design\keepdesign\javasources" -Filter "*minimal*"
+$files = Get-ChildItem "c:\Git\drapi-iws-design\kyber\javasources" -Filter "*minimal*"
 foreach ($f in $files) {
   if ($f.Extension -ne '.dxl') { continue }
   $dxl = Get-Content -Raw $f.FullName

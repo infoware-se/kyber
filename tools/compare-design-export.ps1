@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-  Compare Domino design sets: Notes COM DXL file vs keep-design bulk /designdxl (by UNID).
+  Compare Domino design sets: Notes COM DXL file vs Kyber bulk /designdxl (by UNID).
   ACL is not part of COM SelectAllDesignElements / UNID compare — use GET /acl separately.
 
 .EXAMPLE

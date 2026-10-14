@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258E90004E3F19'>
+<noteinfo noteid='222' unid='A1DFBFA655E2DAACC1258E48004F1A0E' sequence='5'>
+<created><datetime dst='true'>20260803T162400,14+02</datetime></created>
+<modified><datetime dst='true'>20261014T161440,34+02</datetime></modified>
+<revised><datetime dst='true'>20260803T163526,98+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20261014T161440,33+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20261014T161440,33+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+<item name='$TITLE'><text>newtheme.theme</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='$Flags'><text>34567Cg~`</text></item>
+<item name='$FileSize' sign='true'><number>900</number></item>
+<item name='$FileData' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAACEAwAAAQAAAAAAAAAAAAAAYACWAwAAhAOEAwAAAAAAAAAAPCEtLQoJVGhlIGRlZmF1
+bHQgdGhlbWUgY29udGVudHMgdXNlIHRoZW1lIGluaGVyaXRhbmNlLgoKCUFwcGxpY2F0aW9uIHRo
+ZW1lcyBjYW4gZXh0ZW5kIGFuIGV4aXN0aW5nIGdsb2JhbCB0aGVtZSB1c2luZyB0aGUKCWV4dGVu
+ZHMgYXR0cmlidXRlLiAgRXhpc3RpbmcgdGhlbWVzIGluY2x1ZGUgdGhlIGZvbGxvd2luZyBvcHRp
+b25zOgoKCTEuIHdlYnN0YW5kYXJkIDIuIG9uZXVpIDMuIG5vdGVzCi0tPgo8dGhlbWUgZXh0ZW5k
+cz0id2Vic3RhbmRhcmQiIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hl
+bWEtaW5zdGFuY2UiIHhzaTpub05hbWVzcGFjZVNjaGVtYUxvY2F0aW9uPSJwbGF0Zm9ybTovcGx1
+Z2luL2NvbS5pYm0uZGVzaWduZXIuZG9taW5vLnN0eWxla2l0cy9zY2hlbWEvc3R5bGVraXQueHNk
+IiA+Cgk8IS0tIAoJCVVzZSB0aGlzIHBhdHRlcm4gdG8gaW5jbHVkZSByZXNvdXJjZXMgKHN1Y2gg
+YXMgc3R5bGUgc2hlZXRzCgkJYW5kIEphdmFTY3JpcHQgZmlsZXMgdGhhdCBhcmUgdXNlZCBieSB0
+aGlzIHRoZW1lLgoJLS0+Cgk8IS0tCgk8cmVzb3VyY2U+CgkJPGNvbnRlbnQtdHlwZT50ZXh0L2Nz
+czwvY29udGVudC10eXBlPgoJCTxocmVmPm15c3R5bGVzaGVldC5jc3M8L2hyZWY+Cgk8L3Jlc291
+cmNlPgoJLS0+CgoJPCEtLQoJCVVzZSB0aGlzIHBhdHRlcm4gdG8gZGVmaW5lIHByb3BlcnR5IG5h
+bWUvdmFsdWUgcGFpcnMgZm9yIGNvbnRyb2xzCgktLT4KCTwhLS0KCTxjb250cm9sPgoJCTxuYW1l
+PltDb250cm9sIE5hbWVdPC9uYW1lPgoJCTxwcm9wZXJ0eT4KCQkJPG5hbWU+W3Byb3BlcnR5IE5h
+bWVdPC9uYW1lPgoJCQk8dmFsdWU+W3Byb3BlcnR5IFZhbHVlXTwvdmFsdWU+CgkJPC9wcm9wZXJ0
+eT4KCTwvY29udHJvbD4KCS0tPgo8L3RoZW1lPg0K
+</rawitemdata></item>
+<item name='$FileNames' sign='true'><text>newtheme.theme</text></item>
+<item name='$Comment'><text>https://help.hcl-software.com/dom_designer/14.5.1/index.html</text></item></note>
+

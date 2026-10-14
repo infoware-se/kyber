@@ -10,7 +10,7 @@
   - PUT/GET/DELETE missing named element → not found (HTTP 404 or KEEP-mapped 400)
   - empty-body POST create → 200/201, duplicate → 409
   - GET + PUT update round-trip on a form
-  - GET applicationproperties + dbicon + acl on keepdesign.nsf; POST rejected on appprops/dbicon
+  - GET applicationproperties + dbicon + acl on kyber.nsf; POST rejected on appprops/dbicon
   - POST /xpagesproject creates skeleton; second call skips; POST /xpages empty-body works
 
   Leaves the NSF on the server (design-v1 never deletes databases).
@@ -147,8 +147,8 @@ if ($bulkResp.created) {
   Ok "applicationproperties title=$smokeTitle"
 }
 
-# --- Always-present: GET on keepdesign.nsf (fresh empty NSF may lack $DBIcon) ---
-$defaultNsf = "keepdesign.nsf"
+# --- Always-present: GET on kyber.nsf (fresh empty NSF may lack $DBIcon) ---
+$defaultNsf = "kyber.nsf"
 function Design-UrlOn([string]$TargetNsf, [string]$ApiPath, [string]$ExtraQuery = "") {
   $q = "nsfPath=$([uri]::EscapeDataString($TargetNsf))"
   if ($ExtraQuery) { $q = "$q&$ExtraQuery" }
@@ -201,7 +201,7 @@ $creates = @(
   @{ coll = "forms"; qs = "name=SmokeForm" },
   @{ coll = "agents"; qs = "kind=lotusscript&name=SmokeAgent" },
   @{ coll = "scriptlibraries"; qs = "kind=lotusscript&name=SmokeLib" },
-  @{ coll = "javasources"; qs = "kind=class&name=se/infoware/keep/SmokeJava.java" }
+  @{ coll = "javasources"; qs = "kind=class&name=se/infoware/kyber/SmokeJava.java" }
 )
 foreach ($c in $creates) {
   $url = Design-Url $c.coll $c.qs
@@ -268,7 +268,7 @@ $deletes = @(
   @{ coll = "forms"; name = "SmokeForm" },
   @{ coll = "agents"; name = "SmokeAgent" },
   @{ coll = "scriptlibraries"; name = "SmokeLib" },
-  @{ coll = "javasources"; name = "se/infoware/keep/SmokeJava.java" },
+  @{ coll = "javasources"; name = "se/infoware/kyber/SmokeJava.java" },
   @{ coll = "xpages"; name = $xpageName }
 )
 foreach ($d in $deletes) {

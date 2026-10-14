@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258E90004E3F19'>
+<noteinfo noteid='12e' unid='94C18332600D1A4EC1258E43002142DB' sequence='5'>
+<created><datetime dst='true'>20260729T080318,03+02</datetime></created>
+<modified><datetime dst='true'>20261014T161439,84+02</datetime></modified>
+<revised><datetime dst='true'>20260803T141926,71+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20261014T161439,83+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20261014T161439,83+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=Infoware</name><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+<item name='$Flags'><text>~C4g</text></item>
+<item name='$TITLE'><text>.settings/org.eclipse.wst.jsdt.ui.superType.name</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='$FileSize' sign='true'><number>6</number></item>
+<item name='$FileData' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAAAGAAAAAQAAAAAAAAAAAAAAYAAYAAAABgAGAAAAAAAAAAAAV2luZG93
+</rawitemdata></item>
+<item name='$FileNames' sign='true'><text>.settings/org.eclipse.wst.jsdt.ui.superType.name</text></item></note>
+

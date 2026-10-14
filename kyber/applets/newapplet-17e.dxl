@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE appletresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<appletresource name='newapplet' xmlns='http://www.lotus.com/dxl' version='14.5'
+ maintenanceversion='1.0' replicaid='C1258E90004E3F19' nocompose='true' designerversion='8.5.3'
+ comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'>
+<noteinfo noteid='17e' unid='A6C6D4111FED8DEAC1258E480040858F' sequence='12'>
+<created><datetime dst='true'>20260803T134444,95+02</datetime></created>
+<modified><datetime dst='true'>20261014T161440,00+02</datetime></modified>
+<revised><datetime dst='true'>20260803T163518,15+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20261014T161439,99+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20261014T161439,99+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby><code event='action'><javaproject
+><java name='DefaultApplet.java'>public class DefaultApplet {
+  public String hello() { return "hello"; }
+}
+</java></javaproject></code></appletresource>
+

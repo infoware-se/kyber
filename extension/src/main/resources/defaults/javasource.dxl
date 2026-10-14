@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<note comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html' name='se/infoware/keep/NewJava.java' class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+<note comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html' name='se/infoware/kyber/NewJava.java' class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
 >
 <item name='$Flags'><text>34567Cg~[</text></item>
-<item name='$TITLE'><text>se/infoware/keep/NewJava.java</text></item>
+<item name='$TITLE'><text>se/infoware/kyber/NewJava.java</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
 <item name='$FileSize' sign='true'><number>233</number></item>
 <item name='$FileData' sign='true'>
@@ -14,8 +14,8 @@ Y2xhc3MgTmV3SmF2YSB7DQoJcHVibGljIHN0YXRpYyBTdHJpbmcgaGVsbG8oU3RyaW5nIHdobykg
 ew0KCQlpZiAod2hvID09IG51bGwgfHwgd2hvLmlzRW1wdHkoKSkgew0KCQkJd2hvID0gIldvcmxk
 IjsNCgkJfQ0KCQlyZXR1cm4gIkhlbGxvLCAiICsgd2hvICsgIiEiOw0KCX0NCn0=
 </rawitemdata></item>
-<item name='$FileNames' sign='true'><text>se/infoware/keep/NewJava.java</text></item>
-<item name='$ClassIndexItem'><text>WEB-INF/classes/se/infoware/keep/NewJava.class</text></item>
+<item name='$FileNames' sign='true'><text>se/infoware/kyber/NewJava.java</text></item>
+<item name='$ClassIndexItem'><text>WEB-INF/classes/se/infoware/kyber/NewJava.class</text></item>
 <item name='$ClassSize0' sign='true'><number>940</number></item>
 <item name='$ClassData0' sign='true'>
 <rawitemdata type='1'>

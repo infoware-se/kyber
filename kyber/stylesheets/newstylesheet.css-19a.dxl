@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE stylesheetresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<stylesheetresource name='newstylesheet.css' xmlns='http://www.lotus.com/dxl'
+ version='14.5' maintenanceversion='1.0' replicaid='C1258E90004E3F19' publicaccess='false'
+ designerversion='8.5.3' comment='https://help.hcl-software.com/dom_designer/14.5.1/index.html'
+ charset='UTF-8'>
+<noteinfo noteid='19a' unid='53D609F608473683C1258E480040870C' sequence='12'>
+<created><datetime dst='true'>20260803T134448,76+02</datetime></created>
+<modified><datetime dst='true'>20261014T161440,07+02</datetime></modified>
+<revised><datetime dst='true'>20260803T163523,44+02</datetime></revised>
+<lastaccessed><datetime dst='true'>20261014T161440,06+02</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20261014T161440,06+02</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby><filedata>
+</filedata></stylesheetresource>
+
