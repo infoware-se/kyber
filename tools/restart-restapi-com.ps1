@@ -29,7 +29,7 @@ function Get-EnvFileValue([string]$Path, [string]$Key) {
 }
 
 function Find-KyberEnvFile {
-  foreach ($f in @(".\.env", (Join-Path $PSScriptRoot "..\.env"), "C:\Git\install-domino-restapi\.env")) {
+  foreach ($f in @((Join-Path $PSScriptRoot "..\.env"), ".\.env")) {
     if (Test-Path $f) { return (Resolve-Path $f).Path }
   }
   return $null

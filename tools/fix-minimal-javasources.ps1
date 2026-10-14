@@ -88,7 +88,7 @@ function Resolve-KyberEnvFile([string]$Explicit) {
     if (-not (Test-Path $Explicit)) { throw "Env file not found: $Explicit" }
     return (Resolve-Path $Explicit).Path
   }
-  foreach ($f in @(".\.env", "$PSScriptRoot\..\.env", "C:\Git\install-domino-restapi\.env")) {
+  foreach ($f in @("$PSScriptRoot\..\.env", ".\.env")) {
     if (Test-Path $f) { return (Resolve-Path $f).Path }
   }
   throw "No .env found. Pass -EnvFile."

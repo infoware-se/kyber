@@ -41,4 +41,4 @@ Installs `infoware-kyber.jar` into `%DRAPI_HOME%\libs\` (replaces any previous K
 
 ## Auth
 
-See Domino REST API admin docs / your site `.env` (`REST_ADMIN_USER` / `REST_ADMIN_PASSWORD`).
+Copy [`.env.example`](.env.example) to `.env` in the repo root. Tools read `DOMINO_REST_API_DATA_URL`, `DOMINO_SERVER`, and `REST_ADMIN_USER` / `REST_ADMIN_PASSWORD` from that file. `.env` is gitignored.

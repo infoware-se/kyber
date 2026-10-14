@@ -27,7 +27,7 @@
 
 .PARAMETER EnvFile
   Path to .env with DOMINO_REST_API_DATA_URL and REST_ADMIN_* credentials.
-  When omitted, the script looks at .\.env, the repo .env, then C:\Git\install-domino-restapi\.env.
+  When omitted, the script uses the repo-root .env (copy of .env.example).
 
 .PARAMETER SkipCertificateCheck
   Pass curl -k. Leave this off for a certificate the machine trusts.
@@ -766,7 +766,7 @@ if (-not $NsfPath) {
 }
 
 if (-not $EnvFile) {
-  foreach ($f in @(".\.env", "$PSScriptRoot\..\.env", "C:\Git\install-domino-restapi\.env")) {
+  foreach ($f in @("$PSScriptRoot\..\.env", ".\.env")) {
     if (Test-Path $f) { $EnvFile = $f; break }
   }
 }
