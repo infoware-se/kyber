@@ -5,7 +5,9 @@ import com.hcl.domino.data.Document;
 import com.hcl.domino.design.AboutDocument;
 import com.hcl.domino.design.DatabaseScriptLibrary;
 import com.hcl.domino.design.DbProperties;
+import com.hcl.domino.design.DesignAgent;
 import com.hcl.domino.design.DesignElement;
+import com.hcl.domino.design.ScriptLibrary;
 import com.hcl.domino.design.SharedActions;
 import com.hcl.domino.design.UsingDocument;
 import com.hcl.domino.dxl.DxlExporter;
@@ -34,6 +36,15 @@ final class DesignElementIO {
   private DesignElementIO() {}
 
   static JsonArray exportAll(Database db) throws Exception {
+    return exportAll(db, null);
+  }
+
+  /**
+   * @param skipped when non-null, receives {@code {type, name?, message}} for notes that were not
+   *     written to the returned array. A typed export failure is omitted here when the same name
+   *     is later exported (for example as {@code designnote}).
+   */
+  static JsonArray exportAll(Database db, JsonArray skipped) throws Exception {
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();
     JsonArray elements = new JsonArray();
     Set<String> exportedUnids = new HashSet<>();
@@ -112,10 +123,12 @@ final class DesignElementIO {
     exportNamed(elements, "form", db.getDesign().getForms(), exporter, exportedUnids);
     exportNamed(elements, "page", db.getDesign().getPages(), exporter, exportedUnids);
     exportNamed(elements, "outline", db.getDesign().getOutlines(), exporter, exportedUnids);
-    exportNamedSafe(elements, "navigator", db.getDesign().getNavigators(), exporter, exportedUnids);
+    exportNamedSafe(
+        elements, "navigator", db.getDesign().getNavigators(), exporter, exportedUnids, skipped);
     // JNX FramesetImpl can throw on missing frameset version (Optional.empty); skip bad
     // notes so bulk GET continues — residual notes may still appear as designnote.
-    exportNamedSafe(elements, "frameset", db.getDesign().getFramesets(), exporter, exportedUnids);
+    exportNamedSafe(
+        elements, "frameset", db.getDesign().getFramesets(), exporter, exportedUnids, skipped);
     exportNamed(elements, "view", db.getDesign().getViews(), exporter, exportedUnids);
     exportNamed(elements, "folder", db.getDesign().getFolders(), exporter, exportedUnids);
     exportNamed(elements, "agent", db.getDesign().getAgents(), exporter, exportedUnids);
@@ -127,20 +140,24 @@ final class DesignElementIO {
         "wiringproperties",
         db.getDesign().getWiringPropertiesElements(),
         exporter,
-        exportedUnids);
+        exportedUnids,
+        skipped);
     exportNamedSafe(
         elements,
         "compositeapplication",
         db.getDesign().getCompositeApplications(),
         exporter,
-        exportedUnids);
+        exportedUnids,
+        skipped);
     exportNamedSafe(
         elements,
         "compositecomponent",
         db.getDesign().getCompositeComponents(),
         exporter,
-        exportedUnids);
-    exportBulkOnly(elements, db, exporter, exportedUnids);
+        exportedUnids,
+        skipped);
+    exportBulkOnly(elements, db, exporter, exportedUnids, skipped);
+    forgetRecoveredSkips(elements, skipped);
 
     return elements;
   }
@@ -322,7 +339,14 @@ final class DesignElementIO {
       case "scriptlibrary" -> {
         name = DesignDxl.requireRootName(dxl, "scriptlibrary");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getScriptLibrary(name), "ScriptLibrary", name);
+        Optional<ScriptLibrary> lib = db.getDesign().getScriptLibrary(name);
+        if (dxl.toLowerCase(Locale.ROOT).contains("<lotusscript")) {
+          compileLotusScript(lib.orElse(null), "ScriptLibrary", name);
+          signWarning = signNamed(lib, "ScriptLibrary", name);
+        } else {
+          // Design-element sign/save rewrites the library and drops JavaScript, SSJS and Java.
+          signWarning = signRawNote(lib, "ScriptLibrary", name);
+        }
       }
       case "sharedfield" -> {
         name = DesignDxl.requireRootName(dxl, "sharedfield");
@@ -377,7 +401,11 @@ final class DesignElementIO {
       case "agent" -> {
         name = DesignDxl.requireRootName(dxl, "agent");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getAgent(name), "Agent", name);
+        Optional<DesignAgent> agent = db.getDesign().getAgent(name);
+        if (dxl.toLowerCase(Locale.ROOT).contains("<lotusscript")) {
+          compileLotusScript(agent.orElse(null), "Agent", name);
+        }
+        signWarning = signNamed(agent, "Agent", name);
       }
       case "customcontrol" -> {
         String requested = DesignDxl.requireDesignName(dxl, "note", "fileresource");
@@ -652,7 +680,8 @@ final class DesignElementIO {
       String type,
       Stream<? extends DesignElement.NamedDesignElement> stream,
       DxlExporter exporter,
-      Set<String> exportedUnids) {
+      Set<String> exportedUnids,
+      JsonArray skipped) {
     List<DesignElement.NamedDesignElement> list = new ArrayList<>();
     try {
       var it = stream.iterator();
@@ -663,19 +692,21 @@ final class DesignElementIO {
             break;
           }
           el = it.next();
-        } catch (RuntimeException skipped) {
+        } catch (RuntimeException failed) {
+          recordSkip(skipped, type, null, failed);
           continue;
         }
         try {
           if (el != null && el.getTitle() != null && !el.getTitle().isBlank()) {
             list.add(el);
           }
-        } catch (RuntimeException skipped) {
-          // title/access can also throw on broken wrappers
+        } catch (RuntimeException failed) {
+          recordSkip(skipped, type, titleOrNull(el), failed);
         }
       }
-    } catch (RuntimeException ignored) {
+    } catch (RuntimeException failed) {
       // entire enumeration failed; bulk catch-all may still export raw notes
+      recordSkip(skipped, type, null, failed);
       return;
     }
     list.sort(
@@ -684,14 +715,57 @@ final class DesignElementIO {
     for (DesignElement.NamedDesignElement el : list) {
       try {
         Document doc = el.getDocument();
+        String dxl = exporter.exportDocument(doc);
         trackUnid(exportedUnids, doc);
         elements.add(
-            new JsonObject()
-                .put("type", type)
-                .put("name", el.getTitle())
-                .put("dxl", exporter.exportDocument(doc)));
-      } catch (Exception skipped) {
+            new JsonObject().put("type", type).put("name", el.getTitle()).put("dxl", dxl));
+      } catch (Exception failed) {
         // leave UNID untracked so exportBulkOnly can try raw DXL
+        recordSkip(skipped, type, titleOrNull(el), failed);
+      }
+    }
+  }
+
+  private static String titleOrNull(DesignElement.NamedDesignElement el) {
+    if (el == null) {
+      return null;
+    }
+    try {
+      String title = el.getTitle();
+      return title == null || title.isBlank() ? null : title;
+    } catch (RuntimeException ignored) {
+      return null;
+    }
+  }
+
+  static void recordSkip(JsonArray skipped, String type, String name, Throwable error) {
+    if (skipped == null || error == null) {
+      return;
+    }
+    String message = error.getMessage() == null ? error.toString() : error.getMessage();
+    JsonObject row = new JsonObject().put("type", type).put("message", message);
+    if (name != null && !name.isBlank()) {
+      row.put("name", name);
+    }
+    skipped.add(row);
+  }
+
+  /** Drop a typed skip when that name was exported anyway (often as designnote). */
+  private static void forgetRecoveredSkips(JsonArray elements, JsonArray skipped) {
+    if (skipped == null || skipped.isEmpty()) {
+      return;
+    }
+    Set<String> names = new HashSet<>();
+    for (int i = 0; i < elements.size(); i++) {
+      String name = elements.getJsonObject(i).getString("name");
+      if (name != null && !name.isBlank()) {
+        names.add(name.trim().toLowerCase(Locale.ROOT));
+      }
+    }
+    for (int i = skipped.size() - 1; i >= 0; i--) {
+      String name = skipped.getJsonObject(i).getString("name");
+      if (name != null && !name.isBlank() && names.contains(name.trim().toLowerCase(Locale.ROOT))) {
+        skipped.remove(i);
       }
     }
   }
@@ -754,9 +828,13 @@ final class DesignElementIO {
   }
 
   private static void exportBulkOnly(
-      JsonArray elements, Database db, DxlExporter exporter, Set<String> exportedUnids)
+      JsonArray elements,
+      Database db,
+      DxlExporter exporter,
+      Set<String> exportedUnids,
+      JsonArray skipped)
       throws Exception {
-    for (BulkOnlyNotes.Entry entry : BulkOnlyNotes.list(db, exportedUnids)) {
+    for (BulkOnlyNotes.Entry entry : BulkOnlyNotes.list(db, exportedUnids, skipped)) {
       try {
         String dxl = exporter.exportDocument(entry.document());
         if (!hasExportableDxl(dxl)) {
@@ -770,8 +848,8 @@ final class DesignElementIO {
                 .put("type", entry.type())
                 .put("name", entry.name())
                 .put("dxl", dxl));
-      } catch (Exception ignored) {
-        // Skip DESIGNCOLLECTION / unsupported notes that DXL cannot export
+      } catch (Exception failed) {
+        recordSkip(skipped, entry.type(), entry.name(), failed);
       }
     }
   }
@@ -823,9 +901,49 @@ final class DesignElementIO {
     }
   }
 
+  /** Compile LotusScript so a later run executes this source, not an empty module. */
+  private static void compileLotusScript(DesignElement el, String label, String name)
+      throws KeepExceptionServer {
+    if (el == null) {
+      throw new KeepExceptionServer("%s %s missing after DXL import; cannot compile", label, name);
+    }
+    try {
+      Document doc = el.getDocument();
+      doc.compileLotusScript();
+      doc.save();
+    } catch (Exception e) {
+      String message = e.getMessage() == null ? e.toString() : e.getMessage();
+      throw new KeepExceptionServer("LotusScript compile failed: %s", message);
+    }
+  }
+
   /**
    * @return warning message if sign failed soft; null on success
    */
+  /** Sign the note itself. Design-element save drops non-LotusScript library source. */
+  private static String signRawNote(
+      Optional<? extends DesignElement> opt, String label, String name)
+      throws KeepExceptionServer {
+    DesignElement el =
+        opt.orElseThrow(
+            () ->
+                new KeepExceptionServer(
+                    "%s %s missing after DXL import; cannot sign", label, name));
+    try {
+      Document doc = el.getDocument();
+      doc.sign();
+      doc.save();
+      return null;
+    } catch (Exception e) {
+      String message = e.getMessage() == null ? e.toString() : e.getMessage();
+      String lower = message.toLowerCase(Locale.ROOT);
+      if (lower.contains("signature") || lower.contains("0x2dc") || lower.contains("2dc")) {
+        return message;
+      }
+      throw new KeepExceptionServer("Sign failed: %s", message);
+    }
+  }
+
   private static String signNamed(
       Optional<? extends DesignElement> opt, String label, String name)
       throws KeepExceptionServer {

@@ -1,4 +1,8 @@
 # Build and import correct minimal Java sources (with matching package/type).
+param(
+  [string]$EnvFile = "",
+  [switch]$SkipCertificateCheck
+)
 $ErrorActionPreference = "Stop"
 
 function Get-EnvFileValue([string]$Path, [string]$Key) {
@@ -49,7 +53,18 @@ $([Convert]::ToBase64String((New-FileData $FileHeader $Source)))
 "@
 }
 
-if (-not ([System.Management.Automation.PSTypeName]'IwsTrustAllCertsFixB').Type) {
+function Resolve-KyberEnvFile([string]$Explicit) {
+  if ($Explicit) {
+    if (-not (Test-Path $Explicit)) { throw "Env file not found: $Explicit" }
+    return (Resolve-Path $Explicit).Path
+  }
+  foreach ($f in @(".\.env", "$PSScriptRoot\..\.env", "C:\Git\install-domino-restapi\.env")) {
+    if (Test-Path $f) { return (Resolve-Path $f).Path }
+  }
+  throw "No .env found. Pass -EnvFile."
+}
+
+if ($SkipCertificateCheck -and -not ([System.Management.Automation.PSTypeName]'IwsTrustAllCertsFixB').Type) {
   Add-Type @"
 using System.Net; using System.Security.Cryptography.X509Certificates;
 public class IwsTrustAllCertsFixB : ICertificatePolicy {
@@ -57,8 +72,10 @@ public class IwsTrustAllCertsFixB : ICertificatePolicy {
 }
 "@
 }
-[System.Net.ServicePointManager]::CertificatePolicy = New-Object IwsTrustAllCertsFixB
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+if ($SkipCertificateCheck) {
+  [System.Net.ServicePointManager]::CertificatePolicy = New-Object IwsTrustAllCertsFixB
+  [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+}
 
 # Extract header from embedded default
 $RepoRoot = Split-Path $PSScriptRoot -Parent
@@ -115,7 +132,7 @@ public enum MinimalEnum {
   }
 )
 
-$envFile = "C:\Git\install-domino-restapi\.env"
+$envFile = Resolve-KyberEnvFile $EnvFile
 $base = (Get-EnvFileValue $envFile "DOMINO_REST_API_DATA_URL").TrimEnd('/')
 $user = Get-EnvFileValue $envFile "REST_ADMIN_USER"
 $pass = Get-EnvFileValue $envFile "REST_ADMIN_PASSWORD"

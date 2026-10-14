@@ -4,7 +4,7 @@
 
 <updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
 <wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
-<item name='$Flags'><text>~C4gP</text></item>
+<item name='$Flags'><text>~C4g</text></item>
 <item name='$TITLE'><text>build.properties</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
 <item name='$FileSize' sign='true'><number>84</number></item>

@@ -11,7 +11,6 @@ const openApiPath = path.join(
   "openapi.kyber.json"
 );
 const doc = JSON.parse(fs.readFileSync(openApiPath, "utf8"));
-doc.info.version = "0.20.1";
 
 const skip = new Set(["/acl", "/applicationproperties"]);
 

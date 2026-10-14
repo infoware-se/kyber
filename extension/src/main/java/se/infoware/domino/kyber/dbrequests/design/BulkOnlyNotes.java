@@ -5,6 +5,7 @@ import com.hcl.domino.data.Document;
 import com.hcl.domino.data.DocumentClass;
 import com.hcl.domino.data.IDTable;
 import com.hcl.domino.design.DesignElement;
+import io.vertx.core.json.JsonArray;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -38,19 +39,22 @@ final class BulkOnlyNotes {
           ".project",
           "build.properties",
           "faces-config.xml",
-          "web.xml",
-          "META-INF/MANIFEST.MF");
+          "web.xml");
 
   private BulkOnlyNotes() {}
 
   record Entry(String type, String name, Document document) {}
 
   static List<Entry> list(Database db, Set<String> alreadyExportedUnids) {
+    return list(db, alreadyExportedUnids, null);
+  }
+
+  static List<Entry> list(Database db, Set<String> alreadyExportedUnids, JsonArray skipped) {
     Set<String> seen =
         alreadyExportedUnids == null ? new HashSet<>() : new HashSet<>(alreadyExportedUnids);
     List<Entry> out = new ArrayList<>();
 
-    for (Document doc : designDocuments(db)) {
+    for (Document doc : designDocuments(db, skipped)) {
       String unid = unidOf(doc);
       if (unid != null && seen.contains(unid)) {
         continue;
@@ -182,7 +186,7 @@ final class BulkOnlyNotes {
     return flags.indexOf('K') >= 0 && title.toLowerCase(Locale.ROOT).endsWith(".xsp");
   }
 
-  private static List<Document> designDocuments(Database db) {
+  private static List<Document> designDocuments(Database db, JsonArray skipped) {
     List<Document> docs = new ArrayList<>();
     try {
       IDTable ids = db.getAllNoteIds(EnumSet.of(DocumentClass.ALLNONDATA), false);
@@ -195,12 +199,12 @@ final class BulkOnlyNotes {
         }
         try {
           db.getDocumentById(rawId).ifPresent(docs::add);
-        } catch (Exception ignored) {
-          // skip unsupported notes
+        } catch (Exception failed) {
+          DesignElementIO.recordSkip(skipped, "designnote", "noteId:" + rawId, failed);
         }
       }
-    } catch (Exception ignored) {
-      // unavailable
+    } catch (Exception failed) {
+      DesignElementIO.recordSkip(skipped, "designnote", null, failed);
     }
     return docs;
   }

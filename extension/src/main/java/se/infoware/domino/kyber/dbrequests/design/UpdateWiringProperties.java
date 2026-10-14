@@ -6,7 +6,7 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Update-only — PUT /wiringpropertiess/{name}?nsfPath= */
+/** Update-only — PUT /wiringproperties/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
 public class UpdateWiringProperties extends AsyncDominoJNXJson {
   @Override

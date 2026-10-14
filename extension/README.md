@@ -1,6 +1,6 @@
-# Kyber (`infoware-kyber.jar`)
+# Kyber — Infoware REST API for design elements (`infoware-kyber.jar`)
 
-**Infoware Domino design REST extension for KEEP/DRAPI — not an HCL product.**
+Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
@@ -41,7 +41,7 @@ All paths are under `/api/kyber-v1` and require `?nsfPath=`.
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/designdxl?nsfPath=` | Export all supported elements as `{ nsfPath, elements: [{ type, name?, dxl }] }` |
+| GET | `/designdxl?nsfPath=` | Export all supported elements as `{ nsfPath, elements: [{ type, name?, dxl }], skipped: [{ type, name?, message }] }` |
 | PUT | `/designdxl?nsfPath=&dbTitle=` | Import that array; **create NSF if missing**; optional `dbTitle` sets DB title on create |
 
 Swagger tag: **`design-handler`** for `/defaults`, `/defaults/{type}`, and `/designdxl` (per-type CRUD stays under **`design-element`**).
@@ -419,7 +419,7 @@ For NSFs that never had XPages — creates missing project files only (idempoten
 |--------|------|
 | POST | `/api/kyber-v1/xpagesproject?nsfPath=` (no body; returns `created` / `skipped`) |
 
-Skeleton: `.project`, `.classpath`, `plugin.xml`, `build.properties`, `WEB-INF/faces-config.xml`, `WEB-INF/classes/plugin/Activator.class`, `WEB-INF/xsp.properties` (embedded from a known-good Designer export; Domino CD `$FileData` is not rewritten).
+Skeleton: `.project`, `.classpath`, `plugin.xml`, `build.properties`, `WEB-INF/faces-config.xml`, `WEB-INF/classes/plugin/Activator.class`, `WEB-INF/xsp.properties` (embedded from a known-good Designer export; Domino CD `$FileData` is not rewritten). Designer writes `META-INF/MANIFEST.MF` and `Local/plugin/Activator.java` itself when the application is opened.
 
 ### Custom Controls
 
@@ -456,11 +456,11 @@ cd extension
 mvn test
 ```
 
-Live smoke against DRAPI (defaults, not-found on missing, create/409, GET/PUT, always-present GET, XPages ensure + create, DELETE):
+Live smoke against DRAPI. `tools/smoke-kyber-api.ps1` creates `kybertest.nsf` and runs list/create/get/put/delete for every typed CRUD collection (including agent, script-library and Java-source kinds), plus singleton create/update and get/put for application properties, the database icon and the ACL. Each created element is written again with `Hello World` and read back. LotusScript, formula and simple-action agents are then run, and each run writes `Hello World` onto a document. The LotusScript agent calls `SmokeLibLs`. Deleted elements are created again so the NSF stays populated. Domino URL commands then open the database, form, page, about document, using document, view, folder, navigator, frameset, icon, image, file, stylesheet, agents, web service and XPage. `?CreateDocument` saves a document that the view, `?OpenDocument` and `?EditDocument` show as `Hello World`, and `?DeleteDocument` removes it:
 
 ```powershell
 .\tools\smoke-kyber-api.ps1
-# optional: -NsfPath my-smoke.nsf
+# default NSF: kybertest.nsf  (optional: -NsfPath other.nsf)
 ```
 
 Note: KEEP often maps `KeepExceptionNotFound` to HTTP **400** (message still says “not found”); OpenAPI documents 404. The smoke accepts either.

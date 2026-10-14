@@ -85,24 +85,24 @@ final class DesignCrud {
               DesignDxl.withName(starter.getString("dxl", ""), name, dxlRoots));
       source = "default";
     } else {
-      name =
+      String fromDxl =
           "sharedactions".equals(t)
               ? DesignDxl.requireSharedActionsName(dxl)
               : DesignDxl.requireDesignName(dxl, dxlRoots);
+      NamedBody named =
+          applyNameParam(
+              dxl,
+              fromDxl,
+              nameParam,
+              mode,
+              (body, wanted) ->
+                  "sharedactions".equals(t)
+                      ? DesignDxl.withName(body, wanted, "sharedactions")
+                      : DesignDxl.withName(body, wanted, dxlRoots));
+      dxl = named.dxl();
+      name = named.name();
       if ("image".equals(t)) {
         DesignElementLookup.normalizeImageNameCheck(name);
-      }
-      if (nameParam != null
-          && !nameParam.isBlank()
-          && !nameParam.trim().equalsIgnoreCase(name)
-          && mode == DxlDesignPatch.Mode.REPLACE) {
-        throw new KeepExceptionWrongDataRequest(
-            "path name '" + nameParam.trim() + "' does not match DXL name '" + name + "'");
-      }
-      if (mode == DxlDesignPatch.Mode.REPLACE
-          && nameParam != null
-          && !nameParam.isBlank()) {
-        name = nameParam.trim();
       }
     }
 
@@ -200,21 +200,15 @@ final class DesignCrud {
       dxl = DesignDxl.forNewNote(kinds.withName(starter.getString("dxl", ""), name));
       source = "default";
     } else {
-      name = DesignDxl.requireDesignName(dxl, dxlRoots);
+      String fromDxl = DesignDxl.requireDesignName(dxl, dxlRoots);
       kind =
           kindParam != null && !kindParam.isBlank()
               ? kinds.normalize(kindParam)
               : kinds.detectOrDefault(dxl);
       source = "dxl";
-      if (mode == DxlDesignPatch.Mode.REPLACE
-          && nameParam != null
-          && !nameParam.isBlank()) {
-        if (!nameParam.trim().equalsIgnoreCase(name)) {
-          throw new KeepExceptionWrongDataRequest(
-              "path name '" + nameParam.trim() + "' does not match DXL name '" + name + "'");
-        }
-        name = nameParam.trim();
-      }
+      NamedBody named = applyNameParam(dxl, fromDxl, nameParam, mode, kinds::withName);
+      dxl = named.dxl();
+      name = named.name();
     }
 
     Database db = request.db();
@@ -335,6 +329,38 @@ final class DesignCrud {
       throws KeepExceptionWrongDataRequest {
     return DesignDefaults.resolveOne(session, type);
   }
+
+  /**
+   * On create, a {@code name} query that differs from the DXL renames the note and strips note
+   * identity so the source UNID is not replaced. On replace, a different name is rejected.
+   */
+  static NamedBody applyNameParam(
+      String dxl,
+      String nameFromDxl,
+      String nameParam,
+      DxlDesignPatch.Mode mode,
+      NameRewriter rewriter)
+      throws KeepExceptionWrongDataRequest {
+    if (nameParam == null || nameParam.isBlank()) {
+      return new NamedBody(dxl, nameFromDxl);
+    }
+    String wanted = nameParam.trim();
+    if (wanted.equalsIgnoreCase(nameFromDxl)) {
+      return new NamedBody(dxl, wanted);
+    }
+    if (mode != DxlDesignPatch.Mode.CREATE) {
+      throw new KeepExceptionWrongDataRequest(
+          "path name '" + wanted + "' does not match DXL name '" + nameFromDxl + "'");
+    }
+    return new NamedBody(DesignDxl.forNewNote(rewriter.rewrite(dxl, wanted)), wanted);
+  }
+
+  @FunctionalInterface
+  interface NameRewriter {
+    String rewrite(String dxl, String name) throws KeepExceptionWrongDataRequest;
+  }
+
+  record NamedBody(String dxl, String name) {}
 
   interface KindAdapter {
     String normalize(String kind) throws KeepExceptionWrongDataRequest;

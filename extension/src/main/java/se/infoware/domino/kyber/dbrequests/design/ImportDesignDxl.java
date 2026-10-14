@@ -1,6 +1,7 @@
 package se.infoware.domino.kyber.dbrequests.design;
 
 import com.hcl.domino.DominoClient;
+import com.hcl.domino.DominoException;
 import com.hcl.domino.data.Database;
 import com.hcl.domino.dxl.DxlImporter;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
@@ -12,6 +13,7 @@ import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Bulk import design DXL - PUT /designdxl?nsfPath=&dbTitle=
@@ -68,9 +70,13 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
     boolean hasAcl = containsType(elements, "acl");
 
     KeepJnxSession session = request.session();
-    boolean created = openOrCreate(session, target);
+    DominoClient.Encryption encryption = encryptionOf(request.incoming.getString("encryption"));
+    boolean created = openOrCreate(session, target, encryption);
 
     Database db = session.getDatabaseDomino(target);
+    if (created && title == null) {
+      title = defaultTitleForNewNsf(target);
+    }
     if (created && title != null) {
       db.setTitle(title);
     }
@@ -176,9 +182,40 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
   }
 
   /**
+   * Title applied when a bulk create omits {@code dbTitle}. Other filenames keep Domino's own
+   * default until the caller sets one.
+   */
+  static String defaultTitleForNewNsf(String nsfPath) {
+    String file = fileName(nsfPath);
+    if (file.equalsIgnoreCase(fileName(DesignDefaults.defaultNsfPath()))) {
+      return "Kyber Design Elements";
+    }
+    if (file.equalsIgnoreCase("kybertest.nsf")) {
+      return "Kyber Smoke Test";
+    }
+    return null;
+  }
+
+  private static String fileName(String nsfPath) {
+    String path = nsfPath == null ? "" : nsfPath.trim().replace('\\', '/');
+    int bang = path.lastIndexOf("!!");
+    if (bang >= 0) {
+      path = path.substring(bang + 2);
+    }
+    int slash = path.lastIndexOf('/');
+    return slash >= 0 ? path.substring(slash + 1) : path;
+  }
+
+  /**
+   * Notes {@code ERR_NOEXIST} (259). Low 14 bits cover a packaged status word.
+   */
+  private static final int ERR_NOEXIST = 259;
+
+  /**
    * @return true if the NSF was created
    */
-  private static boolean openOrCreate(KeepJnxSession session, String nsfPath) throws Exception {
+  private static boolean openOrCreate(
+      KeepJnxSession session, String nsfPath, DominoClient.Encryption encryption) throws Exception {
     DominoClient client = session.getClient();
     String server = "";
     String path = nsfPath;
@@ -191,14 +228,72 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
     try {
       client.openDatabase(server, path);
       return false;
-    } catch (Exception ignored) {
-      // missing or not openable — try create
+    } catch (Exception openFailed) {
+      if (!isMissingDatabase(openFailed)) {
+        String message =
+            openFailed.getMessage() == null ? openFailed.toString() : openFailed.getMessage();
+        throw new KeepExceptionWrongDataRequest(
+            "Cannot open "
+                + nsfPath
+                + " ("
+                + message
+                + "). A new NSF is created only when the file does not exist.");
+      }
     }
 
-    Database created =
-        client.createDatabase(server, path, false, true, DominoClient.Encryption.None);
+    Database created = client.createDatabase(server, path, false, true, encryption);
     DesignAcl.ensureDomainManagers(created);
     return true;
+  }
+
+  /**
+   * True only for a missing file. Authorization and other open failures must not create an NSF.
+   */
+  static boolean isMissingDatabase(Throwable error) {
+    for (Throwable cursor = error; cursor != null; cursor = cursor.getCause()) {
+      if (cursor instanceof DominoException domino) {
+        int id = domino.getId();
+        if (id == ERR_NOEXIST || (id & 0x3fff) == ERR_NOEXIST) {
+          return true;
+        }
+      }
+      String message = cursor.getMessage();
+      if (message == null) {
+        continue;
+      }
+      String lower = message.toLowerCase(Locale.ROOT);
+      if (lower.contains("not authorized")
+          || lower.contains("access denied")
+          || lower.contains("you are not")
+          || lower.contains("insufficient access")) {
+        return false;
+      }
+      if (lower.contains("does not exist") || lower.contains("file not found")) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** Blank means {@link DominoClient.Encryption#None}, the historical create default. */
+  static DominoClient.Encryption encryptionOf(String raw) throws KeepExceptionWrongDataRequest {
+    if (raw == null || raw.isBlank()) {
+      return DominoClient.Encryption.None;
+    }
+    String key = raw.trim().toLowerCase(Locale.ROOT).replace("-", "");
+    return switch (key) {
+      case "none" -> DominoClient.Encryption.None;
+      case "simple" -> DominoClient.Encryption.Simple;
+      case "medium" -> DominoClient.Encryption.Medium;
+      case "strong" -> DominoClient.Encryption.Strong;
+      case "aes128" -> DominoClient.Encryption.AES128;
+      case "aes256" -> DominoClient.Encryption.AES256;
+      default ->
+          throw new KeepExceptionWrongDataRequest(
+              "Unknown encryption '"
+                  + raw.trim()
+                  + "'; expected none|simple|medium|strong|aes128|aes256");
+    };
   }
 
   private static String firstNonBlank(String a, String b) {

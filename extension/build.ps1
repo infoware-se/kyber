@@ -1,4 +1,4 @@
-# Builds infoware-kyber.jar (Kyber — Infoware Domino design REST extension for KEEP/DRAPI).
+# Builds infoware-kyber.jar (Kyber — Infoware REST API for design elements).
 # Requires: JDK 21, Maven 3.9+, HCL keep-core + keep-extension + keep-jnx-ext JARs.
 #
 # Usage (this PC):

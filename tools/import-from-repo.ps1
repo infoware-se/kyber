@@ -14,17 +14,27 @@
 
 .PARAMETER Token
   Bearer JWT. If omitted, authenticates with env / .env credentials
+
+.PARAMETER Encryption
+  Encryption for a NSF this import creates (none, simple, medium, strong, aes128, aes256).
+  Ignored when the NSF already exists. Default is the API default, none.
+
+.PARAMETER SkipCertificateCheck
+  Accept any TLS certificate. Leave this off for a certificate the machine trusts.
 #>
 param(
   [Parameter(Mandatory = $true)][string]$RestUrl,
   [Parameter(Mandatory = $true)][string]$NsfPath,
   [string]$InDir = ".\kyber",
-  [string]$Token = ""
+  [string]$Token = "",
+  [string]$Encryption = "",
+  [switch]$SkipCertificateCheck
 )
 
 $ErrorActionPreference = "Stop"
 
 function Enable-InsecureSsl {
+  if (-not $SkipCertificateCheck) { return }
   if ($PSVersionTable.PSVersion.Major -ge 6) { return }
   if (-not ([System.Management.Automation.PSTypeName]'IwsTrustAllCerts').Type) {
     Add-Type @"
@@ -45,7 +55,7 @@ function Invoke-Drapi {
   $p = @{ Method = $Method; Uri = $Uri; Headers = $Headers }
   if ($Body) { $p.Body = $Body }
   if ($ContentType) { $p.ContentType = $ContentType }
-  if ($PSVersionTable.PSVersion.Major -ge 6) { $p.SkipCertificateCheck = $true }
+  if ($SkipCertificateCheck -and $PSVersionTable.PSVersion.Major -ge 6) { $p.SkipCertificateCheck = $true }
   return Invoke-RestMethod @p
 }
 
@@ -122,8 +132,21 @@ if ($aclCount -gt 0) {
 }
 
 $uri = "$RestUrl/api/kyber-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfPath))"
+if ($Encryption) {
+  $uri = "$uri&encryption=$([uri]::EscapeDataString($Encryption))"
+}
 Write-Host ("PUT {0} ({1} elements)" -f $uri, $elements.Count)
 $result = Invoke-Drapi -Method PUT -Uri $uri -Headers $headers -Body $bodyJson -ContentType "application/json; charset=utf-8"
 
-Write-Host ("imported={0} created={1} aclApplied={2} nsfPath={3}" -f $result.imported, $result.created, $result.aclApplied, $result.nsfPath)
+$failed = 0
+if ($null -ne $result.failed) { $failed = [int]$result.failed }
+Write-Host ("imported={0} failed={1} created={2} aclApplied={3} nsfPath={4}" -f $result.imported, $failed, $result.created, $result.aclApplied, $result.nsfPath)
 $result | ConvertTo-Json -Depth 4 | Write-Output
+if ($result.success -eq $false -or $failed -gt 0) {
+  foreach ($row in @($result.results)) {
+    if ($row.success -eq $false) {
+      Write-Host ("FAIL {0} {1}: {2}" -f $row.type, $row.name, $row.message)
+    }
+  }
+  throw "Import incomplete: failed=$failed"
+}

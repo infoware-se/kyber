@@ -1,4 +1,8 @@
 # Fix minimal Java sources in kyber.nsf via bulk PUT (path CRUD cannot pass '/').
+param(
+  [string]$EnvFile = "",
+  [switch]$SkipCertificateCheck
+)
 $ErrorActionPreference = "Stop"
 
 function Get-EnvFileValue([string]$Path, [string]$Key) {
@@ -79,7 +83,18 @@ function New-MinimalJavaDxl([string]$TemplatePath, [string]$WantedName) {
   return @{ name = $WantedName; dxl = $dxl; preview = (($rewritten -split "`n") | Select-Object -First 6) -join ' | ' }
 }
 
-if (-not ([System.Management.Automation.PSTypeName]'IwsTrustAllCertsFix8').Type) {
+function Resolve-KyberEnvFile([string]$Explicit) {
+  if ($Explicit) {
+    if (-not (Test-Path $Explicit)) { throw "Env file not found: $Explicit" }
+    return (Resolve-Path $Explicit).Path
+  }
+  foreach ($f in @(".\.env", "$PSScriptRoot\..\.env", "C:\Git\install-domino-restapi\.env")) {
+    if (Test-Path $f) { return (Resolve-Path $f).Path }
+  }
+  throw "No .env found. Pass -EnvFile."
+}
+
+if ($SkipCertificateCheck -and -not ([System.Management.Automation.PSTypeName]'IwsTrustAllCertsFix8').Type) {
   Add-Type @"
 using System.Net; using System.Security.Cryptography.X509Certificates;
 public class IwsTrustAllCertsFix8 : ICertificatePolicy {
@@ -87,10 +102,12 @@ public class IwsTrustAllCertsFix8 : ICertificatePolicy {
 }
 "@
 }
-[System.Net.ServicePointManager]::CertificatePolicy = New-Object IwsTrustAllCertsFix8
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+if ($SkipCertificateCheck) {
+  [System.Net.ServicePointManager]::CertificatePolicy = New-Object IwsTrustAllCertsFix8
+  [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+}
 
-$envFile = "C:\Git\install-domino-restapi\.env"
+$envFile = Resolve-KyberEnvFile $EnvFile
 $base = (Get-EnvFileValue $envFile "DOMINO_REST_API_DATA_URL").TrimEnd('/')
 $user = Get-EnvFileValue $envFile "REST_ADMIN_USER"
 $pass = Get-EnvFileValue $envFile "REST_ADMIN_PASSWORD"

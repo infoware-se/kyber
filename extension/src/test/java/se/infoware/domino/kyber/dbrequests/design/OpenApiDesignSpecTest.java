@@ -31,6 +31,33 @@ class OpenApiDesignSpecTest {
     assertTrue(root.getJsonObject("paths").containsKey("/dbicon"));
     assertTrue(root.getJsonObject("paths").containsKey("/xpagesproject"));
     assertTrue(root.getJsonObject("paths").containsKey("/defaults/{type}"));
+    JsonObject bulk = root.getJsonObject("paths").getJsonObject("/designdxl");
+    assertNotNull(bulk.getJsonObject("get").getJsonObject("responses").getJsonObject("200"));
+    JsonObject getProps =
+        bulk.getJsonObject("get")
+            .getJsonObject("responses")
+            .getJsonObject("200")
+            .getJsonObject("content")
+            .getJsonObject("application/json")
+            .getJsonObject("schema")
+            .getJsonObject("properties");
+    assertNotNull(getProps.getJsonObject("skipped"));
+    JsonObject putProps =
+        bulk.getJsonObject("put")
+            .getJsonObject("responses")
+            .getJsonObject("200")
+            .getJsonObject("content")
+            .getJsonObject("application/json")
+            .getJsonObject("schema")
+            .getJsonObject("properties");
+    assertNotNull(putProps.getJsonObject("failed"));
+    boolean hasEncryption = false;
+    for (Object p : bulk.getJsonArray("parameters")) {
+      if (p instanceof JsonObject param && "encryption".equals(param.getString("name"))) {
+        hasEncryption = true;
+      }
+    }
+    assertTrue(hasEncryption);
   }
 
   @Test

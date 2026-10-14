@@ -6,7 +6,7 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Update-only — PUT /sharedactionss/{name}?nsfPath= */
+/** Update-only — PUT /sharedactions/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
 public class UpdateSharedActions extends AsyncDominoJNXJson {
   @Override

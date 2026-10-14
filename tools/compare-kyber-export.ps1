@@ -11,7 +11,8 @@ param(
   [Parameter(Mandatory = $true)][string]$ComDxlPath,
   [Parameter(Mandatory = $true)][string]$NsfPath,
   [string]$RestUrl = $env:DOMINO_REST_API_DATA_URL,
-  [string]$EnvFile = ""
+  [string]$EnvFile = "",
+  [switch]$SkipCertificateCheck
 )
 
 $ErrorActionPreference = "Stop"
@@ -77,14 +78,27 @@ if (-not $RestUrl) { $RestUrl = $env:DOMINO_REST_URL }
 if (-not $RestUrl) { throw "RestUrl / DOMINO_REST_API_DATA_URL required" }
 if (-not (Test-Path $ComDxlPath)) { throw "COM DXL not found: $ComDxlPath" }
 
-Ensure-CertTrust
-$auth = Invoke-RestMethod -Method POST -Uri "$RestUrl/api/v1/auth" -ContentType "application/json" `
+function Invoke-Kyber {
+  param([string]$Method = "GET", [string]$Uri, [hashtable]$Headers, [string]$Body = $null, [string]$ContentType = $null)
+  if ($SkipCertificateCheck -and $PSVersionTable.PSVersion.Major -lt 6) { Ensure-CertTrust }
+  $p = @{ Method = $Method; Uri = $Uri }
+  if ($Headers) { $p.Headers = $Headers }
+  if ($Body) { $p.Body = $Body }
+  if ($ContentType) { $p.ContentType = $ContentType }
+  if ($SkipCertificateCheck -and $PSVersionTable.PSVersion.Major -ge 6) { $p.SkipCertificateCheck = $true }
+  return Invoke-RestMethod @p
+}
+
+$auth = Invoke-Kyber -Method POST -Uri "$RestUrl/api/v1/auth" -ContentType "application/json" `
   -Body (@{ username = $env:REST_ADMIN_USER; password = $env:REST_ADMIN_PASSWORD } | ConvertTo-Json)
 $headers = @{ Authorization = "Bearer $($auth.bearer)" }
 
 $comDxl = [System.IO.File]::ReadAllText($ComDxlPath)
 $comUnids = Get-UnidsFromDxl $comDxl
-$bulk = Invoke-RestMethod -Uri "$RestUrl/api/kyber-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfPath))" -Headers $headers
+$bulk = Invoke-Kyber -Uri "$RestUrl/api/kyber-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfPath))" -Headers $headers
+foreach ($s in @($bulk.skipped | Where-Object { $_ })) {
+  Write-Warning ("skipped {0} {1}: {2}" -f $s.type, $s.name, $s.message)
+}
 $bulkInfo = Get-BulkUnids $bulk.elements
 $bulkUnids = $bulkInfo.Set
 

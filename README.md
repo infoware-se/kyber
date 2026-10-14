@@ -1,6 +1,6 @@
-# Kyber
+# Kyber — Infoware REST API for design elements
 
-Infoware Domino REST API extension for managing database **design elements** via `nsfPath` using typed DXL CRUD. Not an HCL product — runs as a KEEP/DRAPI extension JAR.
+Manages Domino database **design elements** via `nsfPath` using typed DXL CRUD. Not an HCL product — runs as a KEEP/DRAPI extension JAR.
 
 | | |
 |--|--|

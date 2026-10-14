@@ -1,4 +1,8 @@
 # Fix Designer Problems in kyber.nsf (Java package/type, LS reserved name, DB script Option Public)
+param(
+  [string]$EnvFile = "",
+  [switch]$SkipCertificateCheck
+)
 $ErrorActionPreference = "Stop"
 
 function Get-EnvFileValue([string]$Path, [string]$Key) {
@@ -10,7 +14,18 @@ function Get-EnvFileValue([string]$Path, [string]$Key) {
   return $null
 }
 
-if (-not ([System.Management.Automation.PSTypeName]'IwsTrustAllCertsFix3').Type) {
+function Resolve-KyberEnvFile([string]$Explicit) {
+  if ($Explicit) {
+    if (-not (Test-Path $Explicit)) { throw "Env file not found: $Explicit" }
+    return (Resolve-Path $Explicit).Path
+  }
+  foreach ($f in @(".\.env", "$PSScriptRoot\..\.env", "C:\Git\install-domino-restapi\.env")) {
+    if (Test-Path $f) { return (Resolve-Path $f).Path }
+  }
+  throw "No .env found. Pass -EnvFile."
+}
+
+if ($SkipCertificateCheck -and -not ([System.Management.Automation.PSTypeName]'IwsTrustAllCertsFix3').Type) {
   Add-Type @"
 using System.Net; using System.Security.Cryptography.X509Certificates;
 public class IwsTrustAllCertsFix3 : ICertificatePolicy {
@@ -18,10 +33,12 @@ public class IwsTrustAllCertsFix3 : ICertificatePolicy {
 }
 "@
 }
-[System.Net.ServicePointManager]::CertificatePolicy = New-Object IwsTrustAllCertsFix3
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+if ($SkipCertificateCheck) {
+  [System.Net.ServicePointManager]::CertificatePolicy = New-Object IwsTrustAllCertsFix3
+  [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+}
 
-$envFile = "C:\Git\install-domino-restapi\.env"
+$envFile = Resolve-KyberEnvFile $EnvFile
 $base = (Get-EnvFileValue $envFile "DOMINO_REST_API_DATA_URL").TrimEnd('/')
 $user = Get-EnvFileValue $envFile "REST_ADMIN_USER"
 $pass = Get-EnvFileValue $envFile "REST_ADMIN_PASSWORD"

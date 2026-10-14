@@ -107,13 +107,13 @@ final class DesignLotusScriptCompile {
           continue;
         }
         String title = primaryTitle(lib.getTitle());
-        compileOne(lib, "scriptlibrary", title, compiled, skipped, errors, done);
+        compileScriptLibrary(exporter, lib, title, compiled, skipped, errors, done);
       }
       // Also any lib missing from order (cycle / unnamed edge)
       for (Map.Entry<String, ScriptLibrary> e : byName.entrySet()) {
         if (!order.contains(e.getKey())) {
           String title = primaryTitle(e.getValue().getTitle());
-          compileOne(e.getValue(), "scriptlibrary", title, compiled, skipped, errors, done);
+          compileScriptLibrary(exporter, e.getValue(), title, compiled, skipped, errors, done);
         }
       }
       if (done.size() == before) {
@@ -226,6 +226,47 @@ final class DesignLotusScriptCompile {
       } catch (RuntimeException skippedEl) {
         // keep compiling other elements
       }
+    }
+  }
+
+  /**
+   * {@code compileLotusScript} on a JavaScript, SSJS, or Java library rewrites the note and
+   * Designer then hangs while reading it. Only LotusScript libraries are compiled.
+   */
+  private static void compileScriptLibrary(
+      DxlExporter exporter,
+      ScriptLibrary lib,
+      String title,
+      JsonArray compiled,
+      JsonArray skipped,
+      JsonArray errors,
+      Set<String> done) {
+    if (!isLotusScriptLibrary(exporter, lib)) {
+      String key = "scriptlibrary|" + (title == null ? "" : title);
+      if (done.contains(key)) {
+        return;
+      }
+      JsonObject row = new JsonObject().put("type", "scriptlibrary");
+      if (title != null && !title.isBlank()) {
+        row.put("name", title);
+      }
+      row.put("message", "not LotusScript");
+      skipped.add(row);
+      done.add(key);
+      return;
+    }
+    compileOne(lib, "scriptlibrary", title, compiled, skipped, errors, done);
+  }
+
+  static boolean isLotusScriptDxl(String dxl) {
+    return ScriptLibraryKinds.LOTUSSCRIPT.equals(ScriptLibraryKinds.detect(dxl));
+  }
+
+  private static boolean isLotusScriptLibrary(DxlExporter exporter, ScriptLibrary lib) {
+    try {
+      return isLotusScriptDxl(exporter.exportDocument(lib.getDocument()));
+    } catch (Exception e) {
+      return false;
     }
   }
 

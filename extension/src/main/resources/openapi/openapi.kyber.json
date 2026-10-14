@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Kyber — Infoware Domino design REST API",
-    "description": "Kyber (Infoware): CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (bulk import only); per-type CRUD requires an existing database. This API never deletes databases. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl.",
+    "title": "Kyber — Infoware REST API for design elements",
+    "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (bulk import only); per-type CRUD requires an existing database. This API never deletes databases. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl.",
     "version": "0.24.2"
   },
   "servers": [
@@ -193,7 +193,7 @@
     },
     "/designdxl": {
       "summary": "Bulk export or import all supported design elements as DXL",
-      "description": "GET exports every supported design element as CRUD-identical DXL. PUT imports an elements array (same DXL as per-type CRUD). Missing NSF is created on PUT only. Optional ?dbTitle= sets the database title when the NSF is created. Requires ?nsfPath=.",
+      "description": "GET exports every supported design element as CRUD-identical DXL and lists notes that could not be exported in skipped. PUT imports an elements array (same DXL as per-type CRUD) and reports failed when any element was not applied. Missing NSF is created on PUT only, and only when the file does not exist. Optional ?dbTitle= sets the database title when the NSF is created. Optional ?encryption= chooses encryption for that create (default none). Requires ?nsfPath=.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -212,6 +212,16 @@
           },
           "in": "query",
           "required": false
+        },
+        {
+          "name": "encryption",
+          "description": "Encryption for a NSF created by PUT. Ignored when the NSF already exists. Default none (unencrypted). aes256 is the usual choice for a new encrypted database.",
+          "schema": {
+            "type": "string",
+            "enum": ["none", "simple", "medium", "strong", "aes128", "aes256"]
+          },
+          "in": "query",
+          "required": false
         }
       ],
       "get": {
@@ -220,7 +230,7 @@
         ],
         "operationId": "getDesignDxl",
         "summary": "Bulk export design DXL",
-        "description": "Returns { nsfPath, elements: [{ type, name?, dxl }] } for all supported design types. Requires ?nsfPath=. NSF must already exist.",
+        "description": "Returns { nsfPath, elements: [{ type, name?, dxl }], skipped: [{ type, name?, message }] }. skipped is empty when every note was exported. Requires ?nsfPath=. NSF must already exist.",
         "x-keep-version": 1,
         "security": [
           {
@@ -256,6 +266,28 @@
                         "required": [
                           "type",
                           "dxl"
+                        ]
+                      }
+                    },
+                    "skipped": {
+                      "type": "array",
+                      "description": "Notes that were not included in elements",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "message"
                         ]
                       }
                     }
@@ -356,6 +388,10 @@
                     "imported": {
                       "type": "integer"
                     },
+                    "failed": {
+                      "type": "integer",
+                      "description": "Elements that were not applied. success is false when this is greater than zero. Earlier elements in the same request stay written."
+                    },
                     "results": {
                       "type": "array",
                       "items": {
@@ -399,7 +435,7 @@
         ],
         "operationId": "createPage",
         "summary": "Create a page (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -729,7 +765,7 @@
         ],
         "operationId": "createOutline",
         "summary": "Create an outline (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1059,7 +1095,7 @@
         ],
         "operationId": "createFrameset",
         "summary": "Create a frameset (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1389,7 +1425,7 @@
         ],
         "operationId": "createForm",
         "summary": "Create a form (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1719,7 +1755,7 @@
         ],
         "operationId": "createView",
         "summary": "Create a view (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2049,7 +2085,7 @@
         ],
         "operationId": "createFolder",
         "summary": "Create a folder (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2379,7 +2415,7 @@
         ],
         "operationId": "createSubform",
         "summary": "Create a subform (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2708,7 +2744,7 @@
         ],
         "operationId": "createSharedField",
         "summary": "Create a shared field (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3037,7 +3073,7 @@
         ],
         "operationId": "createSharedColumn",
         "summary": "Create a shared column (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3366,7 +3402,7 @@
         ],
         "operationId": "createImage",
         "summary": "Create an image resource (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3695,7 +3731,7 @@
         ],
         "operationId": "createFileResource",
         "summary": "Create a file resource (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4024,7 +4060,7 @@
         ],
         "operationId": "createStyleSheet",
         "summary": "Create a style sheet (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4353,7 +4389,7 @@
         ],
         "operationId": "createTheme",
         "summary": "Create a theme (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5322,7 +5358,7 @@
         ],
         "operationId": "createAgent",
         "summary": "Create an agent (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set (also ?kind= for the variant). Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. For agents, pass optional ?kind=lotusscript|formula|simpleaction|java|importedjava when creating from starter DXL.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set (also ?kind= for the variant). Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. For agents, pass optional ?kind=lotusscript|formula|simpleaction|java|importedjava when creating from starter DXL.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5691,7 +5727,7 @@
         ],
         "operationId": "createScriptLibrary",
         "summary": "Create a script library (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set (also ?kind= for the variant). Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. For script libraries, pass optional ?kind=lotusscript|javascript|ssjs|java when creating from starter DXL.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set (also ?kind= for the variant). Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. For script libraries, pass optional ?kind=lotusscript|javascript|ssjs|java when creating from starter DXL.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6035,7 +6071,7 @@
         ],
         "operationId": "createSharedActions",
         "summary": "Create a Shared Actions note (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7035,7 +7071,7 @@
         ],
         "operationId": "createXPage",
         "summary": "Create an XPage (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. Also auto-ensures the minimal XPages project skeleton on create (see POST /xpagesproject).",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. Also auto-ensures the minimal XPages project skeleton on create (see POST /xpagesproject).",
         "x-keep-version": 1,
         "security": [
           {
@@ -7364,7 +7400,7 @@
         ],
         "operationId": "createCustomControl",
         "summary": "Create a custom control (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7683,7 +7719,7 @@
         ],
         "operationId": "createWebService",
         "summary": "Create a web service provider (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8002,7 +8038,7 @@
         ],
         "operationId": "createWebServiceConsumer",
         "summary": "Create a web service consumer (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8321,7 +8357,7 @@
         ],
         "operationId": "createNavigator",
         "summary": "Create a navigator (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8640,7 +8676,7 @@
         ],
         "operationId": "createDataConnection",
         "summary": "Create a data connection (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8959,7 +8995,7 @@
         ],
         "operationId": "createJar",
         "summary": "Create a JAR (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9278,7 +9314,7 @@
         ],
         "operationId": "createApplet",
         "summary": "Create an applet (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9620,7 +9656,7 @@
         ],
         "operationId": "createJavaSource",
         "summary": "Create a Java source (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set (also ?kind= for the variant). Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. For Java sources, pass optional ?kind=class|interface|enum. The name is the Java path ending in .java (e.g. se/infoware/kyber/NewJava.java).",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set (also ?kind= for the variant). Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. For Java sources, pass optional ?kind=class|interface|enum. The name is the Java path ending in .java (e.g. se/infoware/kyber/NewJava.java).",
         "x-keep-version": 1,
         "security": [
           {
@@ -9953,7 +9989,7 @@
         ],
         "operationId": "createWiringProperties",
         "summary": "Create a wiring properties (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10272,7 +10308,7 @@
         ],
         "operationId": "createCompositeApplication",
         "summary": "Create a composite application (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10591,7 +10627,7 @@
         ],
         "operationId": "createCompositeComponent",
         "summary": "Create a composite component (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets/renames the element on create. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists.",
         "x-keep-version": 1,
         "security": [
           {

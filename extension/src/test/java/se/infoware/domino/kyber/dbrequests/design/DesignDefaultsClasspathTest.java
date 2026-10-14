@@ -33,8 +33,14 @@ class DesignDefaultsClasspathTest {
     assertTrue(DesignDefaults.classpathDxl("agent", "simpleaction").isPresent());
     assertTrue(DesignDefaults.classpathDxl("agent", "java").isPresent());
     assertTrue(DesignDefaults.classpathDxl("agent", "importedjava").isPresent());
-    assertTrue(DesignDefaults.classpathDxl("scriptlibrary", "javascript").isPresent());
-    assertTrue(DesignDefaults.classpathDxl("scriptlibrary", "ssjs").isPresent());
+    String clientJs = DesignDefaults.classpathDxl("scriptlibrary", "javascript").orElseThrow();
+    assertEquals("javascript", ScriptLibraryKinds.detect(clientJs));
+    String ssjs = DesignDefaults.classpathDxl("scriptlibrary", "ssjs").orElseThrow();
+    assertTrue(ssjs.contains("$ServerJavaScriptLibrary"));
+    assertFalse(ssjs.contains("for='server'"), "DTD code@for is only web or client");
+    assertEquals("ssjs", ScriptLibraryKinds.detect(ssjs));
+    assertTrue(ssjs.indexOf("<code") < ssjs.indexOf("<item"), "code must precede items");
+    assertTrue(clientJs.indexOf("<code") < clientJs.indexOf("<item"));
     assertTrue(DesignDefaults.classpathDxl("scriptlibrary", "java").isPresent());
     assertTrue(DesignDefaults.classpathDxl("javasource", "class").isPresent());
     assertTrue(DesignDefaults.classpathDxl("javasource", "interface").isPresent());

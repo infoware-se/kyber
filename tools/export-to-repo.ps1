@@ -22,6 +22,13 @@
   files extracted from <java name='...'>. Applies to Java script libraries, agents,
   and applets. Source stays in DXL; Domino recompiles on import.
   On by default. Pass -ReadableJava:`$false to keep binary .class in DXL.
+
+.PARAMETER SkipCertificateCheck
+  Accept any TLS certificate. Leave this off for a certificate the machine trusts.
+
+.PARAMETER AllowSkipped
+  Write the tree even when GET /designdxl reports skipped notes. Without this switch
+  the script stops before replacing OutDir.
 #>
 param(
   [Parameter(Mandatory = $true)][string]$RestUrl,
@@ -29,12 +36,15 @@ param(
   [string]$OutDir = ".\kyber",
   [string]$Token = "",
   [string[]]$SkipTypes = @(),
-  [bool]$ReadableJava = $true
+  [bool]$ReadableJava = $true,
+  [switch]$SkipCertificateCheck,
+  [switch]$AllowSkipped
 )
 
 $ErrorActionPreference = "Stop"
 
 function Enable-InsecureSsl {
+  if (-not $SkipCertificateCheck) { return }
   if ($PSVersionTable.PSVersion.Major -ge 6) { return }
   if (-not ([System.Management.Automation.PSTypeName]'IwsTrustAllCerts').Type) {
     Add-Type @"
@@ -55,7 +65,7 @@ function Invoke-Drapi {
   $p = @{ Method = $Method; Uri = $Uri; Headers = $Headers }
   if ($Body) { $p.Body = $Body }
   if ($ContentType) { $p.ContentType = $ContentType }
-  if ($PSVersionTable.PSVersion.Major -ge 6) { $p.SkipCertificateCheck = $true }
+  if ($SkipCertificateCheck -and $PSVersionTable.PSVersion.Major -ge 6) { $p.SkipCertificateCheck = $true }
   return Invoke-RestMethod @p
 }
 
@@ -211,6 +221,16 @@ $headers = @{ Authorization = "Bearer $bearer" }
 $uri = "$RestUrl/api/kyber-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfPath))"
 Write-Host "GET $uri"
 $payload = Invoke-Drapi -Method GET -Uri $uri -Headers $headers
+
+$skipped = @($payload.skipped | Where-Object { $_ })
+if ($skipped.Count -gt 0) {
+  foreach ($s in $skipped) {
+    Write-Warning ("skipped {0} {1}: {2}" -f $s.type, $s.name, $s.message)
+  }
+  if (-not $AllowSkipped) {
+    throw "Export skipped $($skipped.Count) design note(s). Re-run with -AllowSkipped to write a partial tree."
+  }
+}
 
 if (Test-Path $OutDir) {
   Remove-Item -Recurse -Force $OutDir

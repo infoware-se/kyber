@@ -6,7 +6,7 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Create-only — POST /wiringpropertiess?nsfPath=&name= */
+/** Create-only — POST /wiringproperties?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
 public class CreateWiringProperties extends AsyncDominoJNXJson {
   @Override
