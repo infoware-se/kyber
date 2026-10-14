@@ -3,7 +3,7 @@
   Live smoke of kyber-v1 against DRAPI: defaults, CRUD status codes, XPages ensure.
 
 .DESCRIPTION
-  Auth via C:\Git\install-domino-restapi\.env (or DOMINO_REST_* / REST_ADMIN_*).
+  Auth via DOMINO_REST_* / REST_ADMIN_* or a gitignored .env. Notes COM uses DOMINO_SERVER.
   Uses kybertest.nsf (PUT /designdxl?dbTitle=... creates it when missing), then asserts:
 
   - GET /defaults for a few types
@@ -231,7 +231,7 @@ Option Explicit
 Dim session, db, agent, dc, doc, nxt, item
 On Error Resume Next
 Set session = CreateObject("Notes.NotesSession")
-Set db = session.GetDatabase("YourDominoServer", "kybertest.nsf")
+Set db = session.GetDatabase("$DominoServer", "kybertest.nsf")
 If Not db.IsOpen Then
   WScript.Echo "OPEN FAIL " & Err.Description
   WScript.Quit 1
@@ -527,7 +527,7 @@ function Invoke-NotesSign([string[]]$Unids) {
 Option Explicit
 Dim session, db, doc
 Set session = CreateObject("Notes.NotesSession")
-Set db = session.GetDatabase("YourDominoServer", "$NsfPath")
+Set db = session.GetDatabase("$DominoServer", "$NsfPath")
 If Not db.IsOpen Then
   WScript.Echo "OPEN FAIL"
   WScript.Quit 1
@@ -544,7 +544,7 @@ function Invoke-NotesSignDesign {
 Option Explicit
 Dim session, db, nc, doc, id, signed
 Set session = CreateObject("Notes.NotesSession")
-Set db = session.GetDatabase("YourDominoServer", "$NsfPath")
+Set db = session.GetDatabase("$DominoServer", "$NsfPath")
 If Not db.IsOpen Then
   WScript.Echo "OPEN FAIL"
   WScript.Quit 1
@@ -772,7 +772,11 @@ if (-not $EnvFile) {
 }
 $base = $env:DOMINO_REST_API_DATA_URL
 if (-not $base) { $base = Get-EnvFileValue $EnvFile "DOMINO_REST_API_DATA_URL" }
+if (-not $base) { $base = Get-EnvFileValue $EnvFile "DOMINO_REST_URL" }
 if (-not $base) { Fail "DOMINO_REST_API_DATA_URL missing" }
+$DominoServer = $env:DOMINO_SERVER
+if (-not $DominoServer) { $DominoServer = Get-EnvFileValue $EnvFile "DOMINO_SERVER" }
+if (-not $DominoServer) { Fail "DOMINO_SERVER missing" }
 $base = $base.TrimEnd("/")
 
 $user = $env:REST_ADMIN_USER; if (-not $user) { $user = Get-EnvFileValue $EnvFile "REST_ADMIN_USER" }

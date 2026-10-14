@@ -18,7 +18,29 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-if (-not $Server) { $Server = "YourDominoServer" }
+function Get-EnvFileValue([string]$Path, [string]$Key) {
+  if (-not $Path -or -not (Test-Path $Path)) { return $null }
+  foreach ($line in Get-Content $Path) {
+    if ($line -match "^\s*#" -or $line -notmatch "=") { continue }
+    $k, $v = $line -split "=", 2
+    if ($k.Trim() -eq $Key) { return $v.Trim().Trim('"').Trim("'") }
+  }
+  return $null
+}
+
+function Find-KyberEnvFile {
+  foreach ($f in @(".\.env", (Join-Path $PSScriptRoot "..\.env"), "C:\Git\install-domino-restapi\.env")) {
+    if (Test-Path $f) { return (Resolve-Path $f).Path }
+  }
+  return $null
+}
+
+$KyberEnvFile = Find-KyberEnvFile
+if (-not $Server) { $Server = $env:DOMINO_SERVER }
+if (-not $Server) { $Server = Get-EnvFileValue $KyberEnvFile "DOMINO_SERVER" }
+if (-not $Server) {
+  throw "Set -Server or DOMINO_SERVER to the Notes server name used by SendConsoleCommand."
+}
 
 function Invoke-DominoConsole([string]$Command) {
   $session = New-Object -ComObject Notes.NotesSession
@@ -47,7 +69,11 @@ function Wait-NrestapiStopped([int]$TimeoutSec) {
 function Wait-RestapiHttp([int]$TimeoutSec) {
   $url = $env:DOMINO_REST_API_DATA_URL
   if (-not $url) { $url = $env:DOMINO_REST_URL }
-  if (-not $url) { $url = "https://your-domino-server:8880" }
+  if (-not $url) { $url = Get-EnvFileValue $KyberEnvFile "DOMINO_REST_API_DATA_URL" }
+  if (-not $url) { $url = Get-EnvFileValue $KyberEnvFile "DOMINO_REST_URL" }
+  if (-not $url) {
+    throw "Set DOMINO_REST_API_DATA_URL or DOMINO_REST_URL so the restart can see that REST is up."
+  }
   $url = $url.TrimEnd("/") + "/"
   for ($i = 1; $i -le $TimeoutSec; $i++) {
     try {

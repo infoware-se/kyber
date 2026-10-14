@@ -4,6 +4,7 @@ extension/target/
 extension/lib/
 *.class
 extension/IBM_TECHNICAL_SUPPORT/
+extension/*.dll
 
 # Local design exports / scratch (not part of the extension)
 /design/

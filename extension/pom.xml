@@ -8,6 +8,13 @@
     <version>0.24.2</version>
     <packaging>jar</packaging>
     <name>Kyber — Infoware REST API for design elements</name>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <properties>
         <domino.version>14.5.0</domino.version>

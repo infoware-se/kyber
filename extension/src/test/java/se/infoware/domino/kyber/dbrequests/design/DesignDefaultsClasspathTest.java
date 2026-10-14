@@ -6,7 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 class DesignDefaultsClasspathTest {
@@ -69,7 +73,7 @@ class DesignDefaultsClasspathTest {
   }
 
   @Test
-  void xpagesProjectSkeletonResourcesExist() {
+  void xpagesProjectSkeletonResourcesExist() throws Exception {
     String[] files = {
       "project.dxl",
       "classpath.dxl",
@@ -80,9 +84,39 @@ class DesignDefaultsClasspathTest {
       "xsp-properties.dxl"
     };
     for (String file : files) {
-      assertTrue(
-          XPagesProject.class.getResourceAsStream("/defaults/xpages-project/" + file) != null,
-          "missing skeleton " + file);
+      String dxl = readResource("/defaults/xpages-project/" + file);
+      assertFalse(dxl.contains("Dantooine"), file);
+      assertFalse(dxl.contains("onInfoware"), file);
+      assertFalse(dxl.contains("Mathias"), file);
     }
+    String project = filePayload(readResource("/defaults/xpages-project/project.dxl"));
+    String plugin = filePayload(readResource("/defaults/xpages-project/plugin-xml.dxl"));
+    String activator = filePayload(readResource("/defaults/xpages-project/activator-class.dxl"));
+    String resource = filePayload(DesignDefaults.classpathDxl("xpagesresource").orElseThrow());
+    for (String payload : new String[] {project, plugin, activator, resource}) {
+      assertFalse(payload.contains("keepdesign"));
+      assertFalse(payload.contains("Dantooine"));
+      assertFalse(payload.contains("onInfoware"));
+    }
+    assertTrue(project.contains("<name>kyber.nsf</name>"));
+    assertTrue(plugin.contains("id=\"kyber_nsf\""));
+    assertTrue(activator.contains("kyber_nsf"));
+  }
+
+  private static String readResource(String path) throws Exception {
+    try (var in = XPagesProject.class.getResourceAsStream(path)) {
+      assertTrue(in != null, "missing " + path);
+      return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+    }
+  }
+
+  private static String filePayload(String dxl) {
+    Matcher matcher =
+        Pattern.compile("(?is)<rawitemdata[^>]*>\\s*([A-Za-z0-9+/=\\s]+)\\s*</rawitemdata>")
+            .matcher(dxl);
+    assertTrue(matcher.find(), "missing file payload");
+    byte[] raw = Base64.getMimeDecoder().decode(matcher.group(1).replaceAll("\\s+", ""));
+    assertTrue(raw.length > 42);
+    return new String(raw, 42, raw.length - 42, StandardCharsets.ISO_8859_1);
   }
 }
