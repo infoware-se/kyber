@@ -208,7 +208,7 @@ if (-not [System.IO.Path]::IsPathRooted($OutDir)) {
 $bearer = Get-BearerToken
 $headers = @{ Authorization = "Bearer $bearer" }
 
-$uri = "$RestUrl/api/design-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfPath))"
+$uri = "$RestUrl/api/kyber-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfPath))"
 Write-Host "GET $uri"
 $payload = Invoke-Drapi -Method GET -Uri $uri -Headers $headers
 

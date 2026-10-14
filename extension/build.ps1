@@ -1,4 +1,4 @@
-﻿# Builds infoware-kyber.jar (Kyber — Infoware Domino design REST extension for KEEP/DRAPI).
+# Builds infoware-kyber.jar (Kyber — Infoware Domino design REST extension for KEEP/DRAPI).
 # Requires: JDK 21, Maven 3.9+, HCL keep-core + keep-extension + keep-jnx-ext JARs.
 #
 # Usage (this PC):
@@ -261,7 +261,7 @@ try {
     Write-Host "Next steps:"
     Write-Host "  1. .\build.ps1 -InstallToDrapi   (quit via COM, swap JAR, load via COM)"
     Write-Host "  2. Or manually: tools\restart-restapi-com.ps1 after copying the JAR"
-    Write-Host "  3. Verify /api/design-v1/webservicenames in Swagger"
+    Write-Host "  3. Verify /api/kyber-v1/webservicenames in Swagger"
     Write-Host ""
 
     $installRoot = if ($KeepJarDir) { $KeepJarDir } else { "C:\Domino\restapi" }

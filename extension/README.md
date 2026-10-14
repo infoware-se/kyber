@@ -28,7 +28,7 @@ Same pattern for other named types (`/forms`, `/scriptlibraries`, …). Write re
 
 OpenAPI operationIds: `listX` / `getX` / `createX` / `updateX` / `deleteX`.
 
-All paths are under `/api/design-v1` and require `?nsfPath=`.
+All paths are under `/api/kyber-v1` and require `?nsfPath=`.
 
 ## Bulk export/import (`design-handler`)
 
@@ -139,91 +139,91 @@ Named types share the same CRUD shape: **list** `GET /{types}`, **create** `POST
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/pages?nsfPath=` |
-| POST | `/api/design-v1/pages?nsfPath=` (`text/xml` page DXL; optional `?name=`) |
-| GET | `/api/design-v1/pages/{name}?nsfPath=` |
-| PUT | `/api/design-v1/pages/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/pages/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/pages?nsfPath=` |
+| POST | `/api/kyber-v1/pages?nsfPath=` (`text/xml` page DXL; optional `?name=`) |
+| GET | `/api/kyber-v1/pages/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/pages/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/pages/{name}?nsfPath=` |
 
 ### Outlines
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/outlines?nsfPath=` |
-| POST | `/api/design-v1/outlines?nsfPath=` (`text/xml` outline DXL; optional `?name=`) |
-| GET | `/api/design-v1/outlines/{name}?nsfPath=` |
-| PUT | `/api/design-v1/outlines/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/outlines/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/outlines?nsfPath=` |
+| POST | `/api/kyber-v1/outlines?nsfPath=` (`text/xml` outline DXL; optional `?name=`) |
+| GET | `/api/kyber-v1/outlines/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/outlines/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/outlines/{name}?nsfPath=` |
 
 ### Framesets
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/framesets?nsfPath=` |
-| POST | `/api/design-v1/framesets?nsfPath=` (`text/xml` frameset DXL; optional `?name=`) |
-| GET | `/api/design-v1/framesets/{name}?nsfPath=` |
-| PUT | `/api/design-v1/framesets/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/framesets/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/framesets?nsfPath=` |
+| POST | `/api/kyber-v1/framesets?nsfPath=` (`text/xml` frameset DXL; optional `?name=`) |
+| GET | `/api/kyber-v1/framesets/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/framesets/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/framesets/{name}?nsfPath=` |
 
 ### Forms
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/forms?nsfPath=` |
-| POST | `/api/design-v1/forms?nsfPath=` (`text/xml` form DXL; optional `?name=`) |
-| GET | `/api/design-v1/forms/{name}?nsfPath=` |
-| PUT | `/api/design-v1/forms/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/forms/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/forms?nsfPath=` |
+| POST | `/api/kyber-v1/forms?nsfPath=` (`text/xml` form DXL; optional `?name=`) |
+| GET | `/api/kyber-v1/forms/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/forms/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/forms/{name}?nsfPath=` |
 
 ### Views
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/views?nsfPath=` |
-| POST | `/api/design-v1/views?nsfPath=` (`text/xml` view DXL; optional `?name=`) |
-| GET | `/api/design-v1/views/{name}?nsfPath=` |
-| PUT | `/api/design-v1/views/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/views/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/views?nsfPath=` |
+| POST | `/api/kyber-v1/views?nsfPath=` (`text/xml` view DXL; optional `?name=`) |
+| GET | `/api/kyber-v1/views/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/views/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/views/{name}?nsfPath=` |
 
 ### Folders
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/folders?nsfPath=` |
-| POST | `/api/design-v1/folders?nsfPath=` (`text/xml` folder DXL; optional `?name=`) |
-| GET | `/api/design-v1/folders/{name}?nsfPath=` |
-| PUT | `/api/design-v1/folders/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/folders/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/folders?nsfPath=` |
+| POST | `/api/kyber-v1/folders?nsfPath=` (`text/xml` folder DXL; optional `?name=`) |
+| GET | `/api/kyber-v1/folders/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/folders/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/folders/{name}?nsfPath=` |
 
 ### Subforms
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/subforms?nsfPath=` |
-| POST | `/api/design-v1/subforms?nsfPath=` (`text/xml` subform DXL; optional `?name=`) |
-| GET | `/api/design-v1/subforms/{name}?nsfPath=` |
-| PUT | `/api/design-v1/subforms/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/subforms/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/subforms?nsfPath=` |
+| POST | `/api/kyber-v1/subforms?nsfPath=` (`text/xml` subform DXL; optional `?name=`) |
+| GET | `/api/kyber-v1/subforms/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/subforms/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/subforms/{name}?nsfPath=` |
 
 ### Shared fields
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/sharedfields?nsfPath=` |
-| POST | `/api/design-v1/sharedfields?nsfPath=` (`text/xml` sharedfield DXL; optional `?name=`) |
-| GET | `/api/design-v1/sharedfields/{name}?nsfPath=` |
-| PUT | `/api/design-v1/sharedfields/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/sharedfields/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/sharedfields?nsfPath=` |
+| POST | `/api/kyber-v1/sharedfields?nsfPath=` (`text/xml` sharedfield DXL; optional `?name=`) |
+| GET | `/api/kyber-v1/sharedfields/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/sharedfields/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/sharedfields/{name}?nsfPath=` |
 
 ### Shared columns
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/sharedcolumns?nsfPath=` |
-| POST | `/api/design-v1/sharedcolumns?nsfPath=` (`text/xml` sharedcolumn DXL; optional `?name=`) |
-| GET | `/api/design-v1/sharedcolumns/{name}?nsfPath=` |
-| PUT | `/api/design-v1/sharedcolumns/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/sharedcolumns/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/sharedcolumns?nsfPath=` |
+| POST | `/api/kyber-v1/sharedcolumns?nsfPath=` (`text/xml` sharedcolumn DXL; optional `?name=`) |
+| GET | `/api/kyber-v1/sharedcolumns/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/sharedcolumns/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/sharedcolumns/{name}?nsfPath=` |
 
 ### Images
 
@@ -231,76 +231,76 @@ Named types share the same CRUD shape: **list** `GET /{types}`, **create** `POST
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/images?nsfPath=` |
-| POST | `/api/design-v1/images?nsfPath=` (`text/xml` imageresource DXL; optional `?name=`) |
-| GET | `/api/design-v1/images/{name}?nsfPath=` |
-| PUT | `/api/design-v1/images/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/images/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/images?nsfPath=` |
+| POST | `/api/kyber-v1/images?nsfPath=` (`text/xml` imageresource DXL; optional `?name=`) |
+| GET | `/api/kyber-v1/images/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/images/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/images/{name}?nsfPath=` |
 
 ### Files
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/fileresources?nsfPath=` |
-| POST | `/api/design-v1/fileresources?nsfPath=` (`text/xml` fileresource DXL; optional `?name=`) |
-| GET | `/api/design-v1/fileresources/{name}?nsfPath=` |
-| PUT | `/api/design-v1/fileresources/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/fileresources/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/fileresources?nsfPath=` |
+| POST | `/api/kyber-v1/fileresources?nsfPath=` (`text/xml` fileresource DXL; optional `?name=`) |
+| GET | `/api/kyber-v1/fileresources/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/fileresources/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/fileresources/{name}?nsfPath=` |
 
 ### Style sheets
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/stylesheets?nsfPath=` |
-| POST | `/api/design-v1/stylesheets?nsfPath=` (`text/xml` stylesheetresource DXL; optional `?name=`) |
-| GET | `/api/design-v1/stylesheets/{name}?nsfPath=` |
-| PUT | `/api/design-v1/stylesheets/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/stylesheets/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/stylesheets?nsfPath=` |
+| POST | `/api/kyber-v1/stylesheets?nsfPath=` (`text/xml` stylesheetresource DXL; optional `?name=`) |
+| GET | `/api/kyber-v1/stylesheets/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/stylesheets/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/stylesheets/{name}?nsfPath=` |
 
 ### Themes
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/themes?nsfPath=` |
-| POST | `/api/design-v1/themes?nsfPath=` (`text/xml`; prefer Designer-exported DXL; optional `?name=`) |
-| GET | `/api/design-v1/themes/{name}?nsfPath=` |
-| PUT | `/api/design-v1/themes/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/themes/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/themes?nsfPath=` |
+| POST | `/api/kyber-v1/themes?nsfPath=` (`text/xml`; prefer Designer-exported DXL; optional `?name=`) |
+| GET | `/api/kyber-v1/themes/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/themes/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/themes/{name}?nsfPath=` |
 
 ### Navigators
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/navigators?nsfPath=` |
-| POST | `/api/design-v1/navigators?nsfPath=` (`text/xml`; optional `?name=`) |
-| GET | `/api/design-v1/navigators/{name}?nsfPath=` |
-| PUT | `/api/design-v1/navigators/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/navigators/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/navigators?nsfPath=` |
+| POST | `/api/kyber-v1/navigators?nsfPath=` (`text/xml`; optional `?name=`) |
+| GET | `/api/kyber-v1/navigators/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/navigators/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/navigators/{name}?nsfPath=` |
 
 ### ACL
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/acl?nsfPath=` |
-| PUT | `/api/design-v1/acl?nsfPath=` (`text/xml` `<acl>` DXL; requires Manager) |
+| GET | `/api/kyber-v1/acl?nsfPath=` |
+| PUT | `/api/kyber-v1/acl?nsfPath=` (`text/xml` `<acl>` DXL; requires Manager) |
 
 ### About Document
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/about?nsfPath=` |
-| POST | `/api/design-v1/about?nsfPath=` (`text/xml` helpaboutdocument DXL; empty → starter; **409** if exists) |
-| PUT | `/api/design-v1/about?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/about?nsfPath=` |
+| GET | `/api/kyber-v1/about?nsfPath=` |
+| POST | `/api/kyber-v1/about?nsfPath=` (`text/xml` helpaboutdocument DXL; empty → starter; **409** if exists) |
+| PUT | `/api/kyber-v1/about?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/about?nsfPath=` |
 
 ### Using Document
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/using?nsfPath=` |
-| POST | `/api/design-v1/using?nsfPath=` (`text/xml` helpusingdocument DXL; empty → starter; **409** if exists) |
-| PUT | `/api/design-v1/using?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/using?nsfPath=` |
+| GET | `/api/kyber-v1/using?nsfPath=` |
+| POST | `/api/kyber-v1/using?nsfPath=` (`text/xml` helpusingdocument DXL; empty → starter; **409** if exists) |
+| PUT | `/api/kyber-v1/using?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/using?nsfPath=` |
 
 ### Agents
 
@@ -308,13 +308,13 @@ Kinds: `lotusscript` (default), `formula`, `simpleaction`, `java`, `importedjava
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/agents?nsfPath=` |
-| POST | `/api/design-v1/agents?nsfPath=` (`text/xml` agent DXL of any kind; optional `?name=`) |
-| POST | `/api/design-v1/agents?nsfPath=&kind=&name=` (empty body → create from starter; **409** if exists) |
-| GET | `/api/design-v1/defaults/agent?kind=` |
-| GET | `/api/design-v1/agents/{name}?nsfPath=` |
-| PUT | `/api/design-v1/agents/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/agents/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/agents?nsfPath=` |
+| POST | `/api/kyber-v1/agents?nsfPath=` (`text/xml` agent DXL of any kind; optional `?name=`) |
+| POST | `/api/kyber-v1/agents?nsfPath=&kind=&name=` (empty body → create from starter; **409** if exists) |
+| GET | `/api/kyber-v1/defaults/agent?kind=` |
+| GET | `/api/kyber-v1/agents/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/agents/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/agents/{name}?nsfPath=` |
 
 ### Script libraries
 
@@ -322,13 +322,13 @@ Kinds: `lotusscript` (default), `javascript` (client), `ssjs` (server JS), `java
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/scriptlibraries?nsfPath=` |
-| POST | `/api/design-v1/scriptlibraries?nsfPath=` (`text/xml` scriptlibrary DXL of any kind; optional `?name=`) |
-| POST | `/api/design-v1/scriptlibraries?nsfPath=&kind=&name=` (empty body → create from starter; **409** if exists) |
-| GET | `/api/design-v1/defaults/scriptlibrary?kind=` |
-| GET | `/api/design-v1/scriptlibraries/{name}?nsfPath=` |
-| PUT | `/api/design-v1/scriptlibraries/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/scriptlibraries/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/scriptlibraries?nsfPath=` |
+| POST | `/api/kyber-v1/scriptlibraries?nsfPath=` (`text/xml` scriptlibrary DXL of any kind; optional `?name=`) |
+| POST | `/api/kyber-v1/scriptlibraries?nsfPath=&kind=&name=` (empty body → create from starter; **409** if exists) |
+| GET | `/api/kyber-v1/defaults/scriptlibrary?kind=` |
+| GET | `/api/kyber-v1/scriptlibraries/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/scriptlibraries/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/scriptlibraries/{name}?nsfPath=` |
 
 ### Java sources
 
@@ -336,32 +336,32 @@ Kinds: `class` (default), `interface`, `enum`.
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/javasources?nsfPath=` |
-| POST | `/api/design-v1/javasources?nsfPath=` (`text/xml`; optional `?name=`) |
-| POST | `/api/design-v1/javasources?nsfPath=&kind=&name=` (empty body → create from starter; **409** if exists) |
-| GET | `/api/design-v1/defaults/javasource?kind=` |
-| GET | `/api/design-v1/javasources/{name}?nsfPath=` |
-| PUT | `/api/design-v1/javasources/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/javasources/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/javasources?nsfPath=` |
+| POST | `/api/kyber-v1/javasources?nsfPath=` (`text/xml`; optional `?name=`) |
+| POST | `/api/kyber-v1/javasources?nsfPath=&kind=&name=` (empty body → create from starter; **409** if exists) |
+| GET | `/api/kyber-v1/defaults/javasource?kind=` |
+| GET | `/api/kyber-v1/javasources/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/javasources/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/javasources/{name}?nsfPath=` |
 
 ### Shared Actions
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/sharedactions?nsfPath=` |
-| POST | `/api/design-v1/sharedactions?nsfPath=` (`text/xml` sharedactions DXL; optional `?name=`) |
-| GET | `/api/design-v1/sharedactions/{name}?nsfPath=` |
-| PUT | `/api/design-v1/sharedactions/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/sharedactions/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/sharedactions?nsfPath=` |
+| POST | `/api/kyber-v1/sharedactions?nsfPath=` (`text/xml` sharedactions DXL; optional `?name=`) |
+| GET | `/api/kyber-v1/sharedactions/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/sharedactions/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/sharedactions/{name}?nsfPath=` |
 
 ### Database Script
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/databasescript?nsfPath=` |
-| POST | `/api/design-v1/databasescript?nsfPath=` (`text/xml`; empty → starter; **409** if exists) |
-| PUT | `/api/design-v1/databasescript?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/databasescript?nsfPath=` |
+| GET | `/api/kyber-v1/databasescript?nsfPath=` |
+| POST | `/api/kyber-v1/databasescript?nsfPath=` (`text/xml`; empty → starter; **409** if exists) |
+| PUT | `/api/kyber-v1/databasescript?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/databasescript?nsfPath=` |
 
 ### Application Properties
 
@@ -369,8 +369,8 @@ Always present with the NSF — update only.
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/applicationproperties?nsfPath=` |
-| PUT | `/api/design-v1/applicationproperties?nsfPath=` (`text/xml`; **404** if missing) |
+| GET | `/api/kyber-v1/applicationproperties?nsfPath=` |
+| PUT | `/api/kyber-v1/applicationproperties?nsfPath=` (`text/xml`; **404** if missing) |
 
 ### Database icon (`$DBIcon`)
 
@@ -378,8 +378,8 @@ Always present with the NSF — update only. Not listed under `/images`.
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/dbicon?nsfPath=` |
-| PUT | `/api/design-v1/dbicon?nsfPath=` (`text/xml` imageresource; **404** if missing) |
+| GET | `/api/kyber-v1/dbicon?nsfPath=` |
+| PUT | `/api/kyber-v1/dbicon?nsfPath=` (`text/xml` imageresource; **404** if missing) |
 
 ### Xsp Properties
 
@@ -387,10 +387,10 @@ Optional `WEB-INF/xsp.properties` (not always present on classic NSF).
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/xspproperties?nsfPath=` |
-| POST | `/api/design-v1/xspproperties?nsfPath=` (`text/xml`; empty → starter; **409** if exists) |
-| PUT | `/api/design-v1/xspproperties?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/xspproperties?nsfPath=` |
+| GET | `/api/kyber-v1/xspproperties?nsfPath=` |
+| POST | `/api/kyber-v1/xspproperties?nsfPath=` (`text/xml`; empty → starter; **409** if exists) |
+| PUT | `/api/kyber-v1/xspproperties?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/xspproperties?nsfPath=` |
 
 ### XPages
 
@@ -398,11 +398,11 @@ Named type (many per NSF) — same CRUD shape as forms/pages, not a singleton. C
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/xpages?nsfPath=` |
-| POST | `/api/design-v1/xpages?nsfPath=` (`text/xml`; prefer Designer-exported DXL; optional `?name=`; empty body + `?name=` → starter; auto-ensures project) |
-| GET | `/api/design-v1/xpages/{name}?nsfPath=` |
-| PUT | `/api/design-v1/xpages/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/xpages/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/xpages?nsfPath=` |
+| POST | `/api/kyber-v1/xpages?nsfPath=` (`text/xml`; prefer Designer-exported DXL; optional `?name=`; empty body + `?name=` → starter; auto-ensures project) |
+| GET | `/api/kyber-v1/xpages/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/xpages/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/xpages/{name}?nsfPath=` |
 
 ### XPages project bootstrap
 
@@ -410,7 +410,7 @@ For NSFs that never had XPages — creates missing project files only (idempoten
 
 | Method | Path |
 |--------|------|
-| POST | `/api/design-v1/xpagesproject?nsfPath=` (no body; returns `created` / `skipped`) |
+| POST | `/api/kyber-v1/xpagesproject?nsfPath=` (no body; returns `created` / `skipped`) |
 
 Skeleton: `.project`, `.classpath`, `plugin.xml`, `build.properties`, `WEB-INF/faces-config.xml`, `WEB-INF/classes/plugin/Activator.class`, `WEB-INF/xsp.properties` (embedded from a known-good Designer export; Domino CD `$FileData` is not rewritten).
 
@@ -420,11 +420,11 @@ XPages Custom Controls (Designer "Custom Controls") — `.xsp` design notes with
 
 | Method | Path |
 |--------|------|
-| GET | `/api/design-v1/customcontrols?nsfPath=` |
-| POST | `/api/design-v1/customcontrols?nsfPath=` (`text/xml`; Designer-exported DXL; optional `?name=`) |
-| GET | `/api/design-v1/customcontrols/{name}?nsfPath=` |
-| PUT | `/api/design-v1/customcontrols/{name}?nsfPath=` (`text/xml`; **404** if missing) |
-| DELETE | `/api/design-v1/customcontrols/{name}?nsfPath=` |
+| GET | `/api/kyber-v1/customcontrols?nsfPath=` |
+| POST | `/api/kyber-v1/customcontrols?nsfPath=` (`text/xml`; Designer-exported DXL; optional `?name=`) |
+| GET | `/api/kyber-v1/customcontrols/{name}?nsfPath=` |
+| PUT | `/api/kyber-v1/customcontrols/{name}?nsfPath=` (`text/xml`; **404** if missing) |
+| DELETE | `/api/kyber-v1/customcontrols/{name}?nsfPath=` |
 
 ## Build
 
@@ -485,7 +485,7 @@ $formDxl = @"
 <item name='$$ScriptName' summary='false' sign='true'><text>HelloForm</text></item>
 </form>
 "@
-Invoke-RestMethod -Method POST -Uri "$base/api/design-v1/forms?nsfPath=$nsf" `
+Invoke-RestMethod -Method POST -Uri "$base/api/kyber-v1/forms?nsfPath=$nsf" `
     -Headers $headers -ContentType "text/xml" -Body $formDxl
 
 # View
@@ -500,7 +500,7 @@ $viewDxl = @"
 <columnheader title='Subject'><font size='9pt'/></columnheader></column>
 </view>
 "@
-Invoke-RestMethod -Method POST -Uri "$base/api/design-v1/views?nsfPath=$nsf" `
+Invoke-RestMethod -Method POST -Uri "$base/api/kyber-v1/views?nsfPath=$nsf" `
     -Headers $headers -ContentType "text/xml" -Body $viewDxl
 ```
 

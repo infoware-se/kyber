@@ -122,7 +122,7 @@ $deletePayload = @{
 } | ConvertTo-Json -Depth 5
 
 try {
-  $del = Invoke-RestMethod -Method PUT -Uri "$base/api/design-v1/designdxl?$nsfQ" -Headers $headers `
+  $del = Invoke-RestMethod -Method PUT -Uri "$base/api/kyber-v1/designdxl?$nsfQ" -Headers $headers `
     -ContentType "application/json" -Body $deletePayload
   Write-Host "Delete phase imported=$($del.imported) failed=$($del.failed)"
 } catch {
@@ -137,7 +137,7 @@ $payload = @{
   )
 } | ConvertTo-Json -Depth 5
 
-$put = Invoke-RestMethod -Method PUT -Uri "$base/api/design-v1/designdxl?$nsfQ" -Headers $headers `
+$put = Invoke-RestMethod -Method PUT -Uri "$base/api/kyber-v1/designdxl?$nsfQ" -Headers $headers `
   -ContentType "application/json" -Body $payload
 Write-Host "Upsert imported=$($put.imported) failed=$($put.failed)"
 $put.results | ForEach-Object {

@@ -84,7 +84,7 @@ $headers = @{ Authorization = "Bearer $($auth.bearer)" }
 
 $comDxl = [System.IO.File]::ReadAllText($ComDxlPath)
 $comUnids = Get-UnidsFromDxl $comDxl
-$bulk = Invoke-RestMethod -Uri "$RestUrl/api/design-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfPath))" -Headers $headers
+$bulk = Invoke-RestMethod -Uri "$RestUrl/api/kyber-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfPath))" -Headers $headers
 $bulkInfo = Get-BulkUnids $bulk.elements
 $bulkUnids = $bulkInfo.Set
 

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Live smoke of design-v1 against DRAPI: defaults, CRUD status codes, XPages ensure.
+  Live smoke of kyber-v1 against DRAPI: defaults, CRUD status codes, XPages ensure.
 
 .DESCRIPTION
   Auth via C:\Git\install-domino-restapi\.env (or DOMINO_REST_* / REST_ADMIN_*).
@@ -13,7 +13,7 @@
   - GET applicationproperties + dbicon + acl on kyber.nsf; POST rejected on appprops/dbicon
   - POST /xpagesproject creates skeleton; second call skips; POST /xpages empty-body works
 
-  Leaves the NSF on the server (design-v1 never deletes databases).
+  Leaves the NSF on the server (kyber-v1 never deletes databases).
 
 .PARAMETER NsfPath
   Target NSF. Default: smoke-design-api-<yyyyMMddHHmmss>.nsf (fresh each run).
@@ -100,7 +100,7 @@ $empty = Join-Path $env:TEMP "smoke-empty.txt"
 function Design-Url([string]$ApiPath, [string]$ExtraQuery = "") {
   $q = "nsfPath=$([uri]::EscapeDataString($NsfPath))"
   if ($ExtraQuery) { $q = "$q&$ExtraQuery" }
-  return "$base/api/design-v1/${ApiPath}?$q"
+  return "$base/api/kyber-v1/${ApiPath}?$q"
 }
 
 # --- Defaults ---
@@ -111,7 +111,7 @@ foreach ($q in @(
   "javasource?kind=class",
   "xpage"
 )) {
-  $code = Invoke-Design GET "$base/api/design-v1/defaults/$q" -OutFile $out
+  $code = Invoke-Design GET "$base/api/kyber-v1/defaults/$q" -OutFile $out
   if ($code -ne "200") { Fail "GET /defaults/$q -> HTTP $code" }
   $j = Get-Content $out -Raw | ConvertFrom-Json
   if (-not $j.dxl) { Fail "GET /defaults/$q missing dxl" }
@@ -152,7 +152,7 @@ $defaultNsf = "kyber.nsf"
 function Design-UrlOn([string]$TargetNsf, [string]$ApiPath, [string]$ExtraQuery = "") {
   $q = "nsfPath=$([uri]::EscapeDataString($TargetNsf))"
   if ($ExtraQuery) { $q = "$q&$ExtraQuery" }
-  return "$base/api/design-v1/${ApiPath}?$q"
+  return "$base/api/kyber-v1/${ApiPath}?$q"
 }
 foreach ($singleton in @("applicationproperties", "dbicon", "acl")) {
   $code = Invoke-Design GET (Design-UrlOn $defaultNsf $singleton) -OutFile $out

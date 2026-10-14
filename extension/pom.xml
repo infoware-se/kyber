@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>se.infoware.domino</groupId>
     <artifactId>infoware-kyber</artifactId>
-    <version>0.23.0</version>
+    <version>0.24.0</version>
     <packaging>jar</packaging>
     <name>Kyber — Infoware Domino design REST API</name>
 

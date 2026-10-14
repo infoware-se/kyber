@@ -50,25 +50,25 @@ function Invoke-Drapi {
 
 Write-Host "=== databasescript ==="
 $dbDxl = Get-Content -Raw (Join-Path $repo "extension\src\main\resources\defaults\databasescript.dxl")
-$r = Invoke-Drapi PUT "$base/api/design-v1/databasescript?$nsfQ" $dbDxl
+$r = Invoke-Drapi PUT "$base/api/kyber-v1/databasescript?$nsfQ" $dbDxl
 Write-Host "PUT $($r.Code) ok=$($r.Ok) stillHasOptionPublic=$($r.Body -match 'Option Public')"
 
 Write-Host "=== Default-LotusScript ==="
 $lsDxl = Get-Content -Raw (Join-Path $repo "extension\src\main\resources\defaults\scriptlibrary.dxl")
-$r = Invoke-Drapi PUT "$base/api/design-v1/scriptlibraries/Default-LotusScript?$nsfQ" $lsDxl
+$r = Invoke-Drapi PUT "$base/api/kyber-v1/scriptlibraries/Default-LotusScript?$nsfQ" $lsDxl
 $hasAsText = $lsDxl.Contains('AsText')
 $hasReserved = $lsDxl.Contains('Hello(name As')
 Write-Host "PUT $($r.Code) ok=$($r.Ok) hasAsText=$hasAsText hasReservedName=$hasReserved"
 
 Write-Host "=== newscriptlibrarylotusscript ==="
-$got = Invoke-RestMethod -Method GET -Uri "$base/api/design-v1/scriptlibraries/newscriptlibrarylotusscript?$nsfQ" -Headers $headers
+$got = Invoke-RestMethod -Method GET -Uri "$base/api/kyber-v1/scriptlibraries/newscriptlibrarylotusscript?$nsfQ" -Headers $headers
 $minLs = $got.dxl
 $minLs = $minLs.Replace('Function Text As String', 'Function AsText As String')
 $minLs = $minLs.Replace('Text = "Hello, "', 'AsText = "Hello, "')
 $minLs = $minLs.Replace('g.Text', 'g.AsText')
 $minLs = $minLs.Replace("Function Text`r", "Function AsText`r")
 $minLs = $minLs.Replace("Function Text`n", "Function AsText`n")
-$r = Invoke-Drapi PUT "$base/api/design-v1/scriptlibraries/newscriptlibrarylotusscript?$nsfQ" $minLs
+$r = Invoke-Drapi PUT "$base/api/kyber-v1/scriptlibraries/newscriptlibrarylotusscript?$nsfQ" $minLs
 Write-Host "PUT $($r.Code) ok=$($r.Ok)"
 
 Write-Host "=== minimal Java sources ==="
@@ -79,9 +79,9 @@ $javaNames = @(
 )
 foreach ($j in $javaNames) {
   $enc = [uri]::EscapeDataString($j.Name)
-  $del = Invoke-Drapi DELETE "$base/api/design-v1/javasources/$enc?$nsfQ"
+  $del = Invoke-Drapi DELETE "$base/api/kyber-v1/javasources/$enc?$nsfQ"
   Write-Host "DELETE $($j.Name) $($del.Code)"
-  $uri = "$base/api/design-v1/javasources?$nsfQ&kind=$($j.Kind)&name=$enc"
+  $uri = "$base/api/kyber-v1/javasources?$nsfQ&kind=$($j.Kind)&name=$enc"
   $cre = Invoke-Drapi POST $uri ""
   Write-Host "POST $($j.Name) $($cre.Code) ok=$($cre.Ok)"
   if (-not $cre.Ok) {

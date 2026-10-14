@@ -121,7 +121,7 @@ if ($aclCount -gt 0) {
   Write-Host "ACL present in manifest - will be applied last by PUT /designdxl"
 }
 
-$uri = "$RestUrl/api/design-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfPath))"
+$uri = "$RestUrl/api/kyber-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfPath))"
 Write-Host ("PUT {0} ({1} elements)" -f $uri, $elements.Count)
 $result = Invoke-Drapi -Method PUT -Uri $uri -Headers $headers -Body $bodyJson -ContentType "application/json; charset=utf-8"
 

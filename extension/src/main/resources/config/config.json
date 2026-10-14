@@ -16,7 +16,7 @@
       "versions": {
         "design": {
           "package": "se.infoware.domino.kyber.handlers.design",
-          "route": "/api/design-v1",
+          "route": "/api/kyber-v1",
           "defaultClass": "com.hcl.domino.keep.handlers.core.DefaultJsonHandler",
           "defaultDatabase": "keepconfigadmin"
         }

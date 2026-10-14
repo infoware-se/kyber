@@ -131,7 +131,7 @@ $deletePayload = @{
   )
 } | ConvertTo-Json -Depth 5
 try {
-  $null = Invoke-RestMethod -Method PUT -Uri "$base/api/design-v1/designdxl?$nsfQ" -Headers $h -ContentType "application/json" -Body $deletePayload
+  $null = Invoke-RestMethod -Method PUT -Uri "$base/api/kyber-v1/designdxl?$nsfQ" -Headers $h -ContentType "application/json" -Body $deletePayload
 } catch {}
 
 $elements = @()
@@ -146,7 +146,7 @@ foreach ($s in $sources) {
 }
 
 $payload = @{ elements = $elements } | ConvertTo-Json -Depth 6
-$put = Invoke-RestMethod -Method PUT -Uri "$base/api/design-v1/designdxl?$nsfQ" -Headers $h -ContentType "application/json" -Body $payload
+$put = Invoke-RestMethod -Method PUT -Uri "$base/api/kyber-v1/designdxl?$nsfQ" -Headers $h -ContentType "application/json" -Body $payload
 Write-Host "imported=$($put.imported) failed=$($put.failed)"
 $put.results | ForEach-Object {
   Write-Host $_.type $_.name $_.success $_.message
