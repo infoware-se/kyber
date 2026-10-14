@@ -13,8 +13,8 @@ class OpenApiDesignSpecTest {
 
   private static JsonObject loadSpec() throws Exception {
     try (InputStream in =
-        OpenApiDesignSpecTest.class.getResourceAsStream("/openapi/openapi.design.json")) {
-      assertNotNull(in, "openapi.design.json missing from test classpath");
+        OpenApiDesignSpecTest.class.getResourceAsStream("/openapi/openapi.kyber.json")) {
+      assertNotNull(in, "openapi.kyber.json missing from test classpath");
       return new JsonObject(new String(in.readAllBytes(), StandardCharsets.UTF_8));
     }
   }

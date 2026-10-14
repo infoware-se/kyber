@@ -1,7 +1,7 @@
 {
   "versions": {
-    "design": {
-      "path": "/openapi/openapi.design.json",
+    "kyber": {
+      "path": "/openapi/openapi.kyber.json",
       "active": true
     }
   },
@@ -14,7 +14,7 @@
     },
     "RestAPI": {
       "versions": {
-        "design": {
+        "kyber": {
           "package": "se.infoware.domino.kyber.handlers.design",
           "route": "/api/kyber-v1",
           "defaultClass": "com.hcl.domino.keep.handlers.core.DefaultJsonHandler",

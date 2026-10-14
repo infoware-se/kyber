@@ -8,7 +8,7 @@ Infoware Domino REST API extension for managing database **design elements** via
 | **API** | `/api/kyber-v1` |
 | **Swagger** | tags **`design-element`** (typed CRUD), **`design-handler`** (`/defaults*` + bulk GET/PUT `/designdxl`) |
 | **Defaults NSF** | `kyber.nsf` (property `kyber.defaultNsf`) |
-| **Version** | 0.24.0 |
+| **Version** | 0.24.1 |
 | **Repo** | https://github.com/infoware-se/kyber |
 
 Full endpoint tables and Designer coverage: **[extension/README.md](extension/README.md)**.

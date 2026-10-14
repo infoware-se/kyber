@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path =
-  "c:/Git/drapi-iws-design/extension/src/main/resources/openapi/openapi.design.json";
+  "c:/Git/drapi-iws-design/extension/src/main/resources/openapi/openapi.kyber.json";
 const doc = JSON.parse(fs.readFileSync(path, "utf8"));
 doc.info.version = "0.22.2";
 

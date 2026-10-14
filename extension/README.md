@@ -513,7 +513,7 @@ extension/
     handlers/design/         AbstractImportDxlHandler + Create*/Update* for text/xml body
   src/main/resources/
     config/config.json       # OpenAPI tags design-element + design-handler (not design — avoids HCL Setup clash)
-    openapi/openapi.design.json
+    openapi/openapi.kyber.json
 ```
 
 ## Adding another design type
