@@ -1,15 +1,15 @@
 ' Export all design elements as DXL via Notes COM (DXLExporter + NoteCollection).
 ' Usage:
-'   cscript //nologo tools\export-design-dxl-com.vbs <out.xml> <server> <nsfPath>
+'   cscript //nologo tools\export-dxl-com.vbs <out.xml> <server> <nsfPath>
 ' Example:
-'   cscript //nologo tools\export-design-dxl-com.vbs %TEMP%\com-dxl.xml YourDominoServer test\testdiscussion.nsf
+'   cscript //nologo tools\export-dxl-com.vbs %TEMP%\com-dxl.xml YourDominoServer test\testdiscussion.nsf
 
 Option Explicit
 Dim session, db, nc, exporter, dxl, fso, f
 Dim outPath, server, nsfPath
 
 If WScript.Arguments.Count < 3 Then
-  WScript.Echo "Usage: cscript //nologo export-design-dxl-com.vbs <out.xml> <server> <nsfPath>"
+  WScript.Echo "Usage: cscript //nologo export-dxl-com.vbs <out.xml> <server> <nsfPath>"
   WScript.Quit 1
 End If
 

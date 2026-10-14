@@ -16,7 +16,7 @@
   Leaves the NSF on the server (kyber-v1 never deletes databases).
 
 .PARAMETER NsfPath
-  Target NSF. Default: smoke-design-api-<yyyyMMddHHmmss>.nsf (fresh each run).
+  Target NSF. Default: smoke-kyber-api-<yyyyMMddHHmmss>.nsf (fresh each run).
 
 .PARAMETER EnvFile
   Path to .env with DOMINO_REST_API_DATA_URL and REST_ADMIN_* credentials.
@@ -73,7 +73,7 @@ function Invoke-Design {
 }
 
 if (-not $NsfPath) {
-  $NsfPath = "smoke-design-api-{0:yyyyMMddHHmmss}.nsf" -f (Get-Date)
+  $NsfPath = "smoke-kyber-api-{0:yyyyMMddHHmmss}.nsf" -f (Get-Date)
 }
 
 $base = $env:DOMINO_REST_API_DATA_URL

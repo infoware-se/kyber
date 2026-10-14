@@ -98,7 +98,8 @@ $auth = Invoke-RestMethod -Method POST -Uri "$base/api/v1/auth" -ContentType "ap
   -Body (@{ username = $user; password = $pass } | ConvertTo-Json)
 $headers = @{ Authorization = "Bearer $($auth.bearer)" }
 $nsfQ = "nsfPath=" + [uri]::EscapeDataString("kyber.nsf")
-$defaults = "c:\Git\drapi-iws-design\extension\src\main\resources\defaults"
+$RepoRoot = Split-Path $PSScriptRoot -Parent
+$defaults = Join-Path $RepoRoot "extension\src\main\resources\defaults"
 
 $items = @(
   (New-MinimalJavaDxl (Join-Path $defaults "javasource.dxl") "se/infoware/kyber/minimal/Minimal.java"),
@@ -148,11 +149,11 @@ $put.results | ForEach-Object {
 # Export kyber folder
 $env:REST_ADMIN_USER = $user
 $env:REST_ADMIN_PASSWORD = $pass
-& "c:\Git\drapi-iws-design\tools\export-to-repo.ps1" -RestUrl $base -NsfPath "kyber.nsf" `
-  -OutDir "c:\Git\drapi-iws-design\kyber"
+& (Join-Path $PSScriptRoot "export-to-repo.ps1") -RestUrl $base -NsfPath "kyber.nsf" `
+  -OutDir (Join-Path $RepoRoot "kyber")
 
 # Verify decoded source from export
-$files = Get-ChildItem "c:\Git\drapi-iws-design\kyber\javasources" -Filter "*minimal*"
+$files = Get-ChildItem (Join-Path $RepoRoot "kyber\javasources") -Filter "*minimal*"
 foreach ($f in $files) {
   if ($f.Extension -ne '.dxl') { continue }
   $dxl = Get-Content -Raw $f.FullName

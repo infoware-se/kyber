@@ -1,7 +1,16 @@
 const fs = require("fs");
-const path =
-  "c:/Git/drapi-iws-design/extension/src/main/resources/openapi/openapi.kyber.json";
-const doc = JSON.parse(fs.readFileSync(path, "utf8"));
+const path = require("path");
+const openApiPath = path.join(
+  __dirname,
+  "..",
+  "extension",
+  "src",
+  "main",
+  "resources",
+  "openapi",
+  "openapi.kyber.json"
+);
+const doc = JSON.parse(fs.readFileSync(openApiPath, "utf8"));
 doc.info.version = "0.20.1";
 
 const skip = new Set(["/acl", "/applicationproperties"]);
@@ -149,7 +158,7 @@ if (xsp && !xsp.delete) {
   };
 }
 
-fs.writeFileSync(path, JSON.stringify(doc, null, 2) + "\n", "utf8");
+fs.writeFileSync(openApiPath, JSON.stringify(doc, null, 2) + "\n", "utf8");
 console.log("patched", doc.info.version);
 console.log("forms.post", doc.paths["/forms"].post?.operationId);
 console.log("forms.put.deprecated", doc.paths["/forms"].put?.deprecated);

@@ -61,7 +61,8 @@ public class IwsTrustAllCertsFixB : ICertificatePolicy {
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 
 # Extract header from embedded default
-$tmpl = Get-Content -Raw "c:\Git\drapi-iws-design\extension\src\main\resources\defaults\javasource.dxl"
+$RepoRoot = Split-Path $PSScriptRoot -Parent
+$tmpl = Get-Content -Raw (Join-Path $RepoRoot "extension\src\main\resources\defaults\javasource.dxl")
 if ($tmpl -notmatch '(?s)<item name=''\$FileData''[^>]*>\s*<rawitemdata[^>]*>\s*([A-Za-z0-9+/=\s]+)\s*</rawitemdata>') {
   throw "no filedata in template"
 }
@@ -154,9 +155,9 @@ $put.results | ForEach-Object {
 
 $env:REST_ADMIN_USER = $user
 $env:REST_ADMIN_PASSWORD = $pass
-& "c:\Git\drapi-iws-design\tools\export-to-repo.ps1" -RestUrl $base -NsfPath "kyber.nsf" -OutDir "c:\Git\drapi-iws-design\kyber"
+& (Join-Path $PSScriptRoot "export-to-repo.ps1") -RestUrl $base -NsfPath "kyber.nsf" -OutDir (Join-Path $RepoRoot "kyber")
 
-Get-ChildItem "c:\Git\drapi-iws-design\kyber\javasources" -Filter "*minimal*.dxl" | ForEach-Object {
+Get-ChildItem (Join-Path $RepoRoot "kyber\javasources") -Filter "*minimal*.dxl" | ForEach-Object {
   $dxl = Get-Content -Raw $_.FullName
   if ($dxl -match '(?s)<item name=''\$FileData''[^>]*>\s*<rawitemdata[^>]*>\s*([A-Za-z0-9+/=\s]+)') {
     $raw = [Convert]::FromBase64String(($Matches[1] -replace '\s',''))

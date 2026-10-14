@@ -459,7 +459,7 @@ mvn test
 Live smoke against DRAPI (defaults, not-found on missing, create/409, GET/PUT, always-present GET, XPages ensure + create, DELETE):
 
 ```powershell
-.\tools\smoke-design-api.ps1
+.\tools\smoke-kyber-api.ps1
 # optional: -NsfPath my-smoke.nsf
 ```
 

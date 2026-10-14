@@ -4,8 +4,8 @@
   ACL is not part of COM SelectAllDesignElements / UNID compare — use GET /acl separately.
 
 .EXAMPLE
-  cscript //nologo .\tools\export-design-dxl-com.vbs $env:TEMP\com.xml YourDominoServer test\testdiscussion.nsf
-  .\tools\compare-design-export.ps1 -ComDxlPath $env:TEMP\com.xml -NsfPath test/testdiscussion.nsf
+  cscript //nologo .\tools\export-dxl-com.vbs $env:TEMP\com.xml YourDominoServer test\testdiscussion.nsf
+  .\tools\compare-kyber-export.ps1 -ComDxlPath $env:TEMP\com.xml -NsfPath test/testdiscussion.nsf
 #>
 param(
   [Parameter(Mandatory = $true)][string]$ComDxlPath,

@@ -1,7 +1,16 @@
 const fs = require("fs");
-const path =
-  "c:/Git/drapi-iws-design/extension/src/main/resources/openapi/openapi.kyber.json";
-const doc = JSON.parse(fs.readFileSync(path, "utf8"));
+const path = require("path");
+const openApiPath = path.join(
+  __dirname,
+  "..",
+  "extension",
+  "src",
+  "main",
+  "resources",
+  "openapi",
+  "openapi.kyber.json"
+);
+const doc = JSON.parse(fs.readFileSync(openApiPath, "utf8"));
 doc.info.version = "0.22.2";
 
 // Build createX -> collection path
@@ -97,7 +106,7 @@ for (const [p, node] of Object.entries(doc.paths)) {
   }
 }
 
-fs.writeFileSync(path, JSON.stringify(doc, null, 2) + "\n");
+fs.writeFileSync(openApiPath, JSON.stringify(doc, null, 2) + "\n");
 console.log("moved", moved, "version", doc.info.version);
 console.log(
   "agents",
