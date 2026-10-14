@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Export Domino design (bulk DXL) into a git-friendly folder tree.
+  Export Domino design via Kyber bulk GET /api/kyber-v1/designdxl into a git-friendly folder tree.
 
 .PARAMETER RestUrl
   Domino REST base URL, e.g. https://host:8880
@@ -9,7 +9,7 @@
   Target NSF path (relative to Domino data directory)
 
 .PARAMETER OutDir
-  Output directory (default: .\design)
+  Output directory (default: .\kyber)
 
 .PARAMETER Token
   Bearer JWT. If omitted, authenticates with DOMINO_REST_USER / DOMINO_REST_PASSWORD from env or .env
@@ -26,7 +26,7 @@
 param(
   [Parameter(Mandatory = $true)][string]$RestUrl,
   [Parameter(Mandatory = $true)][string]$NsfPath,
-  [string]$OutDir = ".\design",
+  [string]$OutDir = ".\kyber",
   [string]$Token = "",
   [string[]]$SkipTypes = @(),
   [bool]$ReadableJava = $true

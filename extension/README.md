@@ -2,6 +2,13 @@
 
 **Infoware Domino design REST extension for KEEP/DRAPI — not an HCL product.**
 
+| | |
+|--|--|
+| **Version** | 0.24.2 |
+| **API** | `/api/kyber-v1` |
+| **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
+| **Spec** | `openapi/openapi.kyber.json` |
+
 Manage database **design elements** via Domino REST API. Target database is selected with query param **`nsfPath`**. Standard collection CRUD:
 
 | | Path | operationId |
@@ -44,27 +51,27 @@ Swagger tag: **`design-handler`** for `/defaults`, `/defaults/{type}`, and `/des
 Element `type` values match repo layout (`form`, `about`, `image`, …). Bridge scripts in repo root [`tools/`](../tools/):
 
 ```powershell
-.\tools\export-to-repo.ps1 -RestUrl https://host:8880 -NsfPath test/app.nsf -OutDir .\design
+.\tools\export-to-repo.ps1 -RestUrl https://host:8880 -NsfPath test/app.nsf -OutDir .\kyber
 # Java in script libraries, agents, applets: strips <javaresource> Base64 and writes sibling .java (default).
 # Keep compiled class in DXL: -ReadableJava:$false
-.\tools\import-from-repo.ps1 -RestUrl https://host:8880 -NsfPath test/restored.nsf -InDir .\design
+.\tools\import-from-repo.ps1 -RestUrl https://host:8880 -NsfPath test/restored.nsf -InDir .\kyber
 ```
 
-Repo tree (folders = DXL `<!DOCTYPE …>` name):
+Repo tree (folders = API type / CRUD layout; this repo ships starters under [`kyber/`](../kyber/)):
 
 ```
-design/
+kyber/
   manifest.json          # type (API), doctype, path, name?
-  form/Main.dxl
-  view/($All).dxl
-  imageresource/logo.gif.dxl
-  helpaboutdocument/about.dxl
+  forms/newform-….dxl
+  views/newview-….dxl
+  images/….dxl
+  about/….dxl
   ...
 ```
 
-`import-from-repo.ps1` reads `manifest.json` (API `type` + path); folder names follow DOCTYPE.
+`import-from-repo.ps1` reads `manifest.json` (API `type` + path).
 
-After PUT, the API compiles LotusScript (script libraries first) and returns a `lotusscript` summary. Notes "Error processing use list module" after a restore usually means code was not compiled; re-import with 0.12+ or run Designer **Recompile All LotusScript**. Some complex libraries (e.g. DDM) can still report syntax errors after DXL round-trip — open those in Designer if needed.
+After PUT, the API compiles LotusScript (script libraries first) and returns a `lotusscript` summary. Notes "Error processing use list module" after a restore usually means code was not compiled — re-import or run Designer **Recompile All LotusScript**. Some complex libraries (e.g. DDM) can still report syntax errors after DXL round-trip — open those in Designer if needed.
 
 **Bulk-only types** (no list/get/put/delete endpoints; only in `/designdxl`): `xpagesresource` (incl. `WEB-INF/` except `xsp.properties`, i18n `*.properties`, `.settings/`, `icons/`, `Local/`), and catch-all `designnote` for any other remaining design note (UNID-deduped after typed exporters). Starters: `GET /defaults/{type}` for `xpagesresource` (not `designnote`).
 
@@ -72,7 +79,7 @@ After PUT, the API compiles LotusScript (script libraries first) and returns a `
 
 ## Coverage (Domino Designer)
 
-Mapped to the Designer outline. "In" = typed DXL CRUD; "Bulk" = `/designdxl` only (v0.16).
+Mapped to the Designer outline. "In" = typed DXL CRUD; "Bulk" = `/designdxl` only.
 
 ### Included
 
@@ -508,12 +515,15 @@ Invoke-RestMethod -Method POST -Uri "$base/api/kyber-v1/views?nsfPath=$nsf" `
 
 ```text
 extension/
-  src/main/java/se/infoware/domino/keep/
+  src/main/java/se/infoware/domino/kyber/
     dbrequests/design/       per-type CRUD + shared DesignDxl / DesignCrud
     handlers/design/         AbstractImportDxlHandler + Create*/Update* for text/xml body
   src/main/resources/
-    config/config.json       # OpenAPI tags design-element + design-handler (not design — avoids HCL Setup clash)
+    config/config.json       # versions.kyber → route /api/kyber-v1 + openapi.kyber.json
+                             # tags design-element + design-handler (not tag "design" — avoids HCL Setup clash)
     openapi/openapi.kyber.json
+    kyber.properties         # kyber.defaultNsf=kyber.nsf
+    defaults/                # embedded starter DXL (+ blank/ baseline)
 ```
 
 ## Adding another design type
@@ -523,4 +533,4 @@ extension/
 3. `handlers/design/CreateX` and `UpdateX` extending `AbstractImportDxlHandler` for `text/xml` **POST** (create) and **PUT** (update)
 4. Document the type in this README table
 
-Do **not** use OpenAPI tag `design` — that maps HCL Setup's Design verticle package.
+Do **not** use OpenAPI tag `design` — that maps HCL Setup's Design verticle package. The catalog version id must stay **`kyber`** (see `config.json`).

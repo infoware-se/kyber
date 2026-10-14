@@ -1,14 +1,15 @@
 # Kyber
 
-Infoware Domino REST API extension for managing database **design elements** via `nsfPath` using typed DXL CRUD.
+Infoware Domino REST API extension for managing database **design elements** via `nsfPath` using typed DXL CRUD. Not an HCL product — runs as a KEEP/DRAPI extension JAR.
 
 | | |
 |--|--|
 | **JAR** | `infoware-kyber.jar` |
 | **API** | `/api/kyber-v1` |
-| **Swagger** | tags **`design-element`** (typed CRUD), **`design-handler`** (`/defaults*` + bulk GET/PUT `/designdxl`) |
+| **Catalog** | OpenAPI version id **`kyber`** (Admin UI card title) |
+| **Swagger tags** | **`design-element`** (typed CRUD), **`design-handler`** (`/defaults*` + bulk `/designdxl`) |
 | **Defaults NSF** | `kyber.nsf` (property `kyber.defaultNsf`) |
-| **Version** | 0.24.1 |
+| **Version** | 0.24.2 |
 | **Repo** | https://github.com/infoware-se/kyber |
 
 Full endpoint tables and Designer coverage: **[extension/README.md](extension/README.md)**.

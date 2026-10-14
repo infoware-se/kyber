@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Import a design folder tree (from export-to-repo.ps1) into an NSF via bulk PUT.
+  Import a design folder tree (from export-to-repo.ps1) into an NSF via Kyber bulk PUT /api/kyber-v1/designdxl.
   Creates the NSF if it does not exist.
 
 .PARAMETER RestUrl
@@ -10,7 +10,7 @@
   Target NSF path (relative to Domino data directory)
 
 .PARAMETER InDir
-  Input directory containing manifest.json and .dxl files (default: .\design)
+  Input directory containing manifest.json and .dxl files (default: .\kyber)
 
 .PARAMETER Token
   Bearer JWT. If omitted, authenticates with env / .env credentials
@@ -18,7 +18,7 @@
 param(
   [Parameter(Mandatory = $true)][string]$RestUrl,
   [Parameter(Mandatory = $true)][string]$NsfPath,
-  [string]$InDir = ".\design",
+  [string]$InDir = ".\kyber",
   [string]$Token = ""
 )
 
