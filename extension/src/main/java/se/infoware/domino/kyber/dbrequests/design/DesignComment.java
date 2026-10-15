@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 /**
  * Designer comment written when Kyber creates or updates a design note.
  *
- * <p>{@code Kyber 0.24.4 Infoware}, or {@code Kyber 0.24.4 Infoware - } plus the comment that was
+ * <p>{@code Kyber 0.24.5 Infoware}, or {@code Kyber 0.24.5 Infoware - } plus the comment that was
  * already there. An earlier Kyber prefix is replaced so a second update does not stack it.
  */
 final class DesignComment {
