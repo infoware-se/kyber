@@ -1,21 +1,13 @@
-# Security Policy
+# Security policy
 
-## Supported Versions
+## Reporting a vulnerability
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+Report a security issue in Kyber privately:
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+https://github.com/infoware-se/kyber/security/advisories/new
 
-## Reporting a Vulnerability
+Do not open a public GitHub issue for a security report.
 
-Use this section to tell people how to report a vulnerability.
+Kyber is a KEEP extension. A design call runs as the authenticated Domino REST user and is limited by that user's access on the target NSF. A report should describe how a caller can do more than that user is allowed to do.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Include the Kyber version, the API call, and the access level of the user. Do not include passwords, tokens, or a live server name.
