@@ -1,36 +1,36 @@
 {
     "exportedAt":  "2026-10-14T14:22:00.3768808Z",
-    "layout":  "api-type",
+    "layout":  "package-explorer",
     "nsfPath":  "kyber.nsf",
     "elements":  [
                      {
-                         "path":  "acl/acl.dxl",
+                         "path":  "AppProperties/acl.dxl",
                          "doctype":  "acl",
                          "type":  "acl"
                      },
                      {
-                         "path":  "note/applicationproperties-11a.dxl",
+                         "path":  "AppProperties/applicationproperties-11a.dxl",
                          "noteid":  "11a",
                          "doctype":  "note",
                          "type":  "applicationproperties",
                          "unid":  "3BF422C897FACF25C1258E430021283D"
                      },
                      {
-                         "path":  "about/about-162.dxl",
+                         "path":  "Resources/about-162.dxl",
                          "noteid":  "162",
                          "doctype":  "helpaboutdocument",
                          "type":  "about",
                          "unid":  "7D51A94B9DB92AE8C1258E4800384CEC"
                      },
                      {
-                         "path":  "using/using-14a.dxl",
+                         "path":  "Resources/using-14a.dxl",
                          "noteid":  "14a",
                          "doctype":  "helpusingdocument",
                          "type":  "using",
                          "unid":  "A23F0D25AABF841AC1258E430024C5FC"
                      },
                      {
-                         "path":  "sharedactions/$ACTIONS-20e.dxl",
+                         "path":  "Code/actions/$ACTIONS-20e.dxl",
                          "type":  "sharedactions",
                          "unid":  "68750F29919DD66FC1258E48004ECF1E",
                          "name":  "$ACTIONS",
@@ -38,14 +38,14 @@
                          "noteid":  "20e"
                      },
                      {
-                         "path":  "databasescript/databasescript-146.dxl",
+                         "path":  "Code/dbscript.lsdb-146.dxl",
                          "noteid":  "146",
                          "doctype":  "databasescript",
                          "type":  "databasescript",
                          "unid":  "776F441F075F23B7C1258E430023C993"
                      },
                      {
-                         "path":  "images/$DBIcon-11e.dxl",
+                         "path":  "Resources/Images/$DBIcon-11e.dxl",
                          "type":  "image",
                          "unid":  "609D97CE72F814E1C1258E4300212852",
                          "name":  "$DBIcon",
@@ -53,7 +53,7 @@
                          "noteid":  "11e"
                      },
                      {
-                         "path":  "images/newimage.png-18e.dxl",
+                         "path":  "Resources/Images/newimage.png-18e.dxl",
                          "type":  "image",
                          "unid":  "5219B50BF2CA6AF2C1258E4800408636",
                          "name":  "newimage.png",
@@ -61,7 +61,7 @@
                          "noteid":  "18e"
                      },
                      {
-                         "path":  "fileresources/newfileresource.txt-192.dxl",
+                         "path":  "Resources/Files/newfileresource.txt-192.dxl",
                          "type":  "fileresource",
                          "unid":  "983B48AF87FAB58BC1258E480040863E",
                          "name":  "newfileresource.txt",
@@ -69,7 +69,7 @@
                          "noteid":  "192"
                      },
                      {
-                         "path":  "stylesheets/newstylesheet.css-19a.dxl",
+                         "path":  "Resources/StyleSheets/newstylesheet.css-19a.dxl",
                          "type":  "stylesheet",
                          "unid":  "53D609F608473683C1258E480040870C",
                          "name":  "newstylesheet.css",
@@ -77,7 +77,7 @@
                          "noteid":  "19a"
                      },
                      {
-                         "path":  "themes/newtheme.theme-222.dxl",
+                         "path":  "Resources/Themes/newtheme.theme-222.dxl",
                          "type":  "theme",
                          "unid":  "A1DFBFA655E2DAACC1258E48004F1A0E",
                          "name":  "newtheme.theme",
@@ -85,7 +85,7 @@
                          "noteid":  "222"
                      },
                      {
-                         "path":  "scriptlibraries/newscriptlibraryjava-212.dxl",
+                         "path":  "Code/ScriptLibraries/newscriptlibraryjava-212.dxl",
                          "type":  "scriptlibrary",
                          "unid":  "7209C52DB6F1FB9EC1258E48004ED6A3",
                          "name":  "newscriptlibraryjava",
@@ -93,7 +93,7 @@
                          "noteid":  "212"
                      },
                      {
-                         "path":  "scriptlibraries/newscriptlibraryjavascript-226.dxl",
+                         "path":  "Code/ScriptLibraries/newscriptlibraryjavascript-226.dxl",
                          "type":  "scriptlibrary",
                          "unid":  "9E6277025BA819B1C1258E48004F6362",
                          "name":  "newscriptlibraryjavascript",
@@ -101,7 +101,7 @@
                          "noteid":  "226"
                      },
                      {
-                         "path":  "scriptlibraries/newscriptlibrarylotusscript-21a.dxl",
+                         "path":  "Code/ScriptLibraries/newscriptlibrarylotusscript-21a.dxl",
                          "type":  "scriptlibrary",
                          "unid":  "65854E3EC65CE1FBC1258E48004EE206",
                          "name":  "newscriptlibrarylotusscript",
@@ -109,7 +109,7 @@
                          "noteid":  "21a"
                      },
                      {
-                         "path":  "scriptlibraries/newscriptlibraryssjs-22a.dxl",
+                         "path":  "Code/ScriptLibraries/newscriptlibraryssjs-22a.dxl",
                          "type":  "scriptlibrary",
                          "unid":  "8A78683CDB90FCD4C1258E48004F637E",
                          "name":  "newscriptlibraryssjs",
@@ -117,7 +117,7 @@
                          "noteid":  "22a"
                      },
                      {
-                         "path":  "sharedfields/newsharedfield-1ce.dxl",
+                         "path":  "SharedElements/Fields/newsharedfield-1ce.dxl",
                          "type":  "sharedfield",
                          "unid":  "27FA54CE5A923E3BC1258E48004E794F",
                          "name":  "newsharedfield",
@@ -125,7 +125,7 @@
                          "noteid":  "1ce"
                      },
                      {
-                         "path":  "sharedcolumns/newsharedcolumn-1d2.dxl",
+                         "path":  "SharedElements/Columns/newsharedcolumn-1d2.dxl",
                          "type":  "sharedcolumn",
                          "unid":  "7A217C7477C3AFA5C1258E48004E7E2F",
                          "name":  "newsharedcolumn",
@@ -133,7 +133,7 @@
                          "noteid":  "1d2"
                      },
                      {
-                         "path":  "subforms/newsubform-1ca.dxl",
+                         "path":  "SharedElements/Subforms/newsubform-1ca.dxl",
                          "type":  "subform",
                          "unid":  "2A6057708D06513CC1258E48004E73F0",
                          "name":  "newsubform",
@@ -141,7 +141,7 @@
                          "noteid":  "1ca"
                      },
                      {
-                         "path":  "forms/newform-1ae.dxl",
+                         "path":  "Forms/newform-1ae.dxl",
                          "type":  "form",
                          "unid":  "336EA3BD8AD1A1BBC1258E48004E417A",
                          "name":  "newform",
@@ -149,7 +149,7 @@
                          "noteid":  "1ae"
                      },
                      {
-                         "path":  "pages/newpage-1c6.dxl",
+                         "path":  "Pages/newpage-1c6.dxl",
                          "type":  "page",
                          "unid":  "ADBAD4CF1F5C19E5C1258E48004E6E5B",
                          "name":  "newpage",
@@ -157,7 +157,7 @@
                          "noteid":  "1c6"
                      },
                      {
-                         "path":  "outlines/newoutline-1d6.dxl",
+                         "path":  "SharedElements/Outlines/newoutline-1d6.dxl",
                          "type":  "outline",
                          "unid":  "59DD5B174ECE78F8C1258E48004E85BA",
                          "name":  "newoutline",
@@ -165,7 +165,7 @@
                          "noteid":  "1d6"
                      },
                      {
-                         "path":  "navigators/newnavigator-1da.dxl",
+                         "path":  "SharedElements/Navigators/newnavigator-1da.dxl",
                          "type":  "navigator",
                          "unid":  "73B8F230403928EBC1258E48004E8B99",
                          "name":  "newnavigator",
@@ -173,7 +173,7 @@
                          "noteid":  "1da"
                      },
                      {
-                         "path":  "framesets/newframeset-1c2.dxl",
+                         "path":  "Framesets/newframeset-1c2.dxl",
                          "type":  "frameset",
                          "unid":  "DC005C84C7418080C1258E48004E68B4",
                          "name":  "newframeset",
@@ -181,7 +181,7 @@
                          "noteid":  "1c2"
                      },
                      {
-                         "path":  "views/newview-1b2.dxl",
+                         "path":  "Views/newview-1b2.dxl",
                          "type":  "view",
                          "unid":  "5D173424BDFDF812C1258E48004E530B",
                          "name":  "newview",
@@ -189,7 +189,7 @@
                          "noteid":  "1b2"
                      },
                      {
-                         "path":  "folders/newfolder-1b6.dxl",
+                         "path":  "Folders/newfolder-1b6.dxl",
                          "type":  "folder",
                          "unid":  "DAC023DFA5AD07CAC1258E48004E585E",
                          "name":  "newfolder",
@@ -197,7 +197,7 @@
                          "noteid":  "1b6"
                      },
                      {
-                         "path":  "agents/newagentformula-1e2.dxl",
+                         "path":  "Code/Agents/newagentformula-1e2.dxl",
                          "type":  "agent",
                          "unid":  "B8113716D7C5D559C1258E48004EA945",
                          "name":  "newagentformula",
@@ -205,7 +205,7 @@
                          "noteid":  "1e2"
                      },
                      {
-                         "path":  "agents/newagentimportedjava-1ea.dxl",
+                         "path":  "Code/Agents/newagentimportedjava-1ea.dxl",
                          "type":  "agent",
                          "unid":  "9E76B27440EF5CFDC1258E48004EAF68",
                          "name":  "newagentimportedjava",
@@ -214,17 +214,17 @@
                      },
                      {
                          "javaSources":  [
-                                             "agents/JavaAgent.java"
+                                             "Code/Agents/JavaAgent.java"
                                          ],
                          "type":  "agent",
                          "unid":  "E0F8EA0C58E7DA89C1258E48004EB57B",
                          "name":  "newagentjava",
                          "doctype":  "agent",
-                         "path":  "agents/newagentjava-1fa.dxl",
+                         "path":  "Code/Agents/newagentjava-1fa.dxl",
                          "noteid":  "1fa"
                      },
                      {
-                         "path":  "agents/newagentlotusscript-202.dxl",
+                         "path":  "Code/Agents/newagentlotusscript-202.dxl",
                          "type":  "agent",
                          "unid":  "2247A6138285FAC1C1258E48004EBDC6",
                          "name":  "newagentlotusscript",
@@ -232,7 +232,7 @@
                          "noteid":  "202"
                      },
                      {
-                         "path":  "agents/newagentsimpleaction-20a.dxl",
+                         "path":  "Code/Agents/newagentsimpleaction-20a.dxl",
                          "type":  "agent",
                          "unid":  "896363CD601D91BAC1258E48004EC890",
                          "name":  "newagentsimpleaction",
@@ -240,7 +240,7 @@
                          "noteid":  "20a"
                      },
                      {
-                         "path":  "customcontrols/newcustomcontrol.xsp-1be.dxl",
+                         "path":  "CustomControls/newcustomcontrol.xsp-1be.dxl",
                          "type":  "customcontrol",
                          "unid":  "5E2EBDC0AD46A863C1258E48004E62CA",
                          "name":  "newcustomcontrol.xsp",
@@ -248,7 +248,7 @@
                          "noteid":  "1be"
                      },
                      {
-                         "path":  "webservices/newwebservice-16e.dxl",
+                         "path":  "Code/WebServices/newwebservice-16e.dxl",
                          "type":  "webservice",
                          "unid":  "F76C63AA11D021DEC1258E480038633E",
                          "name":  "newwebservice",
@@ -256,7 +256,7 @@
                          "noteid":  "16e"
                      },
                      {
-                         "path":  "webserviceconsumers/newwebserviceconsumer-176.dxl",
+                         "path":  "Code/WebServiceConsumer/newwebserviceconsumer-176.dxl",
                          "type":  "webserviceconsumer",
                          "unid":  "94C6695AEAD0D090C1258E480038635E",
                          "name":  "newwebserviceconsumer",
@@ -264,7 +264,7 @@
                          "noteid":  "176"
                      },
                      {
-                         "path":  "xpages/newxpage.xsp-1ba.dxl",
+                         "path":  "XPages/newxpage.xsp-1ba.dxl",
                          "type":  "xpage",
                          "unid":  "676C9462E334A7B7C1258E48004E5D6E",
                          "name":  "newxpage.xsp",
@@ -272,7 +272,7 @@
                          "noteid":  "1ba"
                      },
                      {
-                         "path":  "wiringproperties/newwiring.wsdl-19e.dxl",
+                         "path":  "CompositeApplications/newwiring.wsdl-19e.dxl",
                          "type":  "wiringproperties",
                          "unid":  "CB0501E17F122D20C1258E4800408817",
                          "name":  "newwiring.wsdl",
@@ -280,7 +280,7 @@
                          "noteid":  "19e"
                      },
                      {
-                         "path":  "compositeapplications/newcompositeapplication.xml-186.dxl",
+                         "path":  "CompositeApplications/newcompositeapplication.xml-186.dxl",
                          "type":  "compositeapplication",
                          "unid":  "7F08A0A251A7F97DC1258E48004085BE",
                          "name":  "newcompositeapplication.xml",
@@ -288,7 +288,7 @@
                          "noteid":  "186"
                      },
                      {
-                         "path":  "compositecomponents/newcompositecomponent.component-18a.dxl",
+                         "path":  "CompositeApplications/newcompositecomponent.component-18a.dxl",
                          "type":  "compositecomponent",
                          "unid":  "ACAC06DA7A27A56FC1258E48004085C4",
                          "name":  "newcompositecomponent.component",
@@ -297,17 +297,17 @@
                      },
                      {
                          "javaSources":  [
-                                             "applets/DefaultApplet.java"
+                                             "Resources/Applets/DefaultApplet.java"
                                          ],
                          "type":  "applet",
                          "unid":  "A6C6D4111FED8DEAC1258E480040858F",
                          "name":  "newapplet",
                          "doctype":  "appletresource",
-                         "path":  "applets/newapplet-17e.dxl",
+                         "path":  "Resources/Applets/newapplet-17e.dxl",
                          "noteid":  "17e"
                      },
                      {
-                         "path":  "dataconnections/newdataconnection-182.dxl",
+                         "path":  "Resources/DataConnections/newdataconnection-182.dxl",
                          "type":  "dataconnection",
                          "unid":  "876CCA169834CBC0C1258E48004085AE",
                          "name":  "newdataconnection",
@@ -331,7 +331,7 @@
                          "noteid":  "21e"
                      },
                      {
-                         "path":  "jars/newjar.jar-196.dxl",
+                         "path":  "Code/Jars/newjar.jar-196.dxl",
                          "type":  "jar",
                          "unid":  "39458340D0BC34E1C1258E4800408641",
                          "name":  "newjar.jar",
@@ -339,7 +339,7 @@
                          "noteid":  "196"
                      },
                      {
-                         "path":  "javasources/se_infoware_kyber_NewJava.java-23e.dxl",
+                         "path":  "Code/Java/se/infoware/kyber/NewJava.java-23e.dxl",
                          "type":  "javasource",
                          "unid":  "C64418215F2FE8D6C1258E90004EE516",
                          "name":  "se/infoware/kyber/NewJava.java",
@@ -347,7 +347,7 @@
                          "noteid":  "23e"
                      },
                      {
-                         "path":  "javasources/se_infoware_kyber_NewJavaEnum.java-246.dxl",
+                         "path":  "Code/Java/se/infoware/kyber/NewJavaEnum.java-246.dxl",
                          "type":  "javasource",
                          "unid":  "633A7CE76596DC88C1258E90004EE53E",
                          "name":  "se/infoware/kyber/NewJavaEnum.java",
@@ -355,7 +355,7 @@
                          "noteid":  "246"
                      },
                      {
-                         "path":  "javasources/se_infoware_kyber_NewJavaInterface.java-242.dxl",
+                         "path":  "Code/Java/se/infoware/kyber/NewJavaInterface.java-242.dxl",
                          "type":  "javasource",
                          "unid":  "F3245229EB885FC4C1258E90004EE52A",
                          "name":  "se/infoware/kyber/NewJavaInterface.java",
@@ -363,7 +363,7 @@
                          "noteid":  "242"
                      },
                      {
-                         "path":  "xpagesresources/.classpath-152.dxl",
+                         "path":  ".classpath-152.dxl",
                          "type":  "xpagesresource",
                          "unid":  "3097AE828AE26E41C1258E43004DB57B",
                          "name":  ".classpath",
@@ -371,7 +371,7 @@
                          "noteid":  "152"
                      },
                      {
-                         "path":  "xpagesresources/.project-142.dxl",
+                         "path":  ".project-142.dxl",
                          "type":  "xpagesresource",
                          "unid":  "955377947BA55856C1258E43002142ED",
                          "name":  ".project",
@@ -379,7 +379,7 @@
                          "noteid":  "142"
                      },
                      {
-                         "path":  "xpagesresources/.settings_.jsdtscope-136.dxl",
+                         "path":  ".settings/.jsdtscope-136.dxl",
                          "type":  "xpagesresource",
                          "unid":  "EB13D0776633C127C1258E43002142DD",
                          "name":  ".settings/.jsdtscope",
@@ -387,7 +387,7 @@
                          "noteid":  "136"
                      },
                      {
-                         "path":  "xpagesresources/.settings_org.eclipse.core.resources.prefs-156.dxl",
+                         "path":  ".settings/org.eclipse.core.resources.prefs-156.dxl",
                          "type":  "xpagesresource",
                          "unid":  "ABA92DB761D6B179C1258E43004DBEAC",
                          "name":  ".settings/org.eclipse.core.resources.prefs",
@@ -395,7 +395,7 @@
                          "noteid":  "156"
                      },
                      {
-                         "path":  "xpagesresources/.settings_org.eclipse.wst.jsdt.ui.superType.container-132.dxl",
+                         "path":  ".settings/org.eclipse.wst.jsdt.ui.superType.container-132.dxl",
                          "type":  "xpagesresource",
                          "unid":  "EA8EC99B2794C229C1258E43002142DC",
                          "name":  ".settings/org.eclipse.wst.jsdt.ui.superType.container",
@@ -403,7 +403,7 @@
                          "noteid":  "132"
                      },
                      {
-                         "path":  "xpagesresources/.settings_org.eclipse.wst.jsdt.ui.superType.name-12e.dxl",
+                         "path":  ".settings/org.eclipse.wst.jsdt.ui.superType.name-12e.dxl",
                          "type":  "xpagesresource",
                          "unid":  "94C18332600D1A4EC1258E43002142DB",
                          "name":  ".settings/org.eclipse.wst.jsdt.ui.superType.name",
@@ -411,7 +411,7 @@
                          "noteid":  "12e"
                      },
                      {
-                         "path":  "xpagesresources/.settings_org.eclipse.wst.validation.prefs-126.dxl",
+                         "path":  ".settings/org.eclipse.wst.validation.prefs-126.dxl",
                          "type":  "xpagesresource",
                          "unid":  "F165ABB536B59D08C1258E43002142C1",
                          "name":  ".settings/org.eclipse.wst.validation.prefs",
@@ -419,7 +419,7 @@
                          "noteid":  "126"
                      },
                      {
-                         "path":  "xpagesresources/AppProperties_xspdesign.properties-14e.dxl",
+                         "path":  "AppProperties/xspdesign.properties-14e.dxl",
                          "type":  "xpagesresource",
                          "unid":  "9344B1EEEA2885D6C1258E4300252D80",
                          "name":  "AppProperties/xspdesign.properties",
@@ -427,7 +427,7 @@
                          "noteid":  "14e"
                      },
                      {
-                         "path":  "xpagesresources/build.properties-13a.dxl",
+                         "path":  "build.properties-13a.dxl",
                          "type":  "xpagesresource",
                          "unid":  "70A865A19AB3FC89C1258E43002142E5",
                          "name":  "build.properties",
@@ -435,7 +435,7 @@
                          "noteid":  "13a"
                      },
                      {
-                         "path":  "xpagesresources/plugin.xml-13e.dxl",
+                         "path":  "plugin.xml-13e.dxl",
                          "type":  "xpagesresource",
                          "unid":  "916E81389260C766C1258E43002142E6",
                          "name":  "plugin.xml",
@@ -443,7 +443,7 @@
                          "noteid":  "13e"
                      },
                      {
-                         "path":  "xpagesresources/WEB-INF_classes_plugin_Activator.class-15e.dxl",
+                         "path":  "WEB-INF/classes/plugin/Activator.class-15e.dxl",
                          "type":  "xpagesresource",
                          "unid":  "2E93240705FB9044C1258E440046F231",
                          "name":  "WEB-INF/classes/plugin/Activator.class",
@@ -451,7 +451,7 @@
                          "noteid":  "15e"
                      },
                      {
-                         "path":  "xpagesresources/WEB-INF_faces-config.xml-15a.dxl",
+                         "path":  "WEB-INF/faces-config.xml-15a.dxl",
                          "type":  "xpagesresource",
                          "unid":  "D0E1672688461BA1C1258E440046F220",
                          "name":  "WEB-INF/faces-config.xml",
@@ -459,7 +459,7 @@
                          "noteid":  "15a"
                      },
                      {
-                         "path":  "note/WEB-INF_xsp.properties-12a.dxl",
+                         "path":  "AppProperties/xsp.properties-12a.dxl",
                          "type":  "xspproperties",
                          "unid":  "FD323AD2895146C5C1258E43002142D7",
                          "name":  "WEB-INF/xsp.properties",
