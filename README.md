@@ -123,12 +123,13 @@ A second create of the same name returns **409**. A missing element comes back a
 
 ## Access
 
-The call runs as the signed-in user. The limit is that user's ACL on the target NSF. Listing or reading a design element needs Designer, the same level as creating or changing one.
+The call runs as the signed-in user. Listing or reading a design element needs Designer on the target NSF, the same level as creating or changing one.
 
-| ACL | Allowed |
-|--|--|
-| Designer | List, get, create, update, and delete design. Replacing the ACL stays with Manager. |
-| Manager | Replace the ACL, and create a database. A Manager includes the Designer rights above. |
+| Access | Where it is set | Allowed |
+|--|--|--|
+| Designer | ACL of the target NSF | List, get, create, update, and delete design |
+| Manager | ACL of the target NSF | Replace the ACL. A Manager includes the Designer rights above. |
+| Create databases & templates | Server document, Security | Create a missing NSF. This is the only way `PUT /designdxl` creates a database. |
 
 A Manager may create shared and personal folders, views, and agents. Domino keeps those rights on the Manager level and does not store them as separate checkboxes. Delete documents stays a stored flag at every level. Designer and below need the design checkboxes stored on the ACL entry.
 

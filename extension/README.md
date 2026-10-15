@@ -182,14 +182,15 @@ Singletons: most use `GET` / `POST` (create) / `PUT` (update) / `DELETE` on the 
 | Data (documents) | Omitted |
 | JRE System Library, Plug-in Dependencies, Referenced Libraries, `META-INF` | Not stored as design notes. Pointers live in `.classpath` and `plugin.xml`. Designer writes `META-INF/MANIFEST.MF` when the project opens. |
 
-### KEEP ACL (endpoint access)
+### Access
 
-| ACL | Operations |
-|-----|------------|
-| Designer | list, get, create, update, delete of design (not the ACL) |
-| Manager | ACL replace, and creating a database. A Manager includes the Designer rights above. |
+| Access | Where it is set | Operations |
+|--|--|--|
+| Designer | ACL of the target NSF | list, get, create, update, delete of design (not the ACL) |
+| Manager | ACL of the target NSF | replace the ACL. A Manager includes the Designer rights above. |
+| Create databases & templates | Server document, Security | create a missing NSF. Only `PUT /designdxl` creates a database. |
 
-A Manager is treated as allowed to create shared and personal folders/views and LotusScript/Java agents, including private ones. Domino does not store those checkboxes on a Manager entry. Delete documents stays a stored flag at every level, including Manager. Designer and below still need the checkbox stored on the ACL entry. Creating a database also needs the server right to create databases. The API never deletes a database.
+A Manager is treated as allowed to create shared and personal folders/views and LotusScript/Java agents, including private ones. Domino does not store those checkboxes on a Manager entry. Delete documents stays a stored flag at every level, including Manager. Designer and below still need the checkbox stored on the ACL entry. The API never deletes a database.
 
 ## Endpoints
 
