@@ -17,6 +17,8 @@ final class DesignComment {
 
   private static final Pattern KYBER_PREFIX =
       Pattern.compile("^Kyber \\d+\\.\\d+\\.\\d+ Infoware(?: - (.*))?$");
+  private static final Pattern COMMENT_ATTRIBUTE =
+      Pattern.compile("(?i)\\bcomment=(['\"])(.*?)\\1");
 
   private DesignComment() {}
 
@@ -64,14 +66,35 @@ final class DesignComment {
     }
   }
 
-  static void stamp(DesignElement element) {
+  /** Comment attribute on the imported DXL, or null when the payload does not set one. */
+  static String commentAttribute(String dxl) {
+    if (dxl == null || dxl.isEmpty()) {
+      return null;
+    }
+    Matcher matcher = COMMENT_ATTRIBUTE.matcher(dxl);
+    if (!matcher.find()) {
+      return null;
+    }
+    return matcher.group(2);
+  }
+
+  /**
+   * The comment just imported wins. {@code getComment()} can still return the previous Kyber prefix
+   * after a database-script import, and stamping that would drop the text in the DXL.
+   */
+  static String sourceComment(String dxl, String loadedComment) {
+    String imported = commentAttribute(dxl);
+    return imported != null ? imported : loadedComment;
+  }
+
+  static void stamp(DesignElement element, String dxl) {
     if (element == null) {
       return;
     }
-    element.setComment(apply(element.getComment(), version()));
+    element.setComment(apply(sourceComment(dxl, element.getComment()), version()));
   }
 
-  static void stamp(Document document) {
+  static void stamp(Document document, String dxl) {
     if (document == null) {
       return;
     }
@@ -80,6 +103,6 @@ final class DesignComment {
       current =
           document.getFirstItem("$Comment").map(item -> item.get(String.class, "")).orElse("");
     }
-    document.replaceItemValue("$Comment", apply(current, version()));
+    document.replaceItemValue("$Comment", apply(sourceComment(dxl, current), version()));
   }
 }

@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'>
+
+<updatedby><name>CN=Domino Administrator/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Domino/O=Infoware</name></wassignedby>
+<item name='$Flags'><text>~C4g</text></item>
+<item name='$TITLE'><text>.settings/org.eclipse.core.resources.prefs</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='$FileSize' sign='true'><number>55</number></item>
+<item name='$FileData' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAAA3AAAAAQAAAAAAAAAAAAAAYABJAAAANwA4AAAAAAAAAAAAZWNsaXBzZS5wcmVm
+ZXJlbmNlcy52ZXJzaW9uPTEKZW5jb2RpbmcvPHByb2plY3Q+PVVURi04CgA=
+</rawitemdata></item>
+<item name='$FileNames' sign='true'><text>.settings/org.eclipse.core.resources.prefs</text></item></note>

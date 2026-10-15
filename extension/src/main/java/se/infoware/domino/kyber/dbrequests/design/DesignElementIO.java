@@ -265,7 +265,7 @@ final class DesignElementIO {
           throw new KeepExceptionServer(
               "Application Properties missing after DXL import; cannot sign");
         }
-        signWarning = safeSign(props);
+        signWarning = safeSign(props, dxl);
       }
       case "about" -> {
         DesignDxl.requireRootOnly(dxl, "helpaboutdocument");
@@ -277,7 +277,7 @@ final class DesignElementIO {
                     () ->
                         new KeepExceptionServer(
                             "AboutDocument missing after DXL import; cannot sign"));
-        signWarning = safeSign(el);
+        signWarning = safeSign(el, dxl);
       }
       case "using" -> {
         DesignDxl.requireRootOnly(dxl, "helpusingdocument");
@@ -289,7 +289,7 @@ final class DesignElementIO {
                     () ->
                         new KeepExceptionServer(
                             "UsingDocument missing after DXL import; cannot sign"));
-        signWarning = safeSign(el);
+        signWarning = safeSign(el, dxl);
       }
       case "sharedactions" -> {
         name = DesignDxl.requireSharedActionsName(dxl);
@@ -302,7 +302,7 @@ final class DesignElementIO {
                         new KeepExceptionServer(
                             "SharedActions %s missing after DXL import; cannot sign",
                             sharedActionsName));
-        signWarning = safeSign(el);
+        signWarning = safeSign(el, dxl);
       }
       case "databasescript" -> {
         DesignDxl.requireRootOnly(dxl, "databasescript");
@@ -314,7 +314,7 @@ final class DesignElementIO {
                     () ->
                         new KeepExceptionServer(
                             "DatabaseScript missing after DXL import; cannot sign"));
-        signWarning = safeSign(el);
+        signWarning = safeSign(el, dxl);
       }
       case "image" -> {
         name = DesignDxl.requireRootName(dxl, "imageresource");
@@ -322,22 +322,22 @@ final class DesignElementIO {
         if (DesignElementLookup.isDbIconName(name)) {
           DbIcon.allowDesignRefresh(db);
         }
-        signWarning = signNamed(db.getDesign().getImageResource(name), "ImageResource", name);
+        signWarning = signNamed(db.getDesign().getImageResource(name), "ImageResource", name, dxl);
       }
       case "fileresource" -> {
         name = DesignDxl.requireRootName(dxl, "fileresource");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getFileResource(name), "FileResource", name);
+        signWarning = signNamed(db.getDesign().getFileResource(name), "FileResource", name, dxl);
       }
       case "stylesheet" -> {
         name = DesignDxl.requireRootName(dxl, "stylesheetresource");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getStyleSheet(name), "StyleSheet", name);
+        signWarning = signNamed(db.getDesign().getStyleSheet(name), "StyleSheet", name, dxl);
       }
       case "theme" -> {
         name = DesignDxl.requireDesignName(dxl, "theme", "note");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getTheme(name), "Theme", name);
+        signWarning = signNamed(db.getDesign().getTheme(name), "Theme", name, dxl);
       }
       case "scriptlibrary" -> {
         name = DesignDxl.requireRootName(dxl, "scriptlibrary");
@@ -345,47 +345,47 @@ final class DesignElementIO {
         Optional<ScriptLibrary> lib = db.getDesign().getScriptLibrary(name);
         if (dxl.toLowerCase(Locale.ROOT).contains("<lotusscript")) {
           compileLotusScript(lib.orElse(null), "ScriptLibrary", name);
-          signWarning = signNamed(lib, "ScriptLibrary", name);
+          signWarning = signNamed(lib, "ScriptLibrary", name, dxl);
         } else {
           // Design-element sign/save rewrites the library and drops JavaScript, SSJS and Java.
-          signWarning = signRawNote(lib, "ScriptLibrary", name);
+          signWarning = signRawNote(lib, "ScriptLibrary", name, dxl);
         }
       }
       case "sharedfield" -> {
         name = DesignDxl.requireRootName(dxl, "sharedfield");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getSharedField(name), "SharedField", name);
+        signWarning = signNamed(db.getDesign().getSharedField(name), "SharedField", name, dxl);
       }
       case "sharedcolumn" -> {
         name = DesignDxl.requireRootName(dxl, "sharedcolumn");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getSharedColumn(name), "SharedColumn", name);
+        signWarning = signNamed(db.getDesign().getSharedColumn(name), "SharedColumn", name, dxl);
       }
       case "subform" -> {
         name = DesignDxl.requireRootName(dxl, "subform");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getSubform(name), "Subform", name);
+        signWarning = signNamed(db.getDesign().getSubform(name), "Subform", name, dxl);
       }
       case "form" -> {
         name = DesignDxl.requireRootName(dxl, "form");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getForm(name), "Form", name);
+        signWarning = signNamed(db.getDesign().getForm(name), "Form", name, dxl);
       }
       case "page" -> {
         name = DesignDxl.requireRootName(dxl, "page");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getPage(name), "Page", name);
+        signWarning = signNamed(db.getDesign().getPage(name), "Page", name, dxl);
       }
       case "outline" -> {
         name = DesignDxl.requireRootName(dxl, "outline");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getOutline(name), "Outline", name);
+        signWarning = signNamed(db.getDesign().getOutline(name), "Outline", name, dxl);
       }
       case "frameset" -> {
         name = DesignDxl.requireRootName(dxl, "frameset");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         try {
-          signWarning = signNamed(db.getDesign().getFrameset(name), "Frameset", name);
+          signWarning = signNamed(db.getDesign().getFrameset(name), "Frameset", name, dxl);
         } catch (RuntimeException e) {
           // JNX FramesetImpl Optional.empty version — import succeeded, sign skipped
           signWarning = e.getMessage() == null ? e.toString() : e.getMessage();
@@ -394,12 +394,12 @@ final class DesignElementIO {
       case "view" -> {
         name = DesignDxl.requireRootName(dxl, "view");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getView(name), "View", name);
+        signWarning = signNamed(db.getDesign().getView(name), "View", name, dxl);
       }
       case "folder" -> {
         name = DesignDxl.requireRootName(dxl, "folder");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getFolder(name), "Folder", name);
+        signWarning = signNamed(db.getDesign().getFolder(name), "Folder", name, dxl);
       }
       case "agent" -> {
         name = DesignDxl.requireRootName(dxl, "agent");
@@ -408,7 +408,7 @@ final class DesignElementIO {
         if (dxl.toLowerCase(Locale.ROOT).contains("<lotusscript")) {
           compileLotusScript(agent.orElse(null), "Agent", name);
         }
-        signWarning = signNamed(agent, "Agent", name);
+        signWarning = signNamed(agent, "Agent", name, dxl);
       }
       case "customcontrol" -> {
         String requested = DesignDxl.requireDesignName(dxl, "note", "fileresource");
@@ -428,7 +428,7 @@ final class DesignElementIO {
                         new KeepExceptionServer(
                             "CustomControl %s not loadable as DesignElement after import",
                             resolvedName));
-        signWarning = safeSign(el);
+        signWarning = safeSign(el, dxl);
       }
       case "webservice" -> {
         String requested =
@@ -451,7 +451,7 @@ final class DesignElementIO {
                         new KeepExceptionServer(
                             "WebServiceProvider %s not loadable as DesignElement after import",
                             resolvedName));
-        signWarning = safeSign(el);
+        signWarning = safeSign(el, dxl);
       }
       case "webserviceconsumer" -> {
         String requested =
@@ -474,33 +474,33 @@ final class DesignElementIO {
                         new KeepExceptionServer(
                             "WebServiceConsumer %s not loadable as DesignElement after import",
                             resolvedName));
-        signWarning = safeSign(el);
+        signWarning = safeSign(el, dxl);
       }
       case "xpage" -> {
         name = DesignDxl.requireDesignName(dxl, "note", "fileresource", "xpage");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getXPage(name), "XPage", name);
+        signWarning = signNamed(db.getDesign().getXPage(name), "XPage", name, dxl);
       }
       case "wiringproperties" -> {
         name = DesignDxl.requireDesignName(dxl, "note", "fileresource");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning =
             signNamed(
-                db.getDesign().getWiringPropertiesElement(name), "WiringProperties", name);
+                db.getDesign().getWiringPropertiesElement(name), "WiringProperties", name, dxl);
       }
       case "compositeapplication" -> {
         name = DesignDxl.requireDesignName(dxl, "note", "fileresource");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning =
             signNamed(
-                db.getDesign().getCompositeApplication(name), "CompositeApplication", name);
+                db.getDesign().getCompositeApplication(name), "CompositeApplication", name, dxl);
       }
       case "compositecomponent" -> {
         name = DesignDxl.requireDesignName(dxl, "note", "fileresource");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning =
             signNamed(
-                db.getDesign().getCompositeComponent(name), "CompositeComponent", name);
+                db.getDesign().getCompositeComponent(name), "CompositeComponent", name, dxl);
       }
       case "dataconnection" -> {
         String requestedDc =
@@ -518,15 +518,15 @@ final class DesignElementIO {
         final String resolvedName = name;
         Optional<DesignElement> elOpt = BulkOnlyNotes.asDesignElement(db, entry.document());
         if (elOpt.isPresent()) {
-          signWarning = safeSign(elOpt.get());
+          signWarning = safeSign(elOpt.get(), dxl);
         } else {
-          signWarning = signStampedDocument(entry.document(), "dataconnection", resolvedName);
+          signWarning = signStampedDocument(entry.document(), "dataconnection", resolvedName, dxl);
         }
       }
       case "navigator" -> {
         name = DesignDxl.requireDesignName(dxl, "navigator", "note");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getNavigator(name), "Navigator", name);
+        signWarning = signNamed(db.getDesign().getNavigator(name), "Navigator", name, dxl);
       }
       case "jar", "applet", "javasource", "xspproperties", "xpagesresource", "designnote" -> {
         String requested =
@@ -545,10 +545,10 @@ final class DesignElementIO {
         final String resolvedName = name;
         Optional<DesignElement> elOpt = BulkOnlyNotes.asDesignElement(db, entry.document());
         if (elOpt.isPresent()) {
-          signWarning = safeSign(elOpt.get());
+          signWarning = safeSign(elOpt.get(), dxl);
         } else {
           // Residual notes may not map to a JNX DesignElement; sign the document directly
-          signWarning = signStampedDocument(entry.document(), bulkType, resolvedName);
+          signWarning = signStampedDocument(entry.document(), bulkType, resolvedName, dxl);
         }
       }
       default -> throw new KeepExceptionWrongDataRequest("Unsupported type: " + t);
@@ -899,7 +899,7 @@ final class DesignElementIO {
    */
   /** Sign the note itself. Design-element save drops non-LotusScript library source. */
   private static String signRawNote(
-      Optional<? extends DesignElement> opt, String label, String name)
+      Optional<? extends DesignElement> opt, String label, String name, String dxl)
       throws KeepExceptionServer {
     DesignElement el =
         opt.orElseThrow(
@@ -908,7 +908,7 @@ final class DesignElementIO {
                     "%s %s missing after DXL import; cannot sign", label, name));
     try {
       Document doc = el.getDocument();
-      DesignComment.stamp(doc);
+      DesignComment.stamp(doc, dxl);
       doc.sign();
       doc.save();
       return null;
@@ -923,14 +923,14 @@ final class DesignElementIO {
   }
 
   private static String signNamed(
-      Optional<? extends DesignElement> opt, String label, String name)
+      Optional<? extends DesignElement> opt, String label, String name, String dxl)
       throws KeepExceptionServer {
     DesignElement el =
         opt.orElseThrow(
             () ->
                 new KeepExceptionServer(
                     "%s %s missing after DXL import; cannot sign", label, name));
-    return safeSign(el);
+    return safeSign(el, dxl);
   }
 
   /**
@@ -938,10 +938,10 @@ final class DesignElementIO {
    *
    * @return null on success, else warning text
    */
-  private static String signStampedDocument(Document doc, String type, String name)
+  private static String signStampedDocument(Document doc, String type, String name, String dxl)
       throws KeepExceptionServer {
     try {
-      DesignComment.stamp(doc);
+      DesignComment.stamp(doc, dxl);
       doc.sign();
       doc.save();
       return null;
@@ -960,9 +960,9 @@ final class DesignElementIO {
     }
   }
 
-  private static String safeSign(DesignElement el) throws KeepExceptionServer {
+  private static String safeSign(DesignElement el, String dxl) throws KeepExceptionServer {
     try {
-      DesignComment.stamp(el);
+      DesignComment.stamp(el, dxl);
       el.sign();
       el.save();
       return null;

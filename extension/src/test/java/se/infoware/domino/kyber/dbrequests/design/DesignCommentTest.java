@@ -59,6 +59,20 @@ class DesignCommentTest {
   }
 
   @Test
+  void importedDxlCommentWinsOverAStalePrefix() {
+    String dxl = "<databasescript comment='Hello World'></databasescript>";
+    assertEquals("Hello World", DesignComment.commentAttribute(dxl));
+    assertEquals(
+        "Hello World", DesignComment.sourceComment(dxl, "Kyber 0.24.4 Infoware"));
+    assertEquals(
+        "Kyber 0.24.4 Infoware - Hello World",
+        DesignComment.apply(DesignComment.sourceComment(dxl, "Kyber 0.24.4 Infoware"), "0.24.4"));
+    assertEquals(
+        "Kyber 0.24.4 Infoware",
+        DesignComment.sourceComment("<databasescript></databasescript>", "Kyber 0.24.4 Infoware"));
+  }
+
+  @Test
   void packagedVersionIsTheCurrentRelease() {
     assertEquals("0.24.4", DesignComment.version());
     String stamped = DesignComment.apply("The Comment", DesignComment.version());

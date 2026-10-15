@@ -32,11 +32,16 @@
 
 .PARAMETER SkipCertificateCheck
   Pass curl -k. Leave this off for a certificate the machine trusts.
+
+.PARAMETER SkipDelete
+  Do not call DELETE. Existing design is updated and left in place, including the
+  Hello World document created by the web checks.
 #>
 param(
   [string]$NsfPath = "",
   [string]$EnvFile = "",
-  [switch]$SkipCertificateCheck
+  [switch]$SkipCertificateCheck,
+  [switch]$SkipDelete
 )
 
 $ErrorActionPreference = "Stop"
@@ -106,6 +111,10 @@ function Save-DxlFromGet([string]$Label) {
 
 # Designer keeps a comment attribute on typed notes and a $Comment item on raw notes.
 function Set-HelloWorldDxl([string]$Dxl) {
+  # Shared Actions keeps the note name $ACTIONS. Designer lists the action title.
+  if ($Dxl -match '<sharedactions\b') {
+    $Dxl = [regex]::Replace($Dxl, "title='[^']*'", "title='SmokeAction'", 1)
+  }
   $attr = [regex]"comment='[^']*'"
   if ($attr.IsMatch($Dxl)) { return $attr.Replace($Dxl, "comment='Hello World'", 1) }
   $attr2 = [regex]'comment="[^"]*"'
@@ -287,7 +296,7 @@ function Assert-RunnableAgent([string]$Url, [string]$Label, [string]$Kind) {
   }
   if ($back -notlike "*$needle*") { Fail "$Label hello source was not returned" }
   $agentName = ($Label -split "/")[-1] -replace '\s+\(.*$', ''
-  $ran = Invoke-HelloAgent $agentName -ResetDocs:($Kind -eq "lotusscript")
+  $ran = Invoke-HelloAgent $agentName -ResetDocs:((-not $SkipDelete) -and ($Kind -eq "lotusscript"))
   if ($ran -notmatch '(?m)^RAN\s*$') { Fail "$Label did not run: $ran" }
   $field = switch ($Kind) {
     "lotusscript" { "smokehello" }
@@ -590,7 +599,7 @@ function Invoke-DominoWebSmoke {
   Put-WebHello "stylesheets/Smoke.css" "file"
   Put-WebHello "images/SmokeImage.gif" "image"
 
-  $xpage = Get-DesignNote "xpages/SmokePage.xsp"
+  $xpage = Get-DesignNote "xpages/SmokeXPage.xsp"
   $props = Get-DesignNote "xspproperties"
   $service = Get-DesignNote "webservices/SmokeWebService"
   Invoke-NotesSign @($xpage.Unid, $props.Unid, $service.Unid)
@@ -672,10 +681,14 @@ function Invoke-DominoWebSmoke {
   Assert-DominoShows "/$NsfPath/SmokeFolder?OpenView" "SmokeFolder"
   Assert-DominoShows "/$NsfPath/SmokeNavigator?OpenNavigator" "SmokeNavigator"
   Assert-DominoShows "/$NsfPath/SmokeFrameset?OpenFrameset" "SmokeFrameset"
-  Get-DominoPage "/$NsfPath/SmokeView/${unid}?DeleteDocument" | Out-Null
-  $left = Get-SmokeViewUnids
-  if ($left -contains $unid) { Fail "DeleteDocument left $unid in SmokeView" }
-  Ok "web /$NsfPath/SmokeView/${unid}?DeleteDocument"
+  if ($SkipDelete) {
+    Ok "web /$NsfPath/SmokeView/${unid} left in place"
+  } else {
+    Get-DominoPage "/$NsfPath/SmokeView/${unid}?DeleteDocument" | Out-Null
+    $left = Get-SmokeViewUnids
+    if ($left -contains $unid) { Fail "DeleteDocument left $unid in SmokeView" }
+    Ok "web /$NsfPath/SmokeView/${unid}?DeleteDocument"
+  }
 }
 
 function Invoke-NamedCrud([string]$Coll, [string]$Name, [string]$Kind = "") {
@@ -685,19 +698,24 @@ function Invoke-NamedCrud([string]$Coll, [string]$Name, [string]$Kind = "") {
   $label = if ($Kind) { "$Coll/$Name ($Kind)" } else { "$Coll/$Name" }
   $createUrl = Design-Url $Coll $qs
 
-  $code = Invoke-Design DELETE (Design-Url $item) -OutFile $out
-  if ($code -eq "200") { Ok "cleared $label" }
-  elseif ($code -notin @("404", "400")) { Fail "DELETE leftover $label -> HTTP $code $(Get-ResponseText)" }
+  if (-not $SkipDelete) {
+    $code = Invoke-Design DELETE (Design-Url $item) -OutFile $out
+    if ($code -eq "200") { Ok "cleared $label" }
+    elseif ($code -notin @("404", "400")) { Fail "DELETE leftover $label -> HTTP $code $(Get-ResponseText)" }
+  }
 
   $code = Invoke-Design GET (Design-Url $Coll) -OutFile $out
   Assert-Code "GET /$Coll" $code @("200")
 
   $code = Invoke-Design POST $createUrl -BodyFile $empty -ContentType "text/xml" -OutFile $out
-  Assert-Code "POST $label" $code @("200", "201")
-  Ok "created $label"
-
-  $code = Invoke-Design POST $createUrl -BodyFile $empty -ContentType "text/xml" -OutFile $out
-  Assert-Code "duplicate $label" $code @("409")
+  if ($SkipDelete -and $code -eq "409") {
+    Ok "kept existing $label"
+  } else {
+    Assert-Code "POST $label" $code @("200", "201")
+    Ok "created $label"
+    $code = Invoke-Design POST $createUrl -BodyFile $empty -ContentType "text/xml" -OutFile $out
+    Assert-Code "duplicate $label" $code @("409")
+  }
 
   $code = Invoke-Design GET (Design-Url $item) -OutFile $out
   Assert-Code "GET $label" $code @("200")
@@ -712,27 +730,35 @@ function Invoke-NamedCrud([string]$Coll, [string]$Name, [string]$Kind = "") {
   }
   Ok "listed $label"
 
-  $code = Invoke-Design DELETE (Design-Url $item) -OutFile $out
-  Assert-Code "DELETE $label" $code @("200")
-  $code = Invoke-Design GET (Design-Url $item) -OutFile $out
-  Assert-NotFound "GET after DELETE $label" $code (Get-ResponseText)
+  if (-not $SkipDelete) {
+    $code = Invoke-Design DELETE (Design-Url $item) -OutFile $out
+    Assert-Code "DELETE $label" $code @("200")
+    $code = Invoke-Design GET (Design-Url $item) -OutFile $out
+    Assert-NotFound "GET after DELETE $label" $code (Get-ResponseText)
 
-  $code = Invoke-Design POST $createUrl -BodyFile $empty -ContentType "text/xml" -OutFile $out
-  Assert-Code "leave $label" $code @("200", "201")
+    $code = Invoke-Design POST $createUrl -BodyFile $empty -ContentType "text/xml" -OutFile $out
+    Assert-Code "leave $label" $code @("200", "201")
+  }
   Assert-HelloWorld (Design-Url $item) $label $Kind
   Ok "left $label"
 }
 
 function Invoke-SingletonCrud([string]$Path) {
   $url = Design-Url $Path
-  $code = Invoke-Design DELETE $url -OutFile $out
-  if ($code -eq "200") { Ok "cleared $Path" }
-  elseif ($code -notin @("404", "400")) { Fail "DELETE leftover $Path -> HTTP $code $(Get-ResponseText)" }
+  if (-not $SkipDelete) {
+    $code = Invoke-Design DELETE $url -OutFile $out
+    if ($code -eq "200") { Ok "cleared $Path" }
+    elseif ($code -notin @("404", "400")) { Fail "DELETE leftover $Path -> HTTP $code $(Get-ResponseText)" }
+  }
 
   $code = Invoke-Design POST $url -BodyFile $empty -ContentType "text/xml" -OutFile $out
-  Assert-Code "POST /$Path" $code @("200", "201")
-  $code = Invoke-Design POST $url -BodyFile $empty -ContentType "text/xml" -OutFile $out
-  Assert-Code "duplicate /$Path" $code @("409")
+  if ($SkipDelete -and $code -eq "409") {
+    Ok "kept existing /$Path"
+  } else {
+    Assert-Code "POST /$Path" $code @("200", "201")
+    $code = Invoke-Design POST $url -BodyFile $empty -ContentType "text/xml" -OutFile $out
+    Assert-Code "duplicate /$Path" $code @("409")
+  }
 
   $code = Invoke-Design GET $url -OutFile $out
   Assert-Code "GET /$Path" $code @("200")
@@ -740,13 +766,15 @@ function Invoke-SingletonCrud([string]$Path) {
   $code = Invoke-Design PUT $url -BodyFile $putFile -ContentType "text/xml" -OutFile $out
   Assert-Code "PUT /$Path" $code @("200")
 
-  $code = Invoke-Design DELETE $url -OutFile $out
-  Assert-Code "DELETE /$Path" $code @("200")
-  $code = Invoke-Design GET $url -OutFile $out
-  Assert-NotFound "GET after DELETE /$Path" $code (Get-ResponseText)
+  if (-not $SkipDelete) {
+    $code = Invoke-Design DELETE $url -OutFile $out
+    Assert-Code "DELETE /$Path" $code @("200")
+    $code = Invoke-Design GET $url -OutFile $out
+    Assert-NotFound "GET after DELETE /$Path" $code (Get-ResponseText)
 
-  $code = Invoke-Design POST $url -BodyFile $empty -ContentType "text/xml" -OutFile $out
-  Assert-Code "leave /$Path" $code @("200", "201")
+    $code = Invoke-Design POST $url -BodyFile $empty -ContentType "text/xml" -OutFile $out
+    Assert-Code "leave /$Path" $code @("200", "201")
+  }
   Assert-HelloWorld $url $Path
   Ok "left /$Path"
 }
@@ -893,8 +921,10 @@ $code = Invoke-Design PUT (Design-Url $missingPath) -BodyFile $minimalFormFile `
   -ContentType "text/xml" -OutFile $out
 Assert-NotFound "PUT /forms/$missing" $code (Get-Content $out -Raw)
 
-$code = Invoke-Design DELETE (Design-Url $missingPath) -OutFile $out
-Assert-NotFound "DELETE /forms/$missing" $code (Get-Content $out -Raw)
+if (-not $SkipDelete) {
+  $code = Invoke-Design DELETE (Design-Url $missingPath) -OutFile $out
+  Assert-NotFound "DELETE /forms/$missing" $code (Get-Content $out -Raw)
+}
 
 # --- XPages project ensure ---
 $code = Invoke-Design POST (Design-Url "xpagesproject") -OutFile $out
@@ -962,7 +992,7 @@ $named = @(
   @{ coll = "jars"; name = "Smoke.jar" },
   @{ coll = "applets"; name = "SmokeApplet" },
   @{ coll = "customcontrols"; name = "SmokeControl.xsp" },
-  @{ coll = "xpages"; name = "SmokePage.xsp" },
+  @{ coll = "xpages"; name = "SmokeXPage.xsp" },
   @{ coll = "wiringproperties"; name = "SmokeWiring" },
   @{ coll = "compositeapplications"; name = "SmokeCompositeApp" },
   @{ coll = "compositecomponents"; name = "SmokeComposite.component" },

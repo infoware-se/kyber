@@ -2,15 +2,12 @@ package se.infoware.domino.kyber.dbrequests.design;
 
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -96,17 +93,12 @@ final class DesignDxl {
       throw new KeepExceptionWrongDataRequest("name is required");
     }
     String wanted = name.trim();
-    Element root = parseAndRequireRoot(dxl, expectedRoots);
-    Document doc = root.getOwnerDocument();
-    root.setAttribute("name", wanted);
-    setItemText(root, "$TITLE", wanted);
-    setItemText(root, "$$ScriptName", wanted);
-    try {
-      return serializePreservingDoctype(doc, root, dxl);
-    } catch (Exception e) {
-      String message = e.getMessage() == null ? e.toString() : e.getMessage();
-      throw new KeepExceptionWrongDataRequest("cannot set design name: " + message);
-    }
+    // Validate the root, then edit the original text. A DOM round-trip drops XPage class bytes.
+    parseAndRequireRoot(dxl, expectedRoots);
+    String out = replaceRootNameAttribute(dxl, wanted);
+    out = replaceItemText(out, "$TITLE", wanted);
+    out = replaceItemText(out, "$$ScriptName", wanted);
+    return out;
   }
 
   /**
@@ -124,53 +116,54 @@ final class DesignDxl {
     return out;
   }
 
-  private static String serializePreservingDoctype(Document doc, Element root, String originalDxl)
-      throws Exception {
-    var transformer = TransformerFactory.newInstance().newTransformer();
-    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-    transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-    transformer.setOutputProperty(OutputKeys.INDENT, "no");
-    StringWriter sw = new StringWriter();
-    transformer.transform(new DOMSource(doc), new StreamResult(sw));
-    String out = sw.toString();
-    if (!out.toLowerCase(Locale.ROOT).contains("<!doctype")
-        && originalDxl.toLowerCase(Locale.ROOT).contains("<!doctype")) {
-      String local = root.getLocalName() != null ? root.getLocalName() : root.getTagName();
-      String doctype = "<!DOCTYPE " + local + " SYSTEM 'xmlschemas/domino_14_5_1.dtd'>\n";
-      int xmlEnd = out.indexOf("?>");
-      if (xmlEnd >= 0) {
-        out =
-            out.substring(0, xmlEnd + 2)
-                + "\n"
-                + doctype
-                + out.substring(xmlEnd + 2).stripLeading();
-      } else {
-        out = doctype + out;
-      }
+  private static String replaceRootNameAttribute(String dxl, String wanted) {
+    Matcher root = Pattern.compile("(?s)<([A-Za-z][\\w:.-]*)\\b([^>]*)>").matcher(dxl);
+    if (!root.find()) {
+      return dxl;
     }
-    return out;
+    String attrs = root.group(2);
+    Matcher nameAttr = Pattern.compile("(?i)\\bname=(['\"])(.*?)\\1").matcher(attrs);
+    String updated;
+    if (nameAttr.find()) {
+      String quote = nameAttr.group(1);
+      updated =
+          attrs.substring(0, nameAttr.start())
+              + "name="
+              + quote
+              + xmlAttr(wanted, quote)
+              + quote
+              + attrs.substring(nameAttr.end());
+    } else {
+      updated = attrs + " name='" + xmlAttr(wanted, "'") + "'";
+    }
+    return dxl.substring(0, root.start())
+        + "<"
+        + root.group(1)
+        + updated
+        + ">"
+        + dxl.substring(root.end());
   }
 
-  private static void setItemText(Element root, String itemName, String value) {
-    NodeList items = root.getElementsByTagNameNS("*", "item");
-    if (items.getLength() == 0) {
-      items = root.getElementsByTagName("item");
+  private static String replaceItemText(String dxl, String itemName, String wanted) {
+    Pattern item =
+        Pattern.compile(
+            "(?is)(<item\\s+name=(['\"])"
+                + Pattern.quote(itemName)
+                + "\\2[^>]*>\\s*<text>)[^<]*(</text>)");
+    Matcher matcher = item.matcher(dxl);
+    if (!matcher.find()) {
+      return dxl;
     }
-    for (int i = 0; i < items.getLength(); i++) {
-      if (!(items.item(i) instanceof Element item)) {
-        continue;
-      }
-      if (!itemName.equalsIgnoreCase(item.getAttribute("name"))) {
-        continue;
-      }
-      NodeList texts = item.getElementsByTagNameNS("*", "text");
-      if (texts.getLength() == 0) {
-        texts = item.getElementsByTagName("text");
-      }
-      if (texts.getLength() > 0) {
-        texts.item(0).setTextContent(value);
-      }
+    return matcher.replaceFirst(
+        Matcher.quoteReplacement(matcher.group(1) + wanted + matcher.group(3)));
+  }
+
+  private static String xmlAttr(String value, String quote) {
+    String escaped = value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    if ("'".equals(quote)) {
+      return escaped.replace("'", "&apos;");
     }
+    return escaped.replace("\"", "&quot;");
   }
 
   private static String designNameFromRoot(Element root) {

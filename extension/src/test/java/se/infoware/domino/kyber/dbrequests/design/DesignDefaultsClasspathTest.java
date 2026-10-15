@@ -104,6 +104,7 @@ class DesignDefaultsClasspathTest {
     String[] files = {
       "project.dxl",
       "classpath.dxl",
+      "resources-prefs.dxl",
       "plugin-xml.dxl",
       "build-properties.dxl",
       "faces-config.dxl",
@@ -116,6 +117,8 @@ class DesignDefaultsClasspathTest {
       assertFalse(dxl.contains("onInfoware"), file);
       assertFalse(dxl.contains("Mathias"), file);
     }
+    String prefs = filePayload(readResource("/defaults/xpages-project/resources-prefs.dxl"));
+    assertTrue(prefs.contains("encoding/<project>=UTF-8"));
     String project = filePayload(readResource("/defaults/xpages-project/project.dxl"));
     String plugin = filePayload(readResource("/defaults/xpages-project/plugin-xml.dxl"));
     String activator = filePayload(readResource("/defaults/xpages-project/activator-class.dxl"));

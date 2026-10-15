@@ -50,6 +50,19 @@ class DesignDxlTest {
   }
 
   @Test
+  void withNameKeepsXPageClassBytesAndFileName() throws Exception {
+    String dxl =
+        java.nio.file.Files.readString(
+            java.nio.file.Path.of("src/main/resources/defaults/xpage.dxl"));
+    String out = DesignDxl.withName(dxl, "SmokeXPage.xsp", "note");
+    assertEquals("SmokeXPage.xsp", DesignDxl.requireDesignName(out, "note"));
+    assertTrue(out.contains("<item name='$FileNames' sign='true'><text>newxpage.xsp</text>"));
+    assertTrue(out.contains("<item name='$ClassData0'"));
+    assertTrue(out.contains("<item name='$ClassData1'"));
+    assertTrue(out.contains("WEB-INF/classes/xsp/Newxpage.class"));
+  }
+
+  @Test
   void requireDesignNameUsesTitlePipeSegment() throws Exception {
     String dxl =
         """
