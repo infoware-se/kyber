@@ -8,7 +8,7 @@ import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
 /** List — GET /xpagesresources?nsfPath= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class ListXPagesResources extends AsyncDominoJNXJson {
 
   @Override

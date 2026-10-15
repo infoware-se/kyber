@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** List names — GET collection path (e.g. /agents)?nsfPath= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class ListWebServiceConsumers extends AsyncDominoJNXJson {
 
   @Override

@@ -12,7 +12,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.Optional;
 
 /** Export one compositecomponent as DXL - GET /compositecomponents/{name}?nsfPath= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class GetCompositeComponent extends AsyncDominoJNXJson {
 
   @Override

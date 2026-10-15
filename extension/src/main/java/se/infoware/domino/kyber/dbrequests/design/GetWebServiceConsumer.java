@@ -8,7 +8,7 @@ import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
 /** Export one Web Service Consumer as DXL - GET /webserviceconsumers/{name}?nsfPath= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class GetWebServiceConsumer extends AsyncDominoJNXJson {
 
   @Override

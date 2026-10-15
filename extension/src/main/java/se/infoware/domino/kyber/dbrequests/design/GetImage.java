@@ -12,7 +12,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.Optional;
 
 /** Export one image resource as DXL - GET /images/{name}?nsfPath= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class GetImage extends AsyncDominoJNXJson {
 
   @Override

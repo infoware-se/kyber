@@ -12,7 +12,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.Optional;
 
 /** Export one XPage as DXL - GET /xpages/{name}?nsfPath= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class GetXPage extends AsyncDominoJNXJson {
 
   @Override

@@ -9,7 +9,7 @@ import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
 /** List names — GET collection path (e.g. /agents)?nsfPath= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class ListScriptLibraries extends AsyncDominoJNXJson {
 
   @Override

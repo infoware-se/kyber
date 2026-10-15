@@ -11,7 +11,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.Optional;
 
 /** Export Xsp Properties (WEB-INF/xsp.properties) as DXL - GET /xspproperties?nsfPath= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class GetXspProperties extends AsyncDominoJNXJson {
 
   static final String NAME = "WEB-INF/xsp.properties";

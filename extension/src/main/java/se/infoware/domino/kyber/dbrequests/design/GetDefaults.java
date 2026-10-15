@@ -7,7 +7,7 @@ import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
 /** List starter design DXL — GET /defaults */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class GetDefaults extends AsyncDominoJNXJson {
 
   @Override

@@ -12,7 +12,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.Optional;
 
 /** Export one shared field as DXL - GET /sharedfields/{name}?nsfPath= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class GetSharedField extends AsyncDominoJNXJson {
 
   @Override

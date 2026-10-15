@@ -8,7 +8,7 @@ import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
 /** Export database icon ($DBIcon) — GET /dbicon?nsfPath= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class GetDbIcon extends AsyncDominoJNXJson {
 
   @Override

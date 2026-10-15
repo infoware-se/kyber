@@ -4,7 +4,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
-| **Version** | 0.24.11 |
+| **Version** | 0.24.12 |
 | **API** | `/api/kyber-v1` |
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
@@ -186,9 +186,8 @@ Singletons: most use `GET` / `POST` (create) / `PUT` (update) / `DELETE` on the 
 
 | ACL | Operations |
 |-----|------------|
-| Reader | list, get |
-| Designer | create, update, delete of design (not ACL) |
-| Manager | ACL replace, and creating a database |
+| Designer | list, get, create, update, delete of design (not the ACL) |
+| Manager | ACL replace, and creating a database. A Manager includes the Designer rights above. |
 
 A Manager is treated as allowed to create shared and personal folders/views and LotusScript/Java agents, including private ones. Domino does not store those checkboxes on a Manager entry. Delete documents stays a stored flag at every level, including Manager. Designer and below still need the checkbox stored on the ACL entry. Creating a database also needs the server right to create databases. The API never deletes a database.
 

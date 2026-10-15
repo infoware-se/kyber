@@ -8,7 +8,7 @@ import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
 /** Export one WebContent file as DXL - GET /webcontent/{name}?nsfPath= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class GetWebContent extends AsyncDominoJNXJson {
 
   @Override

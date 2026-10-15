@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.stream.Stream;
 
 /** List names — GET collection path (e.g. /agents)?nsfPath= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class ListFramesets extends AsyncDominoJNXJson {
 
   @Override

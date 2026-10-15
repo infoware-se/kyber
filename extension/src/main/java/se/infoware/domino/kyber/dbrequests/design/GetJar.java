@@ -8,7 +8,7 @@ import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
 /** Export one jar as DXL - GET /jars/{name}?nsfPath= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class GetJar extends AsyncDominoJNXJson {
 
   @Override

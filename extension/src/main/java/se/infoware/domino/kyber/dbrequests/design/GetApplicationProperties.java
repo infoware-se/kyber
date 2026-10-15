@@ -11,7 +11,7 @@ import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
 /** Export Application Properties as DXL - GET /applicationproperties?nsfPath= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class GetApplicationProperties extends AsyncDominoJNXJson {
 
   @Override

@@ -6,7 +6,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.24.11 |
+| **Version** | 0.24.12 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
@@ -123,13 +123,12 @@ A second create of the same name returns **409**. A missing element comes back a
 
 ## Access
 
-The call runs as the signed-in user. The limit is that user's ACL on the target NSF.
+The call runs as the signed-in user. The limit is that user's ACL on the target NSF. Listing or reading a design element needs Designer, the same level as creating or changing one.
 
 | ACL | Allowed |
 |--|--|
-| Reader | List and get |
-| Designer | Create, update, and delete design. The ACL itself stays with Manager. |
-| Manager | Replace the ACL, and create a database |
+| Designer | List, get, create, update, and delete design. Replacing the ACL stays with Manager. |
+| Manager | Replace the ACL, and create a database. A Manager includes the Designer rights above. |
 
 A Manager may create shared and personal folders, views, and agents. Domino keeps those rights on the Manager level and does not store them as separate checkboxes. Delete documents stays a stored flag at every level. Designer and below need the design checkboxes stored on the ACL entry.
 

@@ -5,7 +5,8 @@
  * the authenticated user against the database that request opened. These calls do not run as the
  * Domino server id.
  *
- * <p>A read needs Reader. Creating or replacing a design element needs Designer. Replacing the
+ * <p>Listing or reading a design element needs Designer, the same level as creating or
+ * replacing one. Replacing the
  * ACL needs Manager. Deleting a design note also needs the Delete documents checkbox, including
  * for a Manager. A shared view or folder, and a LotusScript or Java agent, need their own
  * checkbox for a Designer. Domino does not store those checkboxes on a Manager entry, because a

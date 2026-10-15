@@ -10,7 +10,7 @@ import io.vertx.core.json.JsonObject;
 import java.io.StringWriter;
 
 /** Export database ACL as DXL — GET /acl?nsfPath= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class GetAcl extends AsyncDominoJNXJson {
 
   @Override

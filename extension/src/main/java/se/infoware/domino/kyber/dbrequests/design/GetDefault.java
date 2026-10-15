@@ -10,7 +10,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
 /** One starter design DXL — GET /defaults/{type}?kind= */
-@MinimumAcl(AclLevel.READER)
+@MinimumAcl(AclLevel.DESIGNER)
 public class GetDefault extends AsyncDominoJNXJson {
 
   @Override
