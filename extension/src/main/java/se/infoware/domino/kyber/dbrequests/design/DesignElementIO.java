@@ -520,20 +520,7 @@ final class DesignElementIO {
         if (elOpt.isPresent()) {
           signWarning = safeSign(elOpt.get());
         } else {
-          try {
-            entry.document().sign();
-          } catch (Exception e) {
-            String message = e.getMessage() == null ? e.toString() : e.getMessage();
-            String lower = message.toLowerCase(Locale.ROOT);
-            if (lower.contains("signature")
-                || lower.contains("0x2dc")
-                || lower.contains("2dc")) {
-              signWarning = message;
-            } else {
-              throw new KeepExceptionServer(
-                  "dataconnection %s sign failed: %s", resolvedName, message);
-            }
-          }
+          signWarning = signStampedDocument(entry.document(), "dataconnection", resolvedName);
         }
       }
       case "navigator" -> {
@@ -561,20 +548,7 @@ final class DesignElementIO {
           signWarning = safeSign(elOpt.get());
         } else {
           // Residual notes may not map to a JNX DesignElement; sign the document directly
-          try {
-            entry.document().sign();
-          } catch (Exception e) {
-            String message = e.getMessage() == null ? e.toString() : e.getMessage();
-            String lower = message.toLowerCase(Locale.ROOT);
-            if (lower.contains("signature")
-                || lower.contains("0x2dc")
-                || lower.contains("2dc")) {
-              signWarning = message;
-            } else {
-              throw new KeepExceptionServer(
-                  "%s %s sign failed: %s", bulkType, resolvedName, message);
-            }
-          }
+          signWarning = signStampedDocument(entry.document(), bulkType, resolvedName);
         }
       }
       default -> throw new KeepExceptionWrongDataRequest("Unsupported type: " + t);
@@ -934,6 +908,7 @@ final class DesignElementIO {
                     "%s %s missing after DXL import; cannot sign", label, name));
     try {
       Document doc = el.getDocument();
+      DesignComment.stamp(doc);
       doc.sign();
       doc.save();
       return null;
@@ -963,8 +938,31 @@ final class DesignElementIO {
    *
    * @return null on success, else warning text
    */
+  private static String signStampedDocument(Document doc, String type, String name)
+      throws KeepExceptionServer {
+    try {
+      DesignComment.stamp(doc);
+      doc.sign();
+      doc.save();
+      return null;
+    } catch (Exception e) {
+      String message = e.getMessage() == null ? e.toString() : e.getMessage();
+      String lower = message.toLowerCase(Locale.ROOT);
+      if (lower.contains("signature") || lower.contains("0x2dc") || lower.contains("2dc")) {
+        try {
+          doc.save();
+        } catch (Exception ignored) {
+          // imported DXL may still be usable unsigned
+        }
+        return message;
+      }
+      throw new KeepExceptionServer("%s %s sign failed: %s", type, name, message);
+    }
+  }
+
   private static String safeSign(DesignElement el) throws KeepExceptionServer {
     try {
+      DesignComment.stamp(el);
       el.sign();
       el.save();
       return null;
