@@ -6,8 +6,8 @@ extension/lib/
 extension/IBM_TECHNICAL_SUPPORT/
 extension/*.dll
 
-# Local smoke export. Live names stay out of git. Committed NSF trees live under domino/.
-/domino/kybertest.nsf-C1258E43003C92AA/
+# Design exports stay on disk. They are not part of the repo.
+/domino/
 tmp*/
 tmp-*/
 

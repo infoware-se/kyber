@@ -64,7 +64,7 @@ Element `type` is the API name (`form`, `about`, `image`, …). The folder is th
 # -InDir may be the repo root when domino\ holds one NSF, or the NSF folder itself.
 ```
 
-Repo tree (this repo's starter; folders follow Package Explorer). A path with directories keeps them: `mail/user.nsf` becomes `domino/mail/user.nsf-<replica id>/`. File names are `<design name>-<note id>.dxl`.
+An export is a local tree under `domino/`. It is not committed. Folders follow Package Explorer. A path with directories keeps them: `mail/user.nsf` becomes `domino/mail/user.nsf-<replica id>/`. File names are `<design name>-<note id>.dxl`.
 
 ```
 domino/<nsf path>-<replica id>/
