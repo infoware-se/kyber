@@ -61,12 +61,6 @@ Kyber creates `kyber.nsf` on the first design write when the file is missing. Th
 
 The Domino server stays up. Installing Kyber restarts the `restapi` task only.
 
-| You need | |
-|--|--|
-| **Server** | HCL Domino with Domino REST API already running. On Windows the home is usually `C:\Domino\restapi`. |
-| **Account** | A REST user. On the target NSF: Reader to list and get, Designer to change design, Manager to replace the ACL or to create the database. Creating a database also needs the server right to create new databases. |
-| **To build** | JDK 21 and Maven 3.9 or newer. The build reads `keep-core`, `keep-extension`, and `keep-jnx-ext` from `%DRAPI_HOME%`. |
-
 ### Install a release
 
 1. Download `infoware-kyber-<version>.jar` from the [releases](https://github.com/infoware-se/kyber/releases). The version in the table above is the current one.
@@ -94,6 +88,8 @@ GET /api/kyber-v1/defaults?nsfPath=kyber.nsf
 A 404 that says the method is not applicable means the new JAR was not loaded. The file in `libs` is named `infoware-kyber.jar`, and restapi was quit and loaded after the copy.
 
 ### Build and install from source
+
+Building needs JDK 21 and Maven 3.9 or newer. The script reads `keep-core`, `keep-extension`, and `keep-jnx-ext` from `%DRAPI_HOME%`.
 
 ```powershell
 cd extension
