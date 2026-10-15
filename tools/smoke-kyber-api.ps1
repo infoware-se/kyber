@@ -1036,12 +1036,12 @@ foreach ($need in @("form", "webcontent", "fileresource", "xpage", "acl", "image
 }
 $webExport = @($manifest.elements | Where-Object { $_.type -eq "webcontent" -and $_.name -eq "SmokeWeb.txt" })
 if ($webExport.Count -lt 1) { Fail "export missing WebContent SmokeWeb.txt" }
-if ($webExport[0].path -notlike "webcontent/*") {
+if ($webExport[0].path -notlike "WebContent/*") {
   Fail "SmokeWeb.txt exported to $($webExport[0].path)"
 }
 $formExport = @($manifest.elements | Where-Object { $_.type -eq "form" -and $_.name -eq "SmokeForm" })
-if ($formExport.Count -lt 1 -or $formExport[0].path -notlike "forms/*") {
-  Fail "SmokeForm was not exported under forms/"
+if ($formExport.Count -lt 1 -or $formExport[0].path -notlike "Forms/*") {
+  Fail "SmokeForm was not exported under Forms/"
 }
 Ok "exported $($manifest.elementCount) elements"
 

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Export Domino design via Kyber bulk GET /api/kyber-v1/designdxl into a git-friendly folder tree.
+  Export Domino design via Kyber bulk GET /api/kyber-v1/designdxl into Package Explorer folders.
 
 .PARAMETER RestUrl
   Domino REST base URL, e.g. https://host:8880
@@ -139,58 +139,84 @@ function Get-DxlUnid([string]$Dxl) {
 }
 
 # API type -> repo folder (CRUD + typed bulk). Empty = use type name as folder.
+# Folder names match Domino Designer Package Explorer, not the API type names.
 $script:RepoDirByType = [ordered]@{
-  acl                   = "acl"
-  about                 = "about"
-  using                 = "using"
-  sharedactions         = "sharedactions"
-  databasescript        = "databasescript"
-  image                 = "images"
-  fileresource          = "fileresources"
-  webcontent            = "webcontent"
-  stylesheet            = "stylesheets"
-  theme                 = "themes"
-  scriptlibrary         = "scriptlibraries"
-  sharedfield           = "sharedfields"
-  sharedcolumn          = "sharedcolumns"
-  subform               = "subforms"
-  form                  = "forms"
-  page                  = "pages"
-  outline               = "outlines"
-  navigator             = "navigators"
-  frameset              = "framesets"
-  view                  = "views"
-  folder                = "folders"
-  agent                 = "agents"
-  webservice            = "webservices"
-  webserviceconsumer    = "webserviceconsumers"
-  dataconnection        = "dataconnections"
-  jar                   = "jars"
-  applet                = "applets"
-  javasource            = "javasources"
-  xpagesresource        = "xpagesresources"
+  acl                   = "AppProperties"
+  about                 = "Resources"
+  using                 = "Resources"
+  sharedactions         = "Code/actions"
+  databasescript        = "Code"
+  image                 = "Resources/Images"
+  fileresource          = "Resources/Files"
+  webcontent            = "WebContent"
+  stylesheet            = "Resources/StyleSheets"
+  theme                 = "Resources/Themes"
+  scriptlibrary         = "Code/ScriptLibraries"
+  sharedfield           = "SharedElements/Fields"
+  sharedcolumn          = "SharedElements/Columns"
+  subform               = "SharedElements/Subforms"
+  form                  = "Forms"
+  page                  = "Pages"
+  outline               = "SharedElements/Outlines"
+  navigator             = "SharedElements/Navigators"
+  frameset              = "Framesets"
+  view                  = "Views"
+  folder                = "Folders"
+  agent                 = "Code/Agents"
+  webservice            = "Code/WebServices"
+  webserviceconsumer    = "Code/WebServiceConsumer"
+  dataconnection        = "Resources/DataConnections"
+  jar                   = "Code/Jars"
+  applet                = "Resources/Applets"
+  javasource            = "Code/Java"
+  xpagesresource        = "."
   designnote            = "designnotes"
-  customcontrol         = "customcontrols"
-  xpage                 = "xpages"
-  wiringproperties      = "wiringproperties"
-  compositeapplication  = "compositeapplications"
-  compositecomponent    = "compositecomponents"
-  applicationproperties = "note"
-  xspproperties         = "note"
+  customcontrol         = "CustomControls"
+  xpage                 = "XPages"
+  wiringproperties      = "CompositeApplications"
+  compositeapplication  = "CompositeApplications"
+  compositecomponent    = "CompositeApplications"
+  applicationproperties = "AppProperties"
+  xspproperties         = "AppProperties"
 }
 
-function Get-ExportDir([string]$Type, [string]$Doctype) {
+function Get-DesignParent([string]$Name) {
+  if (-not $Name) { return "" }
+  $n = $Name -replace '\\', '/'
+  $i = $n.LastIndexOf('/')
+  if ($i -lt 0) { return "" }
+  return $n.Substring(0, $i)
+}
+
+function Get-DesignLeaf([string]$Name) {
+  if (-not $Name) { return "" }
+  $n = $Name -replace '\\', '/'
+  $i = $n.LastIndexOf('/')
+  if ($i -lt 0) { return $n }
+  return $n.Substring($i + 1)
+}
+
+function Get-ExportDir([string]$Type, [string]$Doctype, [string]$Name) {
   $t = if ($Type) { $Type.Trim().ToLowerInvariant() } else { "" }
   $d = if ($Doctype) { $Doctype.Trim().ToLowerInvariant() } else { "unknown" }
 
-  # CRUD / typed-bulk API types -> logical folders (even when DXL DOCTYPE is note)
+  if ($t -eq "javasource") {
+    $parent = Get-DesignParent $Name
+    if ($parent) { return "Code/Java/$parent" }
+    return "Code/Java"
+  }
+  if ($t -eq "xpagesresource") {
+    $parent = Get-DesignParent $Name
+    if ($parent) { return $parent }
+    return "."
+  }
+
   if ($t -and $script:RepoDirByType.Contains($t)) {
     $mapped = $script:RepoDirByType[$t]
     if ([string]::IsNullOrWhiteSpace($mapped)) { return $t }
     return $mapped
   }
 
-  # Everything else (e.g. applicationproperties) stays under DXL DOCTYPE — often note/
   return $d
 }
 
@@ -247,12 +273,14 @@ foreach ($el in $payload.elements) {
   $doctype = Get-DxlDoctype $dxl
   if ([string]::IsNullOrWhiteSpace($doctype)) { $doctype = "unknown" }
 
-  # Known API types (CRUD + typed bulk) -> logical folders; else DXL DOCTYPE
-  $dir = Get-ExportDir -Type $type -Doctype $doctype
+  $dir = Get-ExportDir -Type $type -Doctype $doctype -Name $name
   $sub = Join-Path $OutDir $dir
   if (-not (Test-Path $sub)) { New-Item -ItemType Directory -Path $sub | Out-Null }
 
-  $base = if ($name) { Sanitize-Name $name } else { Sanitize-Name $type }
+  $leaf = $name
+  if ($type -in @("javasource", "xpagesresource", "xspproperties")) { $leaf = Get-DesignLeaf $name }
+  if ($type -eq "databasescript") { $leaf = "dbscript.lsdb" }
+  $base = if ($leaf) { Sanitize-Name $leaf } else { Sanitize-Name $type }
   $noteId = Get-DxlNoteId $dxl
   $unid = Get-DxlUnid $dxl
   if ($noteId) {
@@ -300,7 +328,7 @@ foreach ($el in $payload.elements) {
 $manifest = @{
   nsfPath = $NsfPath
   exportedAt = (Get-Date).ToUniversalTime().ToString("o")
-  layout = "api-type"
+  layout = "package-explorer"
   elementCount = $index.Count
   elements = $index
 }
@@ -310,4 +338,4 @@ $manifestPath = Join-Path $OutDir "manifest.json"
   ($manifest | ConvertTo-Json -Depth 6),
   [System.Text.UTF8Encoding]::new($false))
 
-Write-Host "Wrote $($index.Count) elements to $OutDir (folders by API type / CRUD)"
+Write-Host "Wrote $($index.Count) elements to $OutDir (Package Explorer folders)"

@@ -57,15 +57,15 @@ Element `type` values match repo layout (`form`, `about`, `image`, …). Bridge 
 .\tools\import-from-repo.ps1 -RestUrl https://host:8880 -NsfPath test/restored.nsf -InDir .\kyber
 ```
 
-Repo tree (folders = API type / CRUD layout; this repo ships starters under [`kyber/`](../kyber/)):
+Repo tree (folders follow Package Explorer; this repo ships starters under [`kyber/`](../kyber/)):
 
 ```
 kyber/
   manifest.json          # type (API), doctype, path, name?
-  forms/newform-….dxl
-  views/newview-….dxl
-  images/….dxl
-  about/….dxl
+  Forms/newform-….dxl
+  Views/newview-….dxl
+  Resources/Images/….dxl
+  Resources/….dxl
   ...
 ```
 
