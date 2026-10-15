@@ -47,12 +47,12 @@ OpenAPI operationIds: `listX` / `getX` / `createX` / `updateX` / `deleteX`.
 
 All paths are under `/api/kyber-v1` and require `?nsfPath=`.
 
-## Bulk export/import (`design-handler`)
+## Export and import (`design-handler`)
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/designdxl?nsfPath=` | Whole-design export as `{ nsfPath, elements: [{ type, name?, dxl }], skipped: [{ type, name?, message }] }` |
-| PUT | `/designdxl?nsfPath=&dbTitle=` | Whole-design import of that array. Creates the NSF when the file is missing. Optional `dbTitle` sets the title on create |
+| GET | `/designdxl?nsfPath=` | Export as `{ nsfPath, elements: [{ type, name?, dxl }], skipped: [{ type, name?, message }] }` |
+| PUT | `/designdxl?nsfPath=&dbTitle=` | Import of that array. Creates the NSF when the file is missing. Optional `dbTitle` sets the title on create |
 
 Swagger tag: **`design-handler`** for `/defaults`, `/defaults/{type}`, and `/designdxl` (per-type CRUD stays under **`design-element`**).
 
@@ -191,7 +191,7 @@ On a database that already exists, the limit is that NSF's ACL.
 | Designer | list, get, create, update, delete of design (not the ACL) |
 | Manager | replace the ACL. A Manager includes the Designer rights above. |
 
-A whole-design import (`PUT /designdxl`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file and imports the design. The same import into a database that already exists uses the ACL table above.
+The import (`PUT /designdxl`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file and imports the design. The same import into a database that already exists uses the ACL table above.
 
 A Manager is treated as allowed to create shared and personal folders/views and LotusScript/Java agents, including private ones. Domino does not store those checkboxes on a Manager entry. Delete documents stays a stored flag at every level, including Manager. Designer and below still need the checkbox stored on the ACL entry. The API never deletes a database.
 
