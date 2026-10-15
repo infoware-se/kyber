@@ -26,6 +26,10 @@ class JavaSourceKindsWithNameTest {
 
     String out = JavaSourceKinds.withName(dxl, "com/example/HelloWorld.java");
     assertTrue(out.contains(">com/example/HelloWorld.java<"));
+    assertTrue(
+        out.contains("name='com/example/HelloWorld.java'")
+            || out.contains("name=\"com/example/HelloWorld.java\""));
+    assertFalse(out.contains("name='se/infoware/kyber/NewJava.java'"));
     assertFalse(out.toLowerCase().contains("$classdata0"), "compiled class items should be stripped");
     assertFalse(out.toLowerCase().contains("$classsize0"));
 

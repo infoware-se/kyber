@@ -103,7 +103,10 @@ final class JavaSourceKinds {
     return d == null ? CLASS : d;
   }
 
-  /** Set {@code $TITLE} / {@code $FileNames} and rewrite package/type in {@code $FileData}. */
+  /**
+   * Set the note {@code name}, {@code $TITLE} and {@code $FileNames}, and rewrite package/type in
+   * {@code $FileData}. The note name is what the importer looks up after create.
+   */
   static String withName(String dxl, String name) throws KeepExceptionWrongDataRequest {
     if (name == null || name.isBlank()) {
       throw new KeepExceptionWrongDataRequest("name is required");
@@ -120,7 +123,7 @@ final class JavaSourceKinds {
       throw new KeepExceptionWrongDataRequest("javasource name has empty type name");
     }
 
-    String out = dxl;
+    String out = DesignDxl.withName(dxl, wanted, "note");
     out =
         out.replaceAll(
             "(?i)(<item\\s+name=['\"]\\$?TITLE['\"][^>]*>\\s*<text>)[^<]*(</text>)",

@@ -875,17 +875,25 @@ if ($bulkResp.created) {
   Ok "applicationproperties title=$smokeTitle"
 }
 
-# --- Always-present: GET on kyber.nsf (fresh empty NSF may lack $DBIcon) ---
+# --- kyber.nsf is the template database: properties and ACL, no product icon ---
 $defaultNsf = "kyber.nsf"
 function Design-UrlOn([string]$TargetNsf, [string]$ApiPath, [string]$ExtraQuery = "") {
   $q = "nsfPath=$([uri]::EscapeDataString($TargetNsf))"
   if ($ExtraQuery) { $q = "$q&$ExtraQuery" }
   return "$base/api/kyber-v1/${ApiPath}?$q"
 }
-foreach ($singleton in @("applicationproperties", "dbicon", "acl")) {
+foreach ($singleton in @("applicationproperties", "acl")) {
   $code = Invoke-Design GET (Design-UrlOn $defaultNsf $singleton) -OutFile $out
   if ($code -ne "200") { Fail "GET /$singleton on $defaultNsf -> HTTP $code $(Get-Content $out -Raw)" }
   Ok "GET /$singleton ($defaultNsf)"
+}
+$code = Invoke-Design GET (Design-UrlOn $defaultNsf "dbicon") -OutFile $out
+if ($code -eq "404") {
+  Ok "GET /dbicon ($defaultNsf) absent"
+} elseif ($code -eq "200") {
+  Ok "GET /dbicon ($defaultNsf)"
+} else {
+  Fail "GET /dbicon on $defaultNsf -> HTTP $code $(Get-Content $out -Raw)"
 }
 foreach ($singleton in @("applicationproperties", "dbicon")) {
   $code = Invoke-Design POST (Design-UrlOn $defaultNsf $singleton) -BodyFile $empty `
@@ -950,7 +958,7 @@ foreach ($path in @("applicationproperties", "acl")) {
   Invoke-UpdateOnly $path
 }
 # A NSF created by PUT /designdxl receives the embedded icon. An existing smoke NSF keeps
-# whatever icon it already has; kyber.nsf is the round-trip of the product icon.
+# whatever icon it already has. kyber.nsf does not get that icon.
 if ($bulkResp.created) {
   $iconRows = @($bulkResp.results | Where-Object { $_.type -eq "dbicon" -and $_.success })
   if ($iconRows.Count -lt 1) {
@@ -964,7 +972,7 @@ if ($iconDxl -notmatch [regex]::Escape("kyber-icon.png")) {
   Fail "GET /dbicon on $NsfPath is missing the Kyber icon"
 }
 Ok "GET /dbicon ($NsfPath)"
-Invoke-UpdateOnly "dbicon" "kyber.nsf"
+Invoke-UpdateOnly "dbicon"
 
 foreach ($path in @("about", "using", "databasescript", "xspproperties")) {
   Invoke-SingletonCrud $path
