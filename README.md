@@ -10,7 +10,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
-| **Swagger tags** | `design-element` for typed CRUD, `design-handler` for `/defaults` and `/designdxl` |
+| **Swagger tags** | `design-element` for typed CRUD, `design-handler` for `/defaults`, `/export`, and `/import` |
 | **Template NSF** | `kyber.nsf` (`kyber.defaultNsf`) |
 | **Reference** | [extension/README.md](extension/README.md) |
 | **Source** | https://github.com/infoware-se/kyber |
@@ -117,7 +117,7 @@ Invoke-RestMethod -Method POST `
 
 Send your own design as DXL (`Content-Type: text/xml`). A full form is in the [manual example](extension/README.md#manual-test). A path such as `mail/user.nsf` is one `nsfPath` value. Percent-encode a slash inside an element name: `WEB-INF%2Ffaces-config.xml`.
 
-Per-type create needs an existing NSF. The import, `PUT /api/kyber-v1/designdxl?nsfPath=&dbTitle=`, creates a missing NSF and imports the design. The target keeps its own replica id. Kyber never deletes a database.
+Per-type create needs an existing NSF. The design import, `PUT /api/kyber-v1/import?nsfPath=&dbTitle=`, creates a missing NSF and imports the design. The target keeps its own replica id. Kyber never deletes a database.
 
 A second create of the same name returns **409**. A missing element comes back as **404** or **400**, and the message says it was not found.
 
@@ -130,7 +130,7 @@ The call runs as the signed-in user. On a database that already exists, the limi
 | Designer | List, get, create, update, and delete design |
 | Manager | Replace the ACL. A Manager includes the Designer rights above. |
 
-The import (`PUT /designdxl`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file and imports the design. The same import into a database that already exists uses the ACL table above.
+The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file and imports the design. The same import into a database that already exists uses the ACL table above.
 
 A Manager may create shared and personal folders, views, and agents. Domino keeps those rights on the Manager level and does not store them as separate checkboxes. Delete documents stays a stored flag at every level. Designer and below need the design checkboxes stored on the ACL entry.
 
@@ -162,7 +162,7 @@ Three types take `?kind=` on an empty create:
 
 About, Using, the database script, and Xsp Properties are one note per database: the calls sit on the collection path, with no `/{name}`. Application properties, the database icon, and the ACL are get and put on that same shape. `$DBIcon` is `/dbicon`. `GET /images` does not list it. A WebContent name under `WEB-INF` is rejected. Those notes are `/xpagesresources`, except `xsp.properties`, which is `/xspproperties`.
 
-`POST /xpages` also ensures the XPages project skeleton when it is missing. `POST /xpagesproject` creates those files on its own: `plugin.xml`, `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, and `xsp.properties`. Designer writes `META-INF/MANIFEST.MF` and `Local/plugin/Activator.java` when the project is opened. JRE System Library, Plug-in Dependencies, Referenced Libraries, and Data are views Designer builds. They are not design notes. `.classpath` and `plugin.xml` carry the JRE and plug-in references. Jars stored in the NSF are under `/jars`.
+`POST /xpages` creates the XPages project files when they are missing: `plugin.xml`, `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, and `xsp.properties`. Designer writes `META-INF/MANIFEST.MF` and `Local/plugin/Activator.java` when the project is opened. JRE System Library, Plug-in Dependencies, Referenced Libraries, and Data are views Designer builds. They are not design notes. `.classpath` and `plugin.xml` carry the JRE and plug-in references. Jars stored in the NSF are under `/jars`.
 
 The blank-NSF baseline is the snapshot of what Domino puts in a new empty database: [`extension/src/main/resources/defaults/blank/`](extension/src/main/resources/defaults/blank/) holds `acl`, application properties, `$DBIcon`, the untitled default view, and `manifest.json`. A sync uses it so those notes are not treated as application design to remove. The files there are a reference. They are not the templates in `kyber.nsf`.
 
@@ -170,7 +170,7 @@ Endpoint tables for each collection are in [extension/README.md](extension/READM
 
 ## Round trip
 
-The export, `GET /api/kyber-v1/designdxl?nsfPath=`, returns `{ nsfPath, elements: [{ type, name?, dxl }], skipped }`. The import is `PUT` of that document. It is the only call that creates a missing NSF. Per-type create needs a database that already exists. On create, `dbTitle` sets the database title. The source `replicaid` is removed, so the target keeps its own. A new NSF receives the embedded Kyber database icon unless the payload already includes one, and a later design refresh is allowed to replace that icon. The ACL is also `GET`/`PUT /acl`, and replacing it requires Manager. Kyber never deletes a database.
+The design export, `GET /api/kyber-v1/export?nsfPath=`, returns `{ nsfPath, elements: [{ type, name?, dxl }], skipped }`. The design import is `PUT /import` of that document. It is the only call that creates a missing NSF. Per-type create needs a database that already exists. On create, `dbTitle` sets the database title. The source `replicaid` is removed, so the target keeps its own. A new NSF receives the embedded Kyber database icon unless the payload already includes one, and a later design refresh is allowed to replace that icon. The ACL is also `GET`/`PUT /acl`, and replacing it requires Manager. Kyber never deletes a database.
 
 [`tools/export-to-repo.ps1`](tools/export-to-repo.ps1) writes that export to disk:
 

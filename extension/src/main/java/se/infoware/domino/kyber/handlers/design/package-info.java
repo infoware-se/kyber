@@ -6,7 +6,7 @@
  * write. The matching class in {@code se.infoware.domino.kyber.dbrequests.design} opens the
  * target NSF and applies that user's ACL.
  *
- * <p>{@link ImportDesignDxl} saves the caller's {@code nsfPath} and points the KEEP connection at
+ * <p>{@link ImportDesign} saves the caller's {@code nsfPath} and points the KEEP connection at
  * {@code KeepConfig.nsf}. That remap exists so a missing NSF can be created. It does not grant
  * access to the target database.
  */

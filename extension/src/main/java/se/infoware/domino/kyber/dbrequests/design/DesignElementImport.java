@@ -34,7 +34,7 @@ final class DesignElementImport {
   private DesignElementImport() {}
 
   /**
-   * Delete one bulk/residual design note by UNID and/or name. Used by {@code PUT /designdxl} when
+   * Delete one bulk/residual design note by UNID and/or name. Used by {@code PUT /import} when
    * an element has {@code "delete": true}.
    */
   static JsonObject deleteOne(Database db, String type, String name, String unid)

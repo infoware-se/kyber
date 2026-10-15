@@ -29,12 +29,12 @@ class OpenApiDesignSpecTest {
     assertNotNull(responses.getJsonObject("400BadRequest"));
     assertTrue(root.getJsonObject("paths").containsKey("/applicationproperties"));
     assertTrue(root.getJsonObject("paths").containsKey("/dbicon"));
-    assertTrue(root.getJsonObject("paths").containsKey("/xpagesproject"));
+    assertFalse(root.getJsonObject("paths").containsKey("/xpagesproject"));
     assertTrue(root.getJsonObject("paths").containsKey("/defaults/{type}"));
-    JsonObject bulk = root.getJsonObject("paths").getJsonObject("/designdxl");
-    assertNotNull(bulk.getJsonObject("get").getJsonObject("responses").getJsonObject("200"));
+    JsonObject export = root.getJsonObject("paths").getJsonObject("/export");
+    assertNotNull(export.getJsonObject("get").getJsonObject("responses").getJsonObject("200"));
     JsonObject getProps =
-        bulk.getJsonObject("get")
+        export.getJsonObject("get")
             .getJsonObject("responses")
             .getJsonObject("200")
             .getJsonObject("content")
@@ -42,8 +42,9 @@ class OpenApiDesignSpecTest {
             .getJsonObject("schema")
             .getJsonObject("properties");
     assertNotNull(getProps.getJsonObject("skipped"));
+    JsonObject imp = root.getJsonObject("paths").getJsonObject("/import");
     JsonObject putProps =
-        bulk.getJsonObject("put")
+        imp.getJsonObject("put")
             .getJsonObject("responses")
             .getJsonObject("200")
             .getJsonObject("content")
@@ -52,7 +53,7 @@ class OpenApiDesignSpecTest {
             .getJsonObject("properties");
     assertNotNull(putProps.getJsonObject("failed"));
     boolean hasEncryption = false;
-    for (Object p : bulk.getJsonArray("parameters")) {
+    for (Object p : imp.getJsonArray("parameters")) {
       if (p instanceof JsonObject param && "encryption".equals(param.getString("name"))) {
         hasEncryption = true;
       }

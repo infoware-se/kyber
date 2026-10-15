@@ -17,7 +17,7 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * Bulk import design DXL - PUT /designdxl?nsfPath=&dbTitle=
+ * Design import. PUT /import?nsfPath=&dbTitle=
  *
  * <p>HTTP handler remaps query {@code nsfPath} (target) to {@code targetNsfPath} and opens
  * {@code KeepConfig.nsf} as the KEEP connection DB so a missing NSF can be created first. The
@@ -47,7 +47,7 @@ import java.util.Set;
  * design note (bulk-only cleanup) instead of importing DXL.
  */
 @MinimumAcl(AclLevel.READER)
-public class ImportDesignDxl extends AsyncDominoJNXJson {
+public class ImportDesign extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
@@ -111,7 +111,7 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
         JsonObject one;
         if (delete) {
           if (isAcl) {
-            throw new KeepExceptionWrongDataRequest("Cannot delete ACL via designdxl delete flag");
+            throw new KeepExceptionWrongDataRequest("Cannot delete the ACL with the design import delete flag");
           }
           DesignAccess.requireDeleteDocuments(session, db);
           one =

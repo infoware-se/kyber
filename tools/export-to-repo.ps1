@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Export Domino design via Kyber bulk GET /api/kyber-v1/designdxl into Package Explorer folders.
+  Export Domino design via Kyber bulk GET /api/kyber-v1/export into Package Explorer folders.
 
 .PARAMETER RestUrl
   Domino REST base URL, e.g. https://host:8880
@@ -24,7 +24,7 @@
   Accept any TLS certificate. Leave this off for a certificate the machine trusts.
 
 .PARAMETER AllowSkipped
-  Write the tree even when GET /designdxl reports skipped notes. Without this switch
+  Write the tree even when GET /export reports skipped notes. Without this switch
   the script stops before replacing OutDir.
 #>
 param(
@@ -274,7 +274,7 @@ $RestUrl = $RestUrl.TrimEnd("/")
 $bearer = Get-BearerToken
 $headers = @{ Authorization = "Bearer $bearer" }
 
-$uri = "$RestUrl/api/kyber-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfPath))"
+$uri = "$RestUrl/api/kyber-v1/export?nsfPath=$([uri]::EscapeDataString($NsfPath))"
 Write-Host "GET $uri"
 $payload = Invoke-Drapi -Method GET -Uri $uri -Headers $headers
 

@@ -13,7 +13,7 @@
  * Manager cannot turn them off, so a Manager is treated as having them. Creating a new NSF needs
  * the server privilege Create databases &amp; templates.
  *
- * <p>{@link ImportDesignDxl} is the one request whose {@code @MinimumAcl} applies to {@code
+ * <p>{@link ImportDesign} is the one request whose {@code @MinimumAcl} applies to {@code
  * KeepConfig.nsf}. KEEP opens that file so a missing target can be created. The write itself is
  * authorized on the caller's {@code nsfPath}.
  *

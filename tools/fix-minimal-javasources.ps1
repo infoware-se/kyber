@@ -130,7 +130,7 @@ foreach ($it in $items) {
 }
 
 # Delete old minimal java notes via bulk delete flags if supported; else UPSERT by importing fixed DXL
-# First try ImportDesignDxl delete: elements with delete:true
+# First try ImportDesign delete: elements with delete:true
 $deletePayload = @{
   elements = @(
     @{ type = "javasource"; name = "se/infoware/kyber/minimal/Minimal.java"; delete = $true },
@@ -140,7 +140,7 @@ $deletePayload = @{
 } | ConvertTo-Json -Depth 5
 
 try {
-  $del = Invoke-RestMethod -Method PUT -Uri "$base/api/kyber-v1/designdxl?$nsfQ" -Headers $headers `
+  $del = Invoke-RestMethod -Method PUT -Uri "$base/api/kyber-v1/import?$nsfQ" -Headers $headers `
     -ContentType "application/json" -Body $deletePayload
   Write-Host "Delete phase imported=$($del.imported) failed=$($del.failed)"
 } catch {
@@ -155,7 +155,7 @@ $payload = @{
   )
 } | ConvertTo-Json -Depth 5
 
-$put = Invoke-RestMethod -Method PUT -Uri "$base/api/kyber-v1/designdxl?$nsfQ" -Headers $headers `
+$put = Invoke-RestMethod -Method PUT -Uri "$base/api/kyber-v1/import?$nsfQ" -Headers $headers `
   -ContentType "application/json" -Body $payload
 Write-Host "Upsert imported=$($put.imported) failed=$($put.failed)"
 $put.results | ForEach-Object {

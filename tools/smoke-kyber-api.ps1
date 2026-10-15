@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
-  Live smoke of kyber-v1 against DRAPI: defaults, CRUD status codes, XPages ensure.
+  Live smoke of kyber-v1 against DRAPI: defaults, CRUD status codes, and XPages.
 
 .DESCRIPTION
   Auth via DOMINO_REST_* / REST_ADMIN_* or a gitignored .env. Notes COM uses DOMINO_SERVER.
-  Uses kybertest.nsf (PUT /designdxl?dbTitle=... creates it when missing), then asserts:
+  Uses kybertest.nsf (PUT /import?dbTitle=... creates it when missing), then asserts:
 
   - GET /defaults for a few types
   - missing form → not found
@@ -19,7 +19,6 @@
   - singletons about, using, databasescript, xspproperties: create or keep, 409, get, put, Hello World
   - applicationproperties, dbicon and acl: get + put of the same DXL
   - a NSF created by this run has the embedded Kyber database icon
-  - POST /xpagesproject once, then a second call that creates nothing
   - export-to-repo.ps1 writes kybertest.nsf to a temp folder, then import-from-repo.ps1
     restores that tree into kybersmoke-import.nsf. The repo domino/ templates are not touched.
   - after that, DELETE each smoked element and the Hello World document, then create the
@@ -884,10 +883,10 @@ foreach ($q in @(
 $smokeTitle = "Kyber Smoke Test"
 $bulkFile = Join-Path $env:TEMP "smoke-bulk.json"
 [IO.File]::WriteAllText($bulkFile, (@{ nsfPath = $NsfPath; elements = @() } | ConvertTo-Json -Compress -Depth 5))
-$code = Invoke-Design PUT (Design-Url "designdxl" "dbTitle=$([uri]::EscapeDataString($smokeTitle))") `
+$code = Invoke-Design PUT (Design-Url "import" "dbTitle=$([uri]::EscapeDataString($smokeTitle))") `
   -BodyFile $bulkFile -ContentType "application/json" -OutFile $out
 if ($code -notin @("200", "201")) {
-  Fail "PUT /designdxl (ensure NSF) -> HTTP $code $(Get-Content $out -Raw)"
+  Fail "PUT /import (ensure NSF) -> HTTP $code $(Get-Content $out -Raw)"
 }
 $bulkResp = Get-Content $out -Raw | ConvertFrom-Json
 if ($bulkResp.created -and $bulkResp.dbTitle -ne $smokeTitle) {
@@ -963,39 +962,6 @@ Assert-NotFound "PUT /forms/$missing" $code (Get-Content $out -Raw)
 
 $script:missingFormPath = $missingPath
 
-# --- XPages project ensure ---
-$code = Invoke-Design POST (Design-Url "xpagesproject") -OutFile $out
-if ($code -notin @("200", "201")) {
-  Fail "POST /xpagesproject -> HTTP $code $(Get-Content $out -Raw)"
-}
-$xp = Get-Content $out -Raw | ConvertFrom-Json
-if (-not $xp.ensured) { Fail "xpagesproject response missing ensured=true: $(Get-Content $out -Raw)" }
-$createdCount = @($xp.created).Count
-if ($bulkResp.created -and $createdCount -lt 1) {
-  Fail "xpagesproject on fresh NSF should create skeleton files, created=$createdCount"
-}
-Ok "xpagesproject created=$createdCount skipped=$(@($xp.skipped).Count)"
-
-$code = Invoke-Design POST (Design-Url "xpagesproject") -OutFile $out
-if ($code -notin @("200", "201")) { Fail "POST /xpagesproject (2nd) -> HTTP $code" }
-$xp2 = Get-Content $out -Raw | ConvertFrom-Json
-$created2 = @($xp2.created).Count
-if ($created2 -ne 0) { Fail "2nd xpagesproject should create 0, got $created2" }
-Ok "xpagesproject idempotent (skipped=$(@($xp2.skipped).Count))"
-
-$code = Invoke-Design GET (Design-Url "xpagesresources") -OutFile $out
-Assert-Code "GET /xpagesresources" $code @("200")
-if ((Get-ResponseText) -notmatch [regex]::Escape("WEB-INF/faces-config.xml")) {
-  Fail "xpagesresources missing faces-config: $(Get-ResponseText)"
-}
-$faces = "xpagesresources/" + [uri]::EscapeDataString("WEB-INF/faces-config.xml")
-$code = Invoke-Design GET (Design-Url $faces) -OutFile $out
-Assert-Code "GET faces-config" $code @("200")
-$face = Get-ResponseText | ConvertFrom-Json
-if ([string]$face.fileName -notmatch "faces-config") { Fail "faces-config fileName '$($face.fileName)'" }
-if ([string]$face.code -notmatch "faces-config") { Fail "faces-config code missing" }
-Ok "faces-config fileName=$($face.fileName)"
-
 $probeName = ".settings/kyber-smoke.prefs"
 $probeItem = "xpagesresources/" + [uri]::EscapeDataString($probeName)
 $code = Invoke-Design POST (Design-Url "xpagesresources" ("name=" + [uri]::EscapeDataString($probeName))) `
@@ -1012,7 +978,7 @@ Ok "xpagesresource create/get/delete"
 foreach ($path in @("applicationproperties", "acl")) {
   Invoke-UpdateOnly $path
 }
-# A NSF created by PUT /designdxl receives the embedded icon, including kyber.nsf.
+# A NSF created by PUT /import receives the embedded icon, including kyber.nsf.
 # An existing smoke NSF keeps whatever icon it already has.
 if ($bulkResp.created) {
   $iconRows = @($bulkResp.results | Where-Object { $_.type -eq "dbicon" -and $_.success })
@@ -1076,6 +1042,19 @@ $named = @(
 foreach ($el in $named) {
   Invoke-NamedCrud $el.coll $el.name $(if ($el.kind) { $el.kind } else { "" })
 }
+
+$code = Invoke-Design GET (Design-Url "xpagesresources") -OutFile $out
+Assert-Code "GET /xpagesresources" $code @("200")
+if ((Get-ResponseText) -notmatch [regex]::Escape("WEB-INF/faces-config.xml")) {
+  Fail "xpagesresources missing faces-config: $(Get-ResponseText)"
+}
+$faces = "xpagesresources/" + [uri]::EscapeDataString("WEB-INF/faces-config.xml")
+$code = Invoke-Design GET (Design-Url $faces) -OutFile $out
+Assert-Code "GET faces-config" $code @("200")
+$face = Get-ResponseText | ConvertFrom-Json
+if ([string]$face.fileName -notmatch "faces-config") { Fail "faces-config fileName '$($face.fileName)'" }
+if ([string]$face.code -notmatch "faces-config") { Fail "faces-config code missing" }
+Ok "faces-config fileName=$($face.fileName)"
 
 Assert-CodeRoundTrip "agents/SmokeAgentLs" "Use `"SmokeLibLs`""
 Assert-CodeRoundTrip "webcontent/SmokeWeb.txt" ""

@@ -9,13 +9,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 /**
- * Bulk export of design notes as CRUD-identical DXL. GET /designdxl?nsfPath=
+ * Design export. GET /export?nsfPath=
  *
  * <p>Requires Designer on the target NSF. Data documents and agent run data are not part of the
  * export.
  */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetDesignDxl extends AsyncDominoJNXJson {
+public class ExportDesign extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

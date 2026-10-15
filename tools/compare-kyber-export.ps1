@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Compare Domino design sets: Notes COM DXL file vs Kyber bulk /designdxl (by UNID).
+  Compare Domino design sets: Notes COM DXL file vs Kyber bulk /export (by UNID).
   ACL is not part of COM SelectAllDesignElements / UNID compare — use GET /acl separately.
 
 .EXAMPLE
@@ -95,7 +95,7 @@ $headers = @{ Authorization = "Bearer $($auth.bearer)" }
 
 $comDxl = [System.IO.File]::ReadAllText($ComDxlPath)
 $comUnids = Get-UnidsFromDxl $comDxl
-$bulk = Invoke-Kyber -Uri "$RestUrl/api/kyber-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfPath))" -Headers $headers
+$bulk = Invoke-Kyber -Uri "$RestUrl/api/kyber-v1/export?nsfPath=$([uri]::EscapeDataString($NsfPath))" -Headers $headers
 foreach ($s in @($bulk.skipped | Where-Object { $_ })) {
   Write-Warning ("skipped {0} {1}: {2}" -f $s.type, $s.name, $s.message)
 }

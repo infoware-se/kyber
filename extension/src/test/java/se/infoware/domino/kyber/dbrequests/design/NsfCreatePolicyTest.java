@@ -21,35 +21,35 @@ class NsfCreatePolicyTest {
   @Test
   void missingFileMayBeCreated() {
     assertTrue(
-        ImportDesignDxl.isMissingDatabase(new DominoException(259, "File does not exist")));
-    assertTrue(ImportDesignDxl.isMissingDatabase(new RuntimeException("File not found")));
+        ImportDesign.isMissingDatabase(new DominoException(259, "File does not exist")));
+    assertTrue(ImportDesign.isMissingDatabase(new RuntimeException("File not found")));
   }
 
   @Test
   void otherOpenFailuresAreNotTreatedAsMissing() {
     assertFalse(
-        ImportDesignDxl.isMissingDatabase(
+        ImportDesign.isMissingDatabase(
             new DominoException(1280, "You are not authorized to perform that operation")));
-    assertFalse(ImportDesignDxl.isMissingDatabase(new RuntimeException("database is locked")));
+    assertFalse(ImportDesign.isMissingDatabase(new RuntimeException("database is locked")));
   }
 
   @Test
   void encryptionDefaultsToNone() throws Exception {
-    assertEquals(DominoClient.Encryption.None, ImportDesignDxl.encryptionOf(null));
-    assertEquals(DominoClient.Encryption.None, ImportDesignDxl.encryptionOf("  "));
-    assertEquals(DominoClient.Encryption.AES256, ImportDesignDxl.encryptionOf("AES-256"));
+    assertEquals(DominoClient.Encryption.None, ImportDesign.encryptionOf(null));
+    assertEquals(DominoClient.Encryption.None, ImportDesign.encryptionOf("  "));
+    assertEquals(DominoClient.Encryption.AES256, ImportDesign.encryptionOf("AES-256"));
   }
 
   @Test
   void knownNsfsGetATitleWhenCreateOmitsDbTitle() {
-    assertEquals("Kyber Design Elements", ImportDesignDxl.defaultTitleForNewNsf("kyber.nsf"));
+    assertEquals("Kyber Design Elements", ImportDesign.defaultTitleForNewNsf("kyber.nsf"));
     assertEquals(
-        "Kyber Design Elements", ImportDesignDxl.defaultTitleForNewNsf("Server!!kyber.nsf"));
-    assertEquals("Kyber Smoke Test", ImportDesignDxl.defaultTitleForNewNsf("kybertest.nsf"));
-    assertNull(ImportDesignDxl.defaultTitleForNewNsf("other.nsf"));
-    assertTrue(ImportDesignDxl.isDefaultNsfPath("kyber.nsf"));
-    assertTrue(ImportDesignDxl.isDefaultNsfPath("Server!!kyber.nsf"));
-    assertFalse(ImportDesignDxl.isDefaultNsfPath("kybertest.nsf"));
+        "Kyber Design Elements", ImportDesign.defaultTitleForNewNsf("Server!!kyber.nsf"));
+    assertEquals("Kyber Smoke Test", ImportDesign.defaultTitleForNewNsf("kybertest.nsf"));
+    assertNull(ImportDesign.defaultTitleForNewNsf("other.nsf"));
+    assertTrue(ImportDesign.isDefaultNsfPath("kyber.nsf"));
+    assertTrue(ImportDesign.isDefaultNsfPath("Server!!kyber.nsf"));
+    assertFalse(ImportDesign.isDefaultNsfPath("kybertest.nsf"));
   }
 
   @Test
@@ -132,11 +132,11 @@ class NsfCreatePolicyTest {
     JsonArray acl =
         new JsonArray().add(new JsonObject().put("type", "acl").put("dxl", "<acl/>"));
     JsonArray both = design.copy().add(acl.getJsonObject(0));
-    assertEquals(AclLevel.DESIGNER, ImportDesignDxl.requiredWriteLevel(design));
-    assertEquals(AclLevel.MANAGER, ImportDesignDxl.requiredWriteLevel(acl));
-    assertEquals(AclLevel.MANAGER, ImportDesignDxl.requiredWriteLevel(both));
-    assertNull(ImportDesignDxl.requiredWriteLevel(new JsonArray()));
-    assertNull(ImportDesignDxl.requiredWriteLevel(null));
+    assertEquals(AclLevel.DESIGNER, ImportDesign.requiredWriteLevel(design));
+    assertEquals(AclLevel.MANAGER, ImportDesign.requiredWriteLevel(acl));
+    assertEquals(AclLevel.MANAGER, ImportDesign.requiredWriteLevel(both));
+    assertNull(ImportDesign.requiredWriteLevel(new JsonArray()));
+    assertNull(ImportDesign.requiredWriteLevel(null));
   }
 
   @Test
@@ -152,12 +152,12 @@ class NsfCreatePolicyTest {
                 new JsonObject()
                     .put("type", "image")
                     .put("dxl", "<imageresource name='$DBIcon'/>"));
-    assertTrue(ImportDesignDxl.shouldApplyDefaultDbIcon(true, "app.nsf", forms));
-    assertTrue(ImportDesignDxl.shouldApplyDefaultDbIcon(true, "kyber.nsf", forms));
-    assertTrue(ImportDesignDxl.shouldApplyDefaultDbIcon(true, "Server!!kyber.nsf", forms));
-    assertFalse(ImportDesignDxl.shouldApplyDefaultDbIcon(false, "app.nsf", forms));
-    assertFalse(ImportDesignDxl.shouldApplyDefaultDbIcon(true, "app.nsf", ownIcon));
-    assertFalse(ImportDesignDxl.shouldApplyDefaultDbIcon(true, "app.nsf", ownImage));
+    assertTrue(ImportDesign.shouldApplyDefaultDbIcon(true, "app.nsf", forms));
+    assertTrue(ImportDesign.shouldApplyDefaultDbIcon(true, "kyber.nsf", forms));
+    assertTrue(ImportDesign.shouldApplyDefaultDbIcon(true, "Server!!kyber.nsf", forms));
+    assertFalse(ImportDesign.shouldApplyDefaultDbIcon(false, "app.nsf", forms));
+    assertFalse(ImportDesign.shouldApplyDefaultDbIcon(true, "app.nsf", ownIcon));
+    assertFalse(ImportDesign.shouldApplyDefaultDbIcon(true, "app.nsf", ownImage));
     assertFalse(
         DesignDefaults.countsAsStarter(
             new JsonObject().put("type", "image").put("name", "$DBIcon")));
@@ -206,6 +206,6 @@ class NsfCreatePolicyTest {
 
   @Test
   void unknownEncryptionIsRejected() {
-    assertThrows(KeepExceptionWrongDataRequest.class, () -> ImportDesignDxl.encryptionOf("rot13"));
+    assertThrows(KeepExceptionWrongDataRequest.class, () -> ImportDesign.encryptionOf("rot13"));
   }
 }

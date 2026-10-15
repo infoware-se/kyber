@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Kyber — Infoware REST API for design elements",
-    "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) with a typed root element. GET /designdxl is the export and PUT /designdxl is the import of all supported elements as DXL. The import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database. This API never deletes databases. The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
+    "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) with a typed root element. GET /export is the design export and PUT /import is the design import of all supported elements as DXL. The design import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database. This API never deletes databases. The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
     "version": "0.24.12"
   },
   "servers": [
@@ -17,20 +17,20 @@
     },
     {
       "name": "design-handler",
-      "description": "Starter DXL defaults (GET /defaults, GET /defaults/{type}?kind=), export (GET /designdxl), and import (PUT /designdxl). If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. The first write to any NSF creates kyber.nsf without design templates when it is missing, with the same usage text in About and Using. The import creates the NSF when the file is missing, after the server privilege Create databases & templates. POST /xpagesproject ensures the minimal XPages project skeleton."
+      "description": "Templates, the design export, and the design import.\n\nGET /defaults lists the design templates. GET /defaults/{type} returns one template. Add kind for an agent, a script library, or a Java source. A template is the first matching element in kyber.nsf. When kyber.nsf has none, Kyber uses the starter in the JAR.\n\nGET /export is the design export of a database that already exists. PUT /import is the design import. When that file does not exist, the import checks the server privilege Create databases & templates and creates the database."
     }
   ],
   "paths": {
     "/defaults": {
-      "summary": "List starter design DXL from kyber.nsf or embedded JAR",
-      "description": "Starter DXL catalog. If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Kinded types (agents, script libraries, Java sources) emit one entry per kind.",
+      "summary": "List design templates",
+      "description": "Lists the design template for each type. A template is the first matching element in kyber.nsf. When kyber.nsf has none, Kyber uses the starter in the JAR. Agents, script libraries, and Java sources appear once per kind.",
       "get": {
         "tags": [
           "design-handler"
         ],
         "operationId": "getDefaults",
-        "summary": "List starter design DXL",
-        "description": "Returns { defaultNsf, elements: [{ type, name, dxl, source, kind? }] }. Per type/kind: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Agents, script libraries, and Java sources appear once per kind.",
+        "summary": "List design templates",
+        "description": "Returns defaultNsf and one element per template: type, name, dxl, and source (nsf or embedded). Agents, script libraries, and Java sources appear once per kind.",
         "x-keep-version": 1,
         "security": [
           {
@@ -95,7 +95,7 @@
       }
     },
     "/defaults/{type}": {
-      "summary": "Get starter DXL for one design type",
+      "summary": "Get a design template",
       "parameters": [
         {
           "name": "type",
@@ -133,8 +133,8 @@
           "design-handler"
         ],
         "operationId": "getDefault",
-        "summary": "Get starter design DXL for a type",
-        "description": "Returns starter DXL for one design type. If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. For kinded types pass ?kind=: agents (lotusscript|formula|simpleaction|java|importedjava); scriptlibraries (lotusscript|javascript|ssjs|java); javasources (class|interface|enum - name is a Java path ending in .java).",
+        "summary": "Get a design template",
+        "description": "Returns one design template. Pass kind for an agent (lotusscript, formula, simpleaction, java, importedjava), a script library (lotusscript, javascript, ssjs, java), or a Java source (class, interface, enum).",
         "x-keep-version": 1,
         "security": [
           {
@@ -189,48 +189,29 @@
           }
         }
       },
-      "description": "Returns starter DXL for the given type. If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Pass ?kind= for agents, script libraries, and Java sources."
+      "description": "Returns one design template from kyber.nsf, or the starter in the JAR when kyber.nsf has no element of that type. Pass kind for an agent, a script library, or a Java source."
     },
-    "/designdxl": {
-      "summary": "Export and import the design as DXL",
-      "description": "GET exports every supported design element as CRUD-identical DXL and lists notes that could not be exported in skipped. PUT imports an elements array (same DXL as per-type CRUD) and reports failed when any element was not applied. Missing NSF is created on PUT only, and only when the file does not exist. Optional ?dbTitle= sets the database title when the NSF is created. Optional ?encryption= chooses encryption for that create (default none). Requires ?nsfPath=.",
+    "/export": {
+      "summary": "Design export",
+      "description": "Design export of a database that already exists. Returns nsfPath, elements with type, name, and dxl, and skipped for notes that were not exported.",
       "parameters": [
         {
           "name": "nsfPath",
-          "description": "Target Domino database filepath (created on PUT if missing)",
+          "description": "NSF to export. The file must already exist.",
           "schema": {
             "type": "string"
           },
           "in": "query",
           "required": true
-        },
-        {
-          "name": "dbTitle",
-          "description": "Database title to set when PUT creates a missing NSF (ignored if the NSF already exists). Prefer dbTitle over title — KEEP may already populate title from the bootstrap database.",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": false
-        },
-        {
-          "name": "encryption",
-          "description": "Encryption for a NSF created by PUT. Ignored when the NSF already exists. Default none (unencrypted). aes256 is the usual choice for a new encrypted database.",
-          "schema": {
-            "type": "string",
-            "enum": ["none", "simple", "medium", "strong", "aes128", "aes256"]
-          },
-          "in": "query",
-          "required": false
         }
       ],
       "get": {
         "tags": [
           "design-handler"
         ],
-        "operationId": "getDesignDxl",
-        "summary": "Export",
-        "description": "Returns { nsfPath, elements: [{ type, name?, dxl }], skipped: [{ type, name?, message }] }. skipped is empty when every note was exported. Requires ?nsfPath=. NSF must already exist.",
+        "operationId": "exportDesign",
+        "summary": "Design export",
+        "description": "Design export of a database that already exists. Returns nsfPath, elements with type, name, and dxl, and skipped for notes that were not exported.",
         "x-keep-version": 1,
         "security": [
           {
@@ -306,14 +287,55 @@
             "$ref": "#/components/responses/500InternalServerError"
           }
         }
-      },
+      }
+    },
+    "/import": {
+      "summary": "Design import",
+      "description": "Design import. Each element is signed, and LotusScript is compiled afterwards. When the NSF file is missing, checks the server privilege Create databases & templates and creates the database. dbTitle sets the title of that new database. An import into a database that already exists uses the ACL of that NSF.",
+      "parameters": [
+        {
+          "name": "nsfPath",
+          "description": "Target NSF. The design import creates this file when it does not exist.",
+          "schema": {
+            "type": "string"
+          },
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "dbTitle",
+          "description": "Database title when the design import creates a missing NSF. Ignored when the NSF already exists. Prefer dbTitle over title — KEEP may already populate title from the bootstrap database.",
+          "schema": {
+            "type": "string"
+          },
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "encryption",
+          "description": "Encryption for an NSF created by the design import. Ignored when the NSF already exists. Default none (unencrypted). aes256 is the usual choice for a new encrypted database.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "none",
+              "simple",
+              "medium",
+              "strong",
+              "aes128",
+              "aes256"
+            ]
+          },
+          "in": "query",
+          "required": false
+        }
+      ],
       "put": {
         "tags": [
           "design-handler"
         ],
-        "operationId": "importDesignDxl",
-        "summary": "Import",
-        "description": "Import elements with REPLACE_ELSE_CREATE, sign after each import, then compile LotusScript. When the NSF file is missing, checks the server privilege Create databases & templates and creates the database. Optional ?dbTitle= sets Database.setTitle when created. Requires ?nsfPath=.",
+        "operationId": "importDesign",
+        "summary": "Design import",
+        "description": "Design import. Each element is signed, and LotusScript is compiled afterwards. When the NSF file is missing, checks the server privilege Create databases & templates and creates the database. dbTitle sets the title of that new database. An import into a database that already exists uses the ACL of that NSF.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6978,79 +7000,6 @@
         ]
       }
     },
-    "/xpagesproject": {
-      "summary": "Ensure minimal XPages project skeleton",
-      "description": "Creates missing XPages project files (plugin.xml, .project, .classpath, build.properties, faces-config, Activator, xsp.properties) if absent. Idempotent create-if-absent. Also runs automatically on POST /xpages. Requires ?nsfPath=.",
-      "parameters": [
-        {
-          "name": "nsfPath",
-          "description": "Domino database filepath",
-          "schema": {
-            "type": "string"
-          },
-          "in": "query",
-          "required": true
-        }
-      ],
-      "post": {
-        "tags": [
-          "design-handler"
-        ],
-        "operationId": "ensureXPagesProject",
-        "summary": "Ensure XPages project skeleton files exist",
-        "description": "Import the embedded minimal XPages application skeleton for NSFs that never had XPages. Skips titles that already exist. Requires ?nsfPath=.",
-        "x-keep-version": 1,
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "ensured": {
-                      "type": "boolean"
-                    },
-                    "projectName": {
-                      "type": "string"
-                    },
-                    "created": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "skipped": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400BadRequest"
-          },
-          "403": {
-            "$ref": "#/components/responses/403Forbidden"
-          },
-          "500": {
-            "$ref": "#/components/responses/500InternalServerError"
-          }
-        }
-      }
-    },
     "/xpages": {
       "summary": "List or create XPages",
       "description": "List XPage names (GET) or create an XPage (POST) in the target NSF (?nsfPath=). Get/update/delete use /xpages/{name}. POST also ensures a minimal XPages project skeleton when missing.",
@@ -7071,7 +7020,7 @@
         ],
         "operationId": "createXPage",
         "summary": "Create an XPage (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. Also auto-ensures the minimal XPages project skeleton on create (see POST /xpagesproject).",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), uses the first match by case-insensitive alphabetical name; otherwise embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. Creating an XPage also creates the XPages project files that are missing.",
         "x-keep-version": 1,
         "security": [
           {

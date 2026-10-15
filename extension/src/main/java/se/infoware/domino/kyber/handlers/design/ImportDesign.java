@@ -7,15 +7,15 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * PUT /designdxl — remaps target {@code nsfPath} so KEEP can open a bootstrap DB when the NSF is
+ * PUT /import — remaps target {@code nsfPath} so KEEP can open a bootstrap DB when the NSF is
  * missing.
  *
  * <p>Caller {@code ?nsfPath=} is the NSF to restore into. Connection uses {@code KeepConfig.nsf}.
  * The remap does not authorize the write. {@code
- * se.infoware.domino.kyber.dbrequests.design.ImportDesignDxl} checks Designer or Manager on the
+ * se.infoware.domino.kyber.dbrequests.design.ImportDesign} checks Designer or Manager on the
  * target NSF for the logged-in user.
  */
-public class ImportDesignDxl extends DefaultJsonHandler {
+public class ImportDesign extends DefaultJsonHandler {
 
   static final String BOOTSTRAP_NSF = "KeepConfig.nsf";
 

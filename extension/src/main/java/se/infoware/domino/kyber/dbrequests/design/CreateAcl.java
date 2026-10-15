@@ -19,7 +19,7 @@ public class CreateAcl extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String dxl = request.incoming.getString("dxl", "");
     DesignDxl.requireRootOnly(dxl, TYPE);
-    ImportDesignDxl.ensureEmptyDefaultsNsf(request.session(), DominoClient.Encryption.None);
+    ImportDesign.ensureEmptyDefaultsNsf(request.session(), DominoClient.Encryption.None);
 
     Database db = request.db();
     DxlImporter importer = request.session().getDxlImporter();

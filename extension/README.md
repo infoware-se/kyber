@@ -47,14 +47,15 @@ OpenAPI operationIds: `listX` / `getX` / `createX` / `updateX` / `deleteX`.
 
 All paths are under `/api/kyber-v1` and require `?nsfPath=`.
 
-## Export and import (`design-handler`)
+## Design export and design import (`design-handler`)
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/designdxl?nsfPath=` | Export as `{ nsfPath, elements: [{ type, name?, dxl }], skipped: [{ type, name?, message }] }` |
-| PUT | `/designdxl?nsfPath=&dbTitle=` | Import of that array. Creates the NSF when the file is missing. Optional `dbTitle` sets the title on create |
-
-Swagger tag: **`design-handler`** for `/defaults`, `/defaults/{type}`, and `/designdxl` (per-type CRUD stays under **`design-element`**).
+| GET | `/defaults` | List the design templates |
+| GET | `/defaults/{type}` | Get one design template. `kind` for an agent, a script library, or a Java source |
+| GET | `/export?nsfPath=` | Design export of a database that already exists |
+| PUT | `/import?nsfPath=&dbTitle=` | Design import. When the file is missing, checks Create databases & templates and creates the NSF |
+Per-type CRUD stays under **`design-element`**.
 
 **Templates** live in `kyber.nsf`, or whichever NSF `kyber.defaultNsf` names. `GET /defaults/{type}` returns the first element of that type, matched by case-insensitive name, and `?kind=` when the type has kinds. An empty create copies it into the target NSF. When the template database has no such element, Kyber uses the starter embedded in the JAR under `resources/defaults/`.
 
@@ -120,13 +121,13 @@ Package Explorer also shows JRE System Library, Plug-in Dependencies, Referenced
 
 After PUT, the API compiles LotusScript (script libraries first) and returns a `lotusscript` summary. Notes "Error processing use list module" after a restore usually means code was not compiled — re-import or run Designer **Recompile All LotusScript**. Some complex libraries (e.g. DDM) can still report syntax errors after DXL round-trip — open those in Designer if needed.
 
-**Bulk-only type** (no list/get/put/delete endpoints; only in `/designdxl`): `designnote` for a remaining named design note. The export folder is `_designnotes`. XPages project files (`.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties`, i18n `*.properties`) are `xpagesresource` on `/xpagesresources`. Percent-encode a slash in the path (`WEB-INF%2Ffaces-config.xml`). Starters: `GET /defaults/{type}` for `xpagesresource` (not `designnote`).
+**Bulk-only type** (no list/get/put/delete endpoints; only in `/export` and `/import`): `designnote` for a remaining named design note. The export folder is `_designnotes`. XPages project files (`.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties`, i18n `*.properties`) are `xpagesresource` on `/xpagesresources`. Percent-encode a slash in the path (`WEB-INF%2Ffaces-config.xml`). Starters: `GET /defaults/{type}` for `xpagesresource` (not `designnote`).
 
 **Blank NSF baseline** (reference DXL, not starters): [`resources/defaults/blank/`](src/main/resources/defaults/blank/) — `acl.dxl`, `applicationproperties.dxl`, `image-DBIcon.dxl`, `view-default.dxl`, plus `manifest.json` from a Domino blank database.
 
 ## Coverage (Domino Designer)
 
-Sections follow Package Explorer. "In" = typed DXL CRUD; "Bulk" = `/designdxl` only.
+Sections follow Package Explorer. "In" = typed DXL CRUD; "Bulk" = `/export` and `/import` only.
 
 ### Included
 
@@ -157,7 +158,6 @@ Sections follow Package Explorer. "In" = typed DXL CRUD; "Bulk" = `/designdxl` o
 | Resources | Using Document | `/using` (singleton) |
 | XPages | XPages | `/xpages` (named — list/create + `/{name}` get/update/delete; not a singleton). `POST /xpages` also ensures project skeleton. |
 | Custom Controls | Custom Controls | `/customcontrols` (`.xsp` notes without XPage `K` flag; not Composite Components) |
-| (XPages project) | Bootstrap skeleton | `POST /xpagesproject` — create-if-absent `plugin.xml`, `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, `xsp.properties` |
 | (XPages project) | `.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties` | `/xpagesresources` |
 | Shared Elements | Navigators | `/navigators` |
 | Code | Web Service Providers | `/webservices` + `GET /defaults/webservice` |
@@ -191,7 +191,7 @@ On a database that already exists, the limit is that NSF's ACL.
 | Designer | list, get, create, update, delete of design (not the ACL) |
 | Manager | replace the ACL. A Manager includes the Designer rights above. |
 
-The import (`PUT /designdxl`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file and imports the design. The same import into a database that already exists uses the ACL table above.
+The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file and imports the design. The same import into a database that already exists uses the ACL table above.
 
 A Manager is treated as allowed to create shared and personal folders/views and LotusScript/Java agents, including private ones. Domino does not store those checkboxes on a Manager entry. Delete documents stays a stored flag at every level, including Manager. Designer and below still need the checkbox stored on the ACL entry. The API never deletes a database.
 
@@ -438,7 +438,7 @@ Always present with the NSF — update only.
 
 ### Database icon (`$DBIcon`)
 
-Always present with the NSF — update only. Not listed under `/images`. `PUT /designdxl` that creates an NSF writes the embedded 64×64 Kyber icon unless the payload already has a `dbicon` (or an image named `$DBIcon`). Design refresh is allowed to replace it.
+Always present with the NSF — update only. Not listed under `/images`. `PUT /import` that creates an NSF writes the embedded 64×64 Kyber icon unless the payload already has a `dbicon` (or an image named `$DBIcon`). Design refresh is allowed to replace it.
 
 | Method | Path |
 |--------|------|
@@ -458,25 +458,15 @@ Optional `WEB-INF/xsp.properties` (not always present on classic NSF).
 
 ### XPages
 
-Named type (many per NSF) — same CRUD shape as forms/pages, not a singleton. Creating an XPage also ensures a minimal XPages project skeleton when missing (`POST /xpagesproject`).
+Named type (many per NSF) — same CRUD shape as forms/pages, not a singleton. Creating an XPage also creates the project files that are missing: `plugin.xml`, `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, and `xsp.properties`.
 
 | Method | Path |
 |--------|------|
 | GET | `/api/kyber-v1/xpages?nsfPath=` |
-| POST | `/api/kyber-v1/xpages?nsfPath=` (`text/xml`; prefer Designer-exported DXL; optional `?name=`; empty body + `?name=` → starter; auto-ensures project) |
+| POST | `/api/kyber-v1/xpages?nsfPath=` (`text/xml`; prefer Designer-exported DXL; optional `?name=`; empty body + `?name=` → starter; creates missing project files) |
 | GET | `/api/kyber-v1/xpages/{name}?nsfPath=` |
 | PUT | `/api/kyber-v1/xpages/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/kyber-v1/xpages/{name}?nsfPath=` |
-
-### XPages project bootstrap
-
-For NSFs that never had XPages — creates missing project files only (idempotent).
-
-| Method | Path |
-|--------|------|
-| POST | `/api/kyber-v1/xpagesproject?nsfPath=` (no body; returns `created` / `skipped`) |
-
-Skeleton: `.project`, `.classpath`, `plugin.xml`, `build.properties`, `WEB-INF/faces-config.xml`, `WEB-INF/classes/plugin/Activator.class`, `WEB-INF/xsp.properties` (embedded from a known-good Designer export; Domino CD `$FileData` is not rewritten). Designer writes `META-INF/MANIFEST.MF` and `Local/plugin/Activator.java` itself when the application is opened.
 
 ### Custom Controls
 
@@ -587,7 +577,7 @@ extension/
 
 ## Adding another design type
 
-1. OpenAPI paths + `operationId`s (`listX`, `getX`, `createX`, `updateX`, `deleteX`) under tag **`design-element`**; `/defaults*` and bulk `/designdxl` under **`design-handler`**
+1. OpenAPI paths + `operationId`s (`listX`, `getX`, `createX`, `updateX`, `deleteX`) under tag **`design-element`**; `/defaults*`, `/export`, and `/import` under **`design-handler`**
 2. `dbrequests/design` handlers (JNX list/get/delete, DXL import via `DesignCrud` / `DesignDxl`)
 3. `handlers/design/CreateX` and `UpdateX` extending `AbstractImportDxlHandler` for `text/xml` **POST** (create) and **PUT** (update)
 4. Document the type in this README table

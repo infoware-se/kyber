@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Import a design folder tree (from export-to-repo.ps1) into an NSF via Kyber bulk PUT /api/kyber-v1/designdxl.
+  Import a design folder tree (from export-to-repo.ps1) into an NSF via Kyber bulk PUT /api/kyber-v1/import.
   Creates the NSF if it does not exist.
 
 .PARAMETER RestUrl
@@ -154,10 +154,10 @@ $bodyObj = @{ elements = $elements }
 $bodyJson = $bodyObj | ConvertTo-Json -Depth 20
 $aclCount = @($elements | Where-Object { [string]$_.type -eq 'acl' }).Count
 if ($aclCount -gt 0) {
-  Write-Host "ACL present in manifest - will be applied last by PUT /designdxl"
+  Write-Host "ACL present in manifest - will be applied last by PUT /import"
 }
 
-$uri = "$RestUrl/api/kyber-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfPath))"
+$uri = "$RestUrl/api/kyber-v1/import?nsfPath=$([uri]::EscapeDataString($NsfPath))"
 if ($Encryption) {
   $uri = "$uri&encryption=$([uri]::EscapeDataString($Encryption))"
 }

@@ -501,6 +501,6 @@ final class DesignCrud {
 
   private static void ensureEmptyDefaultsNsf(DbRequestParameters<JsonObject> request)
       throws Exception {
-    ImportDesignDxl.ensureEmptyDefaultsNsf(request.session(), DominoClient.Encryption.None);
+    ImportDesign.ensureEmptyDefaultsNsf(request.session(), DominoClient.Encryption.None);
   }
 }
