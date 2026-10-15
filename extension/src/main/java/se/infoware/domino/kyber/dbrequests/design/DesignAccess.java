@@ -18,6 +18,10 @@ import java.util.regex.Pattern;
  * the new file. Deleting a design note needs the database ACL checkbox Delete documents.
  * LotusScript and Java agents, and shared or personal folders and views, need their own
  * checkboxes. Access level does not grant a checkbox that is off.
+ *
+ * <p>Flags come from {@code Acl.lookupAccess} on the KEEP user's name list. The server id is not
+ * consulted. A Designer or Manager level does not fill in a checkbox that is absent on that
+ * entry.
  */
 final class DesignAccess {
 
@@ -85,6 +89,7 @@ final class DesignAccess {
     return dxl != null && PRIVATE_ROOT.matcher(dxl).find();
   }
 
+  /** Stored ACL flags for the KEEP user, not for the server id. */
   private static Set<AclFlag> flagsOf(KeepJnxSession session, Database db) {
     AclAccess access =
         db.getACL()

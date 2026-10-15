@@ -8,7 +8,12 @@ import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-/** Bulk export all supported design elements as CRUD-identical DXL - GET /designdxl?nsfPath= */
+/**
+ * Bulk export of design notes as CRUD-identical DXL. GET /designdxl?nsfPath=
+ *
+ * <p>Requires Designer on the target NSF. Data documents and agent run data are not part of the
+ * export.
+ */
 @MinimumAcl(AclLevel.DESIGNER)
 public class GetDesignDxl extends AsyncDominoJNXJson {
 

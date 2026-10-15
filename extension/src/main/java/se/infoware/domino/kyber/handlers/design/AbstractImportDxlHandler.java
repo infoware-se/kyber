@@ -11,7 +11,8 @@ import io.vertx.ext.web.RoutingContext;
  * UpdateDxl}.
  *
  * <p>Reads the raw request body as string and puts it on the payload as {@code dxl}. Subclasses are
- * KEEP operationId entry points ({@code CreatePage}, {@code CreateOutline}, ...).
+ * KEEP operationId entry points ({@code CreatePage}, {@code CreateOutline}, ...). The database
+ * request, not this handler, enforces the target NSF ACL for the logged-in user.
  */
 public abstract class AbstractImportDxlHandler extends DefaultJsonHandler {
 

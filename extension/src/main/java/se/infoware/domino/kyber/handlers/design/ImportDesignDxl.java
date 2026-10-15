@@ -11,6 +11,9 @@ import io.vertx.ext.web.RoutingContext;
  * missing.
  *
  * <p>Caller {@code ?nsfPath=} is the NSF to restore into. Connection uses {@code KeepConfig.nsf}.
+ * The remap does not authorize the write. {@code
+ * se.infoware.domino.kyber.dbrequests.design.ImportDesignDxl} checks Designer or Manager on the
+ * target NSF for the logged-in user.
  */
 public class ImportDesignDxl extends DefaultJsonHandler {
 

@@ -12,6 +12,10 @@ import java.io.IOException;
  *
  * <p>Display defaults (e.g. view bgcolor) live in starter DXL under {@code /defaults} and optional
  * {@code kyber.nsf} — not injected here.
+ *
+ * <p>Every import removes the DXL {@code replicaid} attribute before Domino reads the payload, so
+ * the target NSF keeps its own replica id. Design import does not replace database properties.
+ * Data documents in a payload are ignored. ACL import replaces only the ACL.
  */
 final class DxlDesignPatch {
 

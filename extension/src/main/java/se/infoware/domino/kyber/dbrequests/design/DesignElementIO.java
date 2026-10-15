@@ -30,6 +30,10 @@ import java.util.stream.Stream;
 /**
  * Export / import all supported design elements as CRUD-identical DXL (same as Get-star /
  * Create-star), plus bulk-only types (navigators, jars, …) that have no CRUD endpoints.
+ *
+ * <p>Export lists design notes. Data documents and agent run data ({@code document}, {@code
+ * agentdata}) are not included. Import goes through {@link DxlDesignPatch}, which drops {@code
+ * replicaid}, and through {@link DesignAccess} when the element needs a privilege checkbox.
  */
 final class DesignElementIO {
 
