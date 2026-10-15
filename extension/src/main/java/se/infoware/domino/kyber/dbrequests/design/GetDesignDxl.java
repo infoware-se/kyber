@@ -25,7 +25,7 @@ public class GetDesignDxl extends AsyncDominoJNXJson {
     request.emit(
         new JsonObject()
             .put("nsfPath", nsfPath)
-            .put("elements", DesignElementIO.exportAll(db, skipped))
+            .put("elements", DesignElementExport.exportAll(db, skipped))
             .put("skipped", skipped));
   }
 }

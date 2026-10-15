@@ -97,7 +97,7 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
     }
     DxlImporter importer = session.getDxlImporter();
 
-    List<JsonObject> ordered = DesignElementIO.sortForImport(elements);
+    List<JsonObject> ordered = DesignElementImport.sortForImport(elements);
     JsonArray results = new JsonArray();
     int ok = 0;
     int failed = 0;
@@ -115,10 +115,10 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
           }
           DesignAccess.requireDeleteDocuments(session, db);
           one =
-              DesignElementIO.deleteOne(
+              DesignElementImport.deleteOne(
                   db, type, el.getString("name"), el.getString("unid"));
         } else {
-          one = DesignElementIO.importOne(importer, db, type, dxl, session);
+          one = DesignElementImport.importOne(importer, db, type, dxl, session);
         }
         results.add(one);
         ok++;
@@ -158,7 +158,7 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
             DesignDefaults.productDbIconDxl()
                 .orElseThrow(
                     () -> new IllegalStateException("Embedded Kyber database icon is missing"));
-        JsonObject one = DesignElementIO.importOne(importer, db, "image", iconDxl, session);
+        JsonObject one = DesignElementImport.importOne(importer, db, "image", iconDxl, session);
         one.put("type", "dbicon");
         results.add(one);
         ok++;
@@ -346,8 +346,8 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
       db.setTitle(title);
     }
     DxlImporter importer = session.getDxlImporter();
-    DesignElementIO.importOne(importer, db, "about", DefaultsDatabaseHelp.aboutDxl(), session);
-    DesignElementIO.importOne(importer, db, "using", DefaultsDatabaseHelp.usingDxl(), session);
+    DesignElementImport.importOne(importer, db, "about", DefaultsDatabaseHelp.aboutDxl(), session);
+    DesignElementImport.importOne(importer, db, "using", DefaultsDatabaseHelp.usingDxl(), session);
     DxlDesignPatch.importLaunchSettings(importer, DefaultsDatabaseHelp.notesLaunchAboutDxl(), db);
     applyProductDbIcon(importer, db, session);
   }
@@ -357,7 +357,7 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
     String iconDxl =
         DesignDefaults.productDbIconDxl()
             .orElseThrow(() -> new IllegalStateException("Embedded Kyber database icon is missing"));
-    DesignElementIO.importOne(importer, db, "image", iconDxl, session);
+    DesignElementImport.importOne(importer, db, "image", iconDxl, session);
   }
 
   /**

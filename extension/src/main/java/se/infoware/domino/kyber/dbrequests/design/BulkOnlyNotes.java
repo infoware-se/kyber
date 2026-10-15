@@ -220,11 +220,11 @@ final class BulkOnlyNotes {
         try {
           db.getDocumentById(rawId).ifPresent(docs::add);
         } catch (Exception failed) {
-          DesignElementIO.recordSkip(skipped, "designnote", "noteId:" + rawId, failed);
+          DesignElementExport.recordSkip(skipped, "designnote", "noteId:" + rawId, failed);
         }
       }
     } catch (Exception failed) {
-      DesignElementIO.recordSkip(skipped, "designnote", null, failed);
+      DesignElementExport.recordSkip(skipped, "designnote", null, failed);
     }
     return docs;
   }

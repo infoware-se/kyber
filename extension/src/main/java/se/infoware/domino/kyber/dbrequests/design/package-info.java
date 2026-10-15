@@ -15,7 +15,8 @@
  * KeepConfig.nsf}. KEEP opens that file so a missing target can be created. The write itself is
  * authorized on the caller's {@code nsfPath}.
  *
- * <p>Bulk export returns design notes. Data documents and agent run data stay in the NSF. Import
- * removes the DXL {@code replicaid} attribute so the target database keeps its own replica id.
+ * <p>{@link DesignElementExport} lists design notes. Data documents and agent run data stay in
+ * the NSF. {@link DesignElementImport} removes the DXL {@code replicaid} attribute so the target
+ * database keeps its own replica id.
  */
 package se.infoware.domino.kyber.dbrequests.design;

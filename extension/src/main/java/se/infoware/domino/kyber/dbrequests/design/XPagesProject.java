@@ -60,7 +60,7 @@ final class XPagesProject {
         continue;
       }
       String dxl = DesignDxl.forNewNote(loadSkeletonDxl(resource));
-      DesignElementIO.importOne(importer, db, type, dxl, session, DxlDesignPatch.Mode.UPSERT);
+      DesignElementImport.importOne(importer, db, type, dxl, session, DxlDesignPatch.Mode.UPSERT);
       if (!exists(db, type, title)) {
         throw new KeepExceptionWrongDataRequest(
             "XPages project file missing after import: " + title);

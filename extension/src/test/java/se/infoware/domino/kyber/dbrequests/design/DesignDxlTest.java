@@ -34,20 +34,20 @@ class DesignDxlTest {
   void roundTripLeavesOutAgentDataAndUntitledViews() {
     assertEquals("agentdata", DesignDxl.rootLocalName("<agentdata><agent agentname='X'/></agentdata>"));
     assertNull(
-        DesignElementIO.residualRoundTrip(
+        DesignElementExport.residualRoundTrip(
             "designnote", "unid:ABC", "<agentdata><agent agentname='Ran'/></agentdata>"));
     assertNull(
-        DesignElementIO.residualRoundTrip(
+        DesignElementExport.residualRoundTrip(
             "designnote", "Hello", "<document form='Hello'><item name='Subject'/></document>"));
     assertNull(
-        DesignElementIO.residualRoundTrip("designnote", "unid:ABC", "<view></view>"));
+        DesignElementExport.residualRoundTrip("designnote", "unid:ABC", "<view></view>"));
     var named =
-        DesignElementIO.residualRoundTrip(
+        DesignElementExport.residualRoundTrip(
             "designnote", "unid:ABC", "<view name='KeptView'></view>");
     assertEquals("view", named.getString("type"));
     assertEquals("KeptView", named.getString("name"));
     var note =
-        DesignElementIO.residualRoundTrip(
+        DesignElementExport.residualRoundTrip(
             "designnote", "unid:ABC", "<note name='Extra'></note>");
     assertEquals("designnote", note.getString("type"));
     assertEquals("unid:ABC", note.getString("name"));

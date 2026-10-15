@@ -133,7 +133,7 @@ final class DesignCrud {
 
     DxlImporter importer = request.session().getDxlImporter();
     JsonObject imported =
-        DesignElementIO.importOne(importer, db, t, dxl, request.session(), importMode);
+        DesignElementImport.importOne(importer, db, t, dxl, request.session(), importMode);
     String exported =
         DesignElementLookup.exportDxl(db, t, name).orElse(dxl);
 
@@ -230,7 +230,7 @@ final class DesignCrud {
 
     DxlImporter importer = request.session().getDxlImporter();
     JsonObject imported =
-        DesignElementIO.importOne(importer, db, t, dxl, request.session(), importMode);
+        DesignElementImport.importOne(importer, db, t, dxl, request.session(), importMode);
     String exported = DesignElementLookup.exportDxl(db, t, name).orElse(dxl);
 
     JsonObject out =
@@ -314,7 +314,7 @@ final class DesignCrud {
 
     DxlImporter importer = request.session().getDxlImporter();
     JsonObject imported =
-        DesignElementIO.importOne(importer, db, importType, dxl, request.session(), importMode);
+        DesignElementImport.importOne(importer, db, importType, dxl, request.session(), importMode);
     String exported = DesignElementLookup.exportDxl(db, t, existsName).orElse(dxl);
 
     JsonObject out =

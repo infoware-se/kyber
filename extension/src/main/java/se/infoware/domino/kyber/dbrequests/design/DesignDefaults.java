@@ -216,7 +216,7 @@ final class DesignDefaults {
     Optional<Database> nsf = tryOpenDefaultsDb(session);
     if (nsf.isPresent()) {
       try {
-        JsonArray exported = DesignElementIO.exportAll(nsf.get());
+        JsonArray exported = DesignElementExport.exportAll(nsf.get());
         for (int i = 0; i < exported.size(); i++) {
           JsonObject el = exported.getJsonObject(i);
           String t = DesignBulkTypes.normalize(el.getString("type", ""));
@@ -351,7 +351,7 @@ final class DesignDefaults {
       return Optional.empty();
     }
     try {
-      JsonArray exported = DesignElementIO.exportAll(dbOpt.get());
+      JsonArray exported = DesignElementExport.exportAll(dbOpt.get());
       List<JsonObject> matches = new ArrayList<>();
       for (int i = 0; i < exported.size(); i++) {
         JsonObject el = exported.getJsonObject(i);
