@@ -117,19 +117,20 @@ Invoke-RestMethod -Method POST `
 
 Send your own design as DXL (`Content-Type: text/xml`). A full form is in the [manual example](extension/README.md#manual-test). A path such as `mail/user.nsf` is one `nsfPath` value. Percent-encode a slash inside an element name: `WEB-INF%2Ffaces-config.xml`.
 
-Per-type create needs an existing NSF. `PUT /api/kyber-v1/designdxl?nsfPath=&dbTitle=` is the call that creates a missing NSF and imports a whole design. The target keeps its own replica id. Kyber never deletes a database.
+Per-type create needs an existing NSF. A whole-design import, `PUT /api/kyber-v1/designdxl?nsfPath=&dbTitle=`, creates a missing NSF and imports the design. The target keeps its own replica id. Kyber never deletes a database.
 
 A second create of the same name returns **409**. A missing element comes back as **404** or **400**, and the message says it was not found.
 
 ## Access
 
-The call runs as the signed-in user. Listing or reading a design element needs Designer on the target NSF, the same level as creating or changing one.
+The call runs as the signed-in user. On a database that already exists, the limit is that NSF's ACL. Listing or reading a design element needs Designer, the same level as creating or changing one.
 
-| Access | Where it is set | Allowed |
-|--|--|--|
-| Designer | ACL of the target NSF | List, get, create, update, and delete design |
-| Manager | ACL of the target NSF | Replace the ACL. A Manager includes the Designer rights above. |
-| Create databases & templates | Server document, Security | Create a missing NSF. This is the only way `PUT /designdxl` creates a database. |
+| ACL on the target NSF | Allowed |
+|--|--|
+| Designer | List, get, create, update, and delete design |
+| Manager | Replace the ACL. A Manager includes the Designer rights above. |
+
+A whole-design import (`PUT /designdxl`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file and imports the design. The same import into a database that already exists uses the ACL table above.
 
 A Manager may create shared and personal folders, views, and agents. Domino keeps those rights on the Manager level and does not store them as separate checkboxes. Delete documents stays a stored flag at every level. Designer and below need the design checkboxes stored on the ACL entry.
 
@@ -169,7 +170,7 @@ Endpoint tables for each collection are in [extension/README.md](extension/READM
 
 ## Round trip
 
-`GET /api/kyber-v1/designdxl?nsfPath=` exports the design as `{ nsfPath, elements: [{ type, name?, dxl }], skipped }`. `PUT` of that document imports it. This is the only call that creates a missing NSF. Per-type create needs a database that already exists. On create, `dbTitle` sets the database title. The source `replicaid` is removed, so the target keeps its own. A new NSF receives the embedded Kyber database icon unless the payload already includes one, and a later design refresh is allowed to replace that icon. The ACL is also `GET`/`PUT /acl`, and replacing it requires Manager. Kyber never deletes a database.
+A whole-design export, `GET /api/kyber-v1/designdxl?nsfPath=`, returns `{ nsfPath, elements: [{ type, name?, dxl }], skipped }`. The matching import is `PUT` of that document. It is the only call that creates a missing NSF. Per-type create needs a database that already exists. On create, `dbTitle` sets the database title. The source `replicaid` is removed, so the target keeps its own. A new NSF receives the embedded Kyber database icon unless the payload already includes one, and a later design refresh is allowed to replace that icon. The ACL is also `GET`/`PUT /acl`, and replacing it requires Manager. Kyber never deletes a database.
 
 [`tools/export-to-repo.ps1`](tools/export-to-repo.ps1) writes that export to disk:
 
