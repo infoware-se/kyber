@@ -147,6 +147,7 @@ $script:RepoDirByType = [ordered]@{
   databasescript        = "databasescript"
   image                 = "images"
   fileresource          = "fileresources"
+  webcontent            = "webcontent"
   stylesheet            = "stylesheets"
   theme                 = "themes"
   scriptlibrary         = "scriptlibraries"

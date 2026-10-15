@@ -17,6 +17,7 @@ public class DeleteCustomControl extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String name = RequestParams.requireName(request.incoming);
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
     CustomControls.Entry entry = CustomControls.require(db, name);
     DesignElement el =
         CustomControls.asDesignElement(db, entry.document())

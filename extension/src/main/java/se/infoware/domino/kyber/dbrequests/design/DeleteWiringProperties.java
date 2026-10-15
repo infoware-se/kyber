@@ -18,6 +18,7 @@ public class DeleteWiringProperties extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String name = RequestParams.requireName(request.incoming);
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
     Optional<? extends DesignElement> opt = db.getDesign().getWiringPropertiesElement(name);
     if (opt.isEmpty()) {
       throw new KeepExceptionWrongDataRequest("WiringProperties not found: " + name);

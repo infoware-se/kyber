@@ -18,6 +18,7 @@ public class DeleteXPage extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String name = RequestParams.requireName(request.incoming);
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
     Optional<XPage> opt = db.getDesign().getXPage(name);
     if (opt.isEmpty()) {
       throw new KeepExceptionWrongDataRequest("XPage not found: " + name);

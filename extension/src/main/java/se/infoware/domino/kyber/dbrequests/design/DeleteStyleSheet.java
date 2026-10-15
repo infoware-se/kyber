@@ -18,6 +18,7 @@ public class DeleteStyleSheet extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String name = RequestParams.requireName(request.incoming);
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
     Optional<StyleSheet> opt = db.getDesign().getStyleSheet(name);
     if (opt.isEmpty()) {
       throw new KeepExceptionWrongDataRequest("StyleSheet not found: " + name);

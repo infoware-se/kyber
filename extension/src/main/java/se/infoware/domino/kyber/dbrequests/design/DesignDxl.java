@@ -50,6 +50,16 @@ final class DesignDxl {
    * Accepts any of the given root local names. Uses the {@code name} attribute when present;
    * otherwise reads item {@code $TITLE} (common for note-form design exports).
    */
+  /** First element local name, ignoring the XML declaration and doctype. */
+  static String rootLocalName(String dxl) {
+    if (dxl == null || dxl.isBlank()) {
+      return null;
+    }
+    java.util.regex.Matcher matcher =
+        java.util.regex.Pattern.compile("(?is)<([A-Za-z][A-Za-z0-9_]*)\\b").matcher(dxl);
+    return matcher.find() ? matcher.group(1) : null;
+  }
+
   static String requireDesignName(String dxl, String... expectedRoots)
       throws KeepExceptionWrongDataRequest {
     Element root = parseAndRequireRoot(dxl, expectedRoots);
@@ -112,8 +122,18 @@ final class DesignDxl {
       throw new KeepExceptionWrongDataRequest("dxl body is required");
     }
     String out = dxl.replaceAll("(?is)<noteinfo\\b[^>]*>.*?</noteinfo>", "");
-    out = out.replaceAll("(?i)\\s+replicaid=(['\"])[^'\"]*\\1", "");
-    return out;
+    return withoutReplicaId(out);
+  }
+
+  /**
+   * Drop the database {@code replicaid} attribute. The rest of the design note stays. Import uses
+   * this so the target NSF keeps its own replica id.
+   */
+  static String withoutReplicaId(String dxl) {
+    if (dxl == null || dxl.isBlank()) {
+      return dxl;
+    }
+    return dxl.replaceAll("(?i)\\s+replicaid=(['\"])[^'\"]*\\1", "");
   }
 
   private static String replaceRootNameAttribute(String dxl, String wanted) {

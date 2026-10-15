@@ -2,6 +2,7 @@ package se.infoware.domino.kyber.dbrequests.design;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -27,6 +28,39 @@ class DesignDxlTest {
     assertFalse(out.toLowerCase().contains("<noteinfo"));
     assertFalse(out.toLowerCase().contains("replicaid="));
     assertTrue(out.contains("name='X'") || out.contains("name=\"X\""));
+  }
+
+  @Test
+  void roundTripLeavesOutAgentDataAndUntitledViews() {
+    assertEquals("agentdata", DesignDxl.rootLocalName("<agentdata><agent agentname='X'/></agentdata>"));
+    assertNull(
+        DesignElementIO.residualRoundTrip(
+            "designnote", "unid:ABC", "<agentdata><agent agentname='Ran'/></agentdata>"));
+    assertNull(
+        DesignElementIO.residualRoundTrip(
+            "designnote", "Hello", "<document form='Hello'><item name='Subject'/></document>"));
+    assertNull(
+        DesignElementIO.residualRoundTrip("designnote", "unid:ABC", "<view></view>"));
+    var named =
+        DesignElementIO.residualRoundTrip(
+            "designnote", "unid:ABC", "<view name='KeptView'></view>");
+    assertEquals("view", named.getString("type"));
+    assertEquals("KeptView", named.getString("name"));
+    var note =
+        DesignElementIO.residualRoundTrip(
+            "designnote", "unid:ABC", "<note name='Extra'></note>");
+    assertEquals("designnote", note.getString("type"));
+    assertEquals("unid:ABC", note.getString("name"));
+  }
+
+  @Test
+  void withoutReplicaIdKeepsTheDesignNote() {
+    String dxl =
+        "<form name='X' replicaid='C1258E90004E3F19'><noteinfo unid='U'/></noteinfo></form>";
+    String out = DesignDxl.withoutReplicaId(dxl);
+    assertFalse(out.toLowerCase().contains("replicaid"));
+    assertTrue(out.contains("name='X'"));
+    assertTrue(out.contains("<noteinfo unid='U'/>"));
   }
 
   @Test

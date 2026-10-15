@@ -18,8 +18,8 @@ import java.util.Set;
 /**
  * Bulk-only / residual design notes not covered by typed CRUD exporters.
  *
- * <p>After Navigators and known flag/title types, every remaining {@link DocumentClass#ALLNONDATA}
- * note with a usable identity is exported as {@code designnote} so git sync does not drop design.
+ * <p>After Navigators and known flag/title types, remaining {@link DocumentClass#ALLNONDATA}
+ * design notes with a usable identity are exported as {@code designnote}. Data documents are omitted.
  * Notes that DXLExporter cannot serialize (prolog-only) are skipped so bulk matches COM
  * {@code SelectAllDesignElements}.
  */
@@ -59,7 +59,7 @@ final class BulkOnlyNotes {
       if (unid != null && seen.contains(unid)) {
         continue;
       }
-      if (isHandledElsewhere(doc)) {
+      if (isHandledElsewhere(doc) || isDataDocument(doc)) {
         continue;
       }
 
@@ -76,8 +76,12 @@ final class BulkOnlyNotes {
       if (flags == null) {
         flags = "";
       }
+      String flagsExt = itemText(doc, "$FlagsExt");
+      if (flagsExt == null) {
+        flagsExt = "";
+      }
 
-      String type = classify(title, flags);
+      String type = classify(title, flags, flagsExt);
       if (unid != null) {
         seen.add(unid);
       }
@@ -127,7 +131,7 @@ final class BulkOnlyNotes {
    * Prefer specific bulk types; otherwise {@code designnote} catch-all so nothing titled is
    * dropped.
    */
-  private static String classify(String title, String flags) {
+  private static String classify(String title, String flags, String flagsExt) {
     String lower = title.toLowerCase(Locale.ROOT).replace('\\', '/');
     if (lower.startsWith("unid:")) {
       return "designnote";
@@ -154,6 +158,9 @@ final class BulkOnlyNotes {
     if (lower.endsWith(".java") && flags.indexOf('[') >= 0) {
       return "javasource";
     }
+    if (WebContent.isWebContent(lower, flagsExt)) {
+      return "webcontent";
+    }
     if (lower.startsWith("web-inf/")
         || lower.startsWith(".settings/")
         || lower.startsWith("icons/")
@@ -165,6 +172,19 @@ final class BulkOnlyNotes {
       return "xpagesresource";
     }
     return "designnote";
+  }
+
+  /** Data notes and agent run data are not design and are not exported. */
+  private static boolean isDataDocument(Document doc) {
+    try {
+      Set<DocumentClass> classes = doc.getDocumentClass();
+      if (classes == null) {
+        return false;
+      }
+      return classes.contains(DocumentClass.DATA) || classes.contains(DocumentClass.DOCUMENT);
+    } catch (Exception ignored) {
+      return false;
+    }
   }
 
   private static boolean isHandledElsewhere(Document doc) {

@@ -18,6 +18,7 @@ public class DeleteTheme extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String name = RequestParams.requireName(request.incoming);
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
     Optional<Theme> opt = db.getDesign().getTheme(name);
     if (opt.isEmpty()) {
       throw new KeepExceptionWrongDataRequest("Theme not found: " + name);

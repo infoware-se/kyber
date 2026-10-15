@@ -9294,6 +9294,325 @@
         }
       }
     },
+    "/webcontent": {
+      "summary": "List or create WebContent files",
+      "description": "List WebContent names (GET) or create a WebContent file (POST) in the target NSF (?nsfPath=). Get/update/delete use /webcontent/{name}. Files under WEB-INF are rejected.",
+      "parameters": [
+        {
+          "name": "nsfPath",
+          "description": "Domino database filepath",
+          "schema": {
+            "type": "string"
+          },
+          "in": "query",
+          "required": true
+        }
+      ],
+      "post": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "createWebContent",
+        "summary": "Create a WebContent file (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with root note. Optional ?name= sets the file name, including a folder such as css/site.css. A name under WEB-INF is rejected. Empty body creates from starter DXL when ?name= is set. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "description": "Raw DXL (text/xml).",
+          "content": {
+            "text/xml": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "type": {
+                      "type": "string",
+                      "example": "webcontent"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "log": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "409": {
+            "description": "Already exists"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        },
+        "parameters": [
+          {
+            "name": "nsfPath",
+            "description": "Domino database filepath",
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "required": true
+          },
+          {
+            "name": "name",
+            "description": "File name relative to WebContent. Must not be under WEB-INF.",
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "required": false
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listWebContent",
+        "summary": "List WebContent files in the NSF",
+        "description": "Requires ?nsfPath=. Returns WebContent file names. WEB-INF is not included.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "WebContent": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
+      }
+    },
+    "/webcontent/{name}": {
+      "summary": "Get, update, or delete a WebContent file",
+      "description": "Retrieve, replace, or remove one WebContent file (?nsfPath=). A name under WEB-INF is rejected.",
+      "parameters": [
+        {
+          "name": "nsfPath",
+          "description": "Domino database filepath",
+          "schema": {
+            "type": "string"
+          },
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "name",
+          "description": "File name relative to WebContent",
+          "schema": {
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "getWebContent",
+        "summary": "Get WebContent file as DXL",
+        "description": "Export one WebContent file as Domino DXL. Requires ?nsfPath=. 404 if missing.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful retrieval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "dxl": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "deleteWebContent",
+        "summary": "Delete WebContent file",
+        "description": "Remove the named WebContent file. Requires ?nsfPath=. 404 if missing.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "updateWebContent",
+        "summary": "Update WebContent file from DXL (404 if missing)",
+        "description": "Replace the existing WebContent file with the request body DXL. Update-only. A name under WEB-INF is rejected. Requires ?nsfPath=. 404 if missing.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Raw DXL (text/xml).",
+          "content": {
+            "text/xml": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "type": {
+                      "type": "string",
+                      "example": "webcontent"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "log": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
+      }
+    },
     "/applets": {
       "summary": "List or create applets",
       "description": "List applet names (GET) or create an applet (POST) in the target NSF (?nsfPath=). Get/update/delete use /applets/{name}.",

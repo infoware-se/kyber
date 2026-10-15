@@ -17,6 +17,7 @@ public class DeleteDatabaseScript extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
     Optional<DatabaseScriptLibrary> opt = db.getDesign().getDatabaseScriptLibrary();
     if (opt.isEmpty()) {
       throw new KeepExceptionWrongDataRequest("DatabaseScript not found");

@@ -8,7 +8,7 @@
 
   - GET /defaults for a few types
   - missing form → not found
-  - every named CRUD collection: list, empty-body create, 409, get, put, list contains name, delete, create again
+  - every named CRUD collection: list, empty-body create or keep, 409, get, put, list contains name
   - Hello World written into each created element and read back
   - LotusScript, formula and simple-action agents are run; each writes Hello World
   - The LotusScript agent calls SmokeLibLs
@@ -16,10 +16,14 @@
     navigator, frameset, icon, image, file, stylesheet, agents, web service and XPage
   - ?CreateDocument, ?OpenDocument, ?EditDocument and ?DeleteDocument on Hello World
   - kinded agents, script libraries and Java sources, one element per kind
-  - singletons about, using, databasescript, xspproperties: create, 409, get, put, delete, create again, Hello World
+  - singletons about, using, databasescript, xspproperties: create or keep, 409, get, put, Hello World
   - applicationproperties, dbicon and acl: get + put of the same DXL
   - a NSF created by this run has the embedded Kyber database icon
   - POST /xpagesproject once, then a second call that creates nothing
+  - export-to-repo.ps1 writes kybertest.nsf to a temp folder, then import-from-repo.ps1
+    restores that tree into kybersmoke-import.nsf. The repo kyber/ templates are not touched.
+  - after that, DELETE each smoked element and the Hello World document, then create the
+    design again so kybertest.nsf still holds it. -SkipDelete leaves everything in place.
 
   kybertest.nsf is left on the server with the created design still in it.
 
@@ -35,7 +39,8 @@
 
 .PARAMETER SkipDelete
   Do not call DELETE. Existing design is updated and left in place, including the
-  Hello World document created by the web checks.
+  Hello World document created by the web checks. Without this switch the deletes
+  run once, after export and import, and the design is created again afterwards.
 #>
 param(
   [string]$NsfPath = "",
@@ -681,14 +686,8 @@ function Invoke-DominoWebSmoke {
   Assert-DominoShows "/$NsfPath/SmokeFolder?OpenView" "SmokeFolder"
   Assert-DominoShows "/$NsfPath/SmokeNavigator?OpenNavigator" "SmokeNavigator"
   Assert-DominoShows "/$NsfPath/SmokeFrameset?OpenFrameset" "SmokeFrameset"
-  if ($SkipDelete) {
-    Ok "web /$NsfPath/SmokeView/${unid} left in place"
-  } else {
-    Get-DominoPage "/$NsfPath/SmokeView/${unid}?DeleteDocument" | Out-Null
-    $left = Get-SmokeViewUnids
-    if ($left -contains $unid) { Fail "DeleteDocument left $unid in SmokeView" }
-    Ok "web /$NsfPath/SmokeView/${unid}?DeleteDocument"
-  }
+  $script:webDocUnid = $unid
+  Ok "web /$NsfPath/SmokeView/${unid} kept until the delete pass"
 }
 
 function Invoke-NamedCrud([string]$Coll, [string]$Name, [string]$Kind = "") {
@@ -698,17 +697,11 @@ function Invoke-NamedCrud([string]$Coll, [string]$Name, [string]$Kind = "") {
   $label = if ($Kind) { "$Coll/$Name ($Kind)" } else { "$Coll/$Name" }
   $createUrl = Design-Url $Coll $qs
 
-  if (-not $SkipDelete) {
-    $code = Invoke-Design DELETE (Design-Url $item) -OutFile $out
-    if ($code -eq "200") { Ok "cleared $label" }
-    elseif ($code -notin @("404", "400")) { Fail "DELETE leftover $label -> HTTP $code $(Get-ResponseText)" }
-  }
-
   $code = Invoke-Design GET (Design-Url $Coll) -OutFile $out
   Assert-Code "GET /$Coll" $code @("200")
 
   $code = Invoke-Design POST $createUrl -BodyFile $empty -ContentType "text/xml" -OutFile $out
-  if ($SkipDelete -and $code -eq "409") {
+  if ($code -eq "409") {
     Ok "kept existing $label"
   } else {
     Assert-Code "POST $label" $code @("200", "201")
@@ -729,30 +722,29 @@ function Invoke-NamedCrud([string]$Coll, [string]$Name, [string]$Kind = "") {
     Fail "GET /$Coll does not list $Name"
   }
   Ok "listed $label"
-
-  if (-not $SkipDelete) {
-    $code = Invoke-Design DELETE (Design-Url $item) -OutFile $out
-    Assert-Code "DELETE $label" $code @("200")
-    $code = Invoke-Design GET (Design-Url $item) -OutFile $out
-    Assert-NotFound "GET after DELETE $label" $code (Get-ResponseText)
-
-    $code = Invoke-Design POST $createUrl -BodyFile $empty -ContentType "text/xml" -OutFile $out
-    Assert-Code "leave $label" $code @("200", "201")
-  }
   Assert-HelloWorld (Design-Url $item) $label $Kind
   Ok "left $label"
 }
 
+function Remove-NamedThenRestore([string]$Coll, [string]$Name, [string]$Kind = "") {
+  $qs = "name=$([uri]::EscapeDataString($Name))"
+  if ($Kind) { $qs = "kind=$Kind&$qs" }
+  $item = "$Coll/$([uri]::EscapeDataString($Name))"
+  $label = if ($Kind) { "$Coll/$Name ($Kind)" } else { "$Coll/$Name" }
+  $code = Invoke-Design DELETE (Design-Url $item) -OutFile $out
+  Assert-Code "DELETE $label" $code @("200")
+  $code = Invoke-Design GET (Design-Url $item) -OutFile $out
+  Assert-NotFound "GET after DELETE $label" $code (Get-ResponseText)
+  $code = Invoke-Design POST (Design-Url $Coll $qs) -BodyFile $empty -ContentType "text/xml" -OutFile $out
+  Assert-Code "leave $label" $code @("200", "201")
+  Assert-HelloWorld (Design-Url $item) $label $Kind
+  Ok "restored $label"
+}
+
 function Invoke-SingletonCrud([string]$Path) {
   $url = Design-Url $Path
-  if (-not $SkipDelete) {
-    $code = Invoke-Design DELETE $url -OutFile $out
-    if ($code -eq "200") { Ok "cleared $Path" }
-    elseif ($code -notin @("404", "400")) { Fail "DELETE leftover $Path -> HTTP $code $(Get-ResponseText)" }
-  }
-
   $code = Invoke-Design POST $url -BodyFile $empty -ContentType "text/xml" -OutFile $out
-  if ($SkipDelete -and $code -eq "409") {
+  if ($code -eq "409") {
     Ok "kept existing /$Path"
   } else {
     Assert-Code "POST /$Path" $code @("200", "201")
@@ -765,18 +757,20 @@ function Invoke-SingletonCrud([string]$Path) {
   $putFile = Save-DxlFromGet "GET /$Path"
   $code = Invoke-Design PUT $url -BodyFile $putFile -ContentType "text/xml" -OutFile $out
   Assert-Code "PUT /$Path" $code @("200")
-
-  if (-not $SkipDelete) {
-    $code = Invoke-Design DELETE $url -OutFile $out
-    Assert-Code "DELETE /$Path" $code @("200")
-    $code = Invoke-Design GET $url -OutFile $out
-    Assert-NotFound "GET after DELETE /$Path" $code (Get-ResponseText)
-
-    $code = Invoke-Design POST $url -BodyFile $empty -ContentType "text/xml" -OutFile $out
-    Assert-Code "leave /$Path" $code @("200", "201")
-  }
   Assert-HelloWorld $url $Path
   Ok "left /$Path"
+}
+
+function Remove-SingletonThenRestore([string]$Path) {
+  $url = Design-Url $Path
+  $code = Invoke-Design DELETE $url -OutFile $out
+  Assert-Code "DELETE /$Path" $code @("200")
+  $code = Invoke-Design GET $url -OutFile $out
+  Assert-NotFound "GET after DELETE /$Path" $code (Get-ResponseText)
+  $code = Invoke-Design POST $url -BodyFile $empty -ContentType "text/xml" -OutFile $out
+  Assert-Code "leave /$Path" $code @("200", "201")
+  Assert-HelloWorld $url $Path
+  Ok "restored /$Path"
 }
 
 function Invoke-UpdateOnly([string]$Path, [string]$TargetNsf = "") {
@@ -875,7 +869,7 @@ if ($bulkResp.created) {
   Ok "applicationproperties title=$smokeTitle"
 }
 
-# --- kyber.nsf is the template database: properties and ACL, no product icon ---
+# --- kyber.nsf is the template database: properties, ACL, and the product icon ---
 $defaultNsf = "kyber.nsf"
 function Design-UrlOn([string]$TargetNsf, [string]$ApiPath, [string]$ExtraQuery = "") {
   $q = "nsfPath=$([uri]::EscapeDataString($TargetNsf))"
@@ -888,13 +882,11 @@ foreach ($singleton in @("applicationproperties", "acl")) {
   Ok "GET /$singleton ($defaultNsf)"
 }
 $code = Invoke-Design GET (Design-UrlOn $defaultNsf "dbicon") -OutFile $out
-if ($code -eq "404") {
-  Ok "GET /dbicon ($defaultNsf) absent"
-} elseif ($code -eq "200") {
-  Ok "GET /dbicon ($defaultNsf)"
-} else {
-  Fail "GET /dbicon on $defaultNsf -> HTTP $code $(Get-Content $out -Raw)"
+if ($code -ne "200") { Fail "GET /dbicon on $defaultNsf -> HTTP $code $(Get-Content $out -Raw)" }
+if ((Get-Content $out -Raw) -notmatch [regex]::Escape("kyber-icon.png")) {
+  Fail "GET /dbicon on $defaultNsf is missing the Kyber icon"
 }
+Ok "GET /dbicon ($defaultNsf)"
 foreach ($singleton in @("applicationproperties", "dbicon")) {
   $code = Invoke-Design POST (Design-UrlOn $defaultNsf $singleton) -BodyFile $empty `
     -ContentType "text/xml" -OutFile $out
@@ -929,10 +921,7 @@ $code = Invoke-Design PUT (Design-Url $missingPath) -BodyFile $minimalFormFile `
   -ContentType "text/xml" -OutFile $out
 Assert-NotFound "PUT /forms/$missing" $code (Get-Content $out -Raw)
 
-if (-not $SkipDelete) {
-  $code = Invoke-Design DELETE (Design-Url $missingPath) -OutFile $out
-  Assert-NotFound "DELETE /forms/$missing" $code (Get-Content $out -Raw)
-}
+$script:missingFormPath = $missingPath
 
 # --- XPages project ensure ---
 $code = Invoke-Design POST (Design-Url "xpagesproject") -OutFile $out
@@ -957,8 +946,8 @@ Ok "xpagesproject idempotent (skipped=$(@($xp2.skipped).Count))"
 foreach ($path in @("applicationproperties", "acl")) {
   Invoke-UpdateOnly $path
 }
-# A NSF created by PUT /designdxl receives the embedded icon. An existing smoke NSF keeps
-# whatever icon it already has. kyber.nsf does not get that icon.
+# A NSF created by PUT /designdxl receives the embedded icon, including kyber.nsf.
+# An existing smoke NSF keeps whatever icon it already has.
 if ($bulkResp.created) {
   $iconRows = @($bulkResp.results | Where-Object { $_.type -eq "dbicon" -and $_.success })
   if ($iconRows.Count -lt 1) {
@@ -998,6 +987,7 @@ $named = @(
   @{ coll = "webserviceconsumers"; name = "SmokeWebServiceConsumer" },
   @{ coll = "dataconnections"; name = "SmokeConnection" },
   @{ coll = "jars"; name = "Smoke.jar" },
+  @{ coll = "webcontent"; name = "SmokeWeb.txt" },
   @{ coll = "applets"; name = "SmokeApplet" },
   @{ coll = "customcontrols"; name = "SmokeControl.xsp" },
   @{ coll = "xpages"; name = "SmokeXPage.xsp" },
@@ -1022,6 +1012,93 @@ foreach ($el in $named) {
 }
 
 Invoke-DominoWebSmoke
+
+# Export the smoked NSF and import it into a second database. Repo kyber/ stays the template tree.
+$exportDir = Join-Path $env:TEMP "kyber-smoke-export"
+$importNsf = "kybersmoke-import.nsf"
+$roundTrip = @{
+  RestUrl = $base
+  Token = $token
+}
+if ($SkipCertificateCheck) { $roundTrip.SkipCertificateCheck = $true }
+try {
+  & (Join-Path $PSScriptRoot "export-to-repo.ps1") @roundTrip -NsfPath $NsfPath -OutDir $exportDir
+} catch {
+  Fail "export-to-repo: $($_.Exception.Message)"
+}
+$manifestPath = Join-Path $exportDir "manifest.json"
+if (-not (Test-Path $manifestPath)) { Fail "export did not write manifest.json" }
+$manifest = Get-Content -Raw $manifestPath | ConvertFrom-Json
+foreach ($need in @("form", "webcontent", "fileresource", "xpage", "acl", "image")) {
+  if (@($manifest.elements | Where-Object { $_.type -eq $need }).Count -lt 1) {
+    Fail "export missing type $need"
+  }
+}
+$webExport = @($manifest.elements | Where-Object { $_.type -eq "webcontent" -and $_.name -eq "SmokeWeb.txt" })
+if ($webExport.Count -lt 1) { Fail "export missing WebContent SmokeWeb.txt" }
+if ($webExport[0].path -notlike "webcontent/*") {
+  Fail "SmokeWeb.txt exported to $($webExport[0].path)"
+}
+$formExport = @($manifest.elements | Where-Object { $_.type -eq "form" -and $_.name -eq "SmokeForm" })
+if ($formExport.Count -lt 1 -or $formExport[0].path -notlike "forms/*") {
+  Fail "SmokeForm was not exported under forms/"
+}
+Ok "exported $($manifest.elementCount) elements"
+
+try {
+  & (Join-Path $PSScriptRoot "import-from-repo.ps1") @roundTrip -NsfPath $importNsf -InDir $exportDir
+} catch {
+  Fail "import-from-repo: $($_.Exception.Message)"
+}
+foreach ($check in @(
+  @{ path = "forms/SmokeForm"; label = "form" },
+  @{ path = "webcontent/SmokeWeb.txt"; label = "webcontent" }
+)) {
+  $code = Invoke-Design GET (Design-UrlOn $importNsf $check.path) -OutFile $out
+  if ($code -ne "200") {
+    Fail "GET /$($check.label) on $importNsf -> HTTP $code $(Get-ResponseText)"
+  }
+}
+$iconCode = Invoke-Design GET (Design-UrlOn $importNsf "dbicon") -OutFile $out
+if ($iconCode -ne "200") { Fail "GET /dbicon on $importNsf -> HTTP $iconCode $(Get-ResponseText)" }
+if ((Get-ResponseText) -notmatch [regex]::Escape("kyber-icon.png")) {
+  Fail "imported $importNsf is missing the Kyber icon"
+}
+$formCode = Invoke-Design GET (Design-UrlOn $importNsf "forms/SmokeForm") -OutFile $out
+if ($formCode -ne "200") { Fail "GET imported form -> HTTP $formCode $(Get-ResponseText)" }
+$importDxl = $null
+try { $importDxl = (Get-ResponseText | ConvertFrom-Json).dxl } catch { }
+if (-not $importDxl -or $importDxl -notmatch "replicaid='([^']+)'") {
+  Fail "imported form is missing its own replica id"
+}
+$importReplica = $Matches[1]
+if ($script:replicaId -and $importReplica -eq $script:replicaId) {
+  Fail "imported $importNsf kept source replica id $importReplica"
+}
+Ok "imported $importNsf replica id differs"
+Ok "imported $importNsf"
+
+if ($SkipDelete) {
+  Ok "delete pass skipped"
+} else {
+  if ($script:webDocUnid) {
+    Get-DominoPage "/$NsfPath/SmokeView/$($script:webDocUnid)?DeleteDocument" | Out-Null
+    $left = Get-SmokeViewUnids
+    if ($left -contains $script:webDocUnid) {
+      Fail "DeleteDocument left $($script:webDocUnid) in SmokeView"
+    }
+    Ok "web /$NsfPath/SmokeView/$($script:webDocUnid)?DeleteDocument"
+  }
+  foreach ($el in $named) {
+    Remove-NamedThenRestore $el.coll $el.name $(if ($el.kind) { $el.kind } else { "" })
+  }
+  foreach ($path in @("about", "using", "databasescript", "xspproperties")) {
+    Remove-SingletonThenRestore $path
+  }
+  $code = Invoke-Design DELETE (Design-Url $script:missingFormPath) -OutFile $out
+  Assert-NotFound "DELETE missing form" $code (Get-ResponseText)
+  Ok "delete pass restored the design"
+}
 
 Write-Host "SMOKE PASSED ($NsfPath kept, $($named.Count) named elements plus singletons)" -ForegroundColor Green
 exit 0

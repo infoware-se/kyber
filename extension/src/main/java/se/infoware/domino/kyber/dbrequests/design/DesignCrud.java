@@ -84,7 +84,9 @@ final class DesignCrud {
       JsonObject starter = DesignDefaults.resolveOne(request.session(), t);
       dxl =
           DesignDxl.forNewNote(
-              DesignDxl.withName(starter.getString("dxl", ""), name, dxlRoots));
+              "webcontent".equals(t)
+                  ? WebContent.withName(starter.getString("dxl", ""), name)
+                  : DesignDxl.withName(starter.getString("dxl", ""), name, dxlRoots));
       source = "default";
     } else {
       String fromDxl =
@@ -100,7 +102,9 @@ final class DesignCrud {
               (body, wanted) ->
                   "sharedactions".equals(t)
                       ? DesignDxl.withName(body, wanted, "sharedactions")
-                      : DesignDxl.withName(body, wanted, dxlRoots));
+                      : "webcontent".equals(t)
+                          ? WebContent.withName(body, wanted)
+                          : DesignDxl.withName(body, wanted, dxlRoots));
       dxl = named.dxl();
       name = named.name();
       if ("image".equals(t)) {

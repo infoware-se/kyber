@@ -18,6 +18,7 @@ public class DeleteScriptLibrary extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String name = RequestParams.requireName(request.incoming);
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
     Optional<ScriptLibrary> opt = db.getDesign().getScriptLibrary(name);
     if (opt.isEmpty()) {
       throw new KeepExceptionWrongDataRequest("ScriptLibrary not found: " + name);

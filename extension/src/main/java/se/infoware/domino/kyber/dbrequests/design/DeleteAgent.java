@@ -18,6 +18,7 @@ public class DeleteAgent extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String name = RequestParams.requireName(request.incoming);
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
     Optional<DesignAgent> opt = db.getDesign().getAgent(name);
     if (opt.isEmpty()) {
       throw new KeepExceptionWrongDataRequest("Agent not found: " + name);

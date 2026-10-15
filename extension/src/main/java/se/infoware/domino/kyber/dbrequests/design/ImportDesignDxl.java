@@ -14,12 +14,15 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * Bulk import design DXL - PUT /designdxl?nsfPath=&dbTitle=
  *
  * <p>HTTP handler remaps query {@code nsfPath} (target) to {@code targetNsfPath} and opens
- * {@code KeepConfig.nsf} as the KEEP connection DB so a missing NSF can be created first.
+ * {@code KeepConfig.nsf} as the KEEP connection DB so a missing NSF can be created first. The
+ * {@link MinimumAcl} on this class is that bootstrap database only. Writes are authorized against
+ * the target NSF: design changes need Designer, and replacing the ACL needs Manager.
  *
  * <p>This is the only endpoint that may create the target NSF. Per-type CRUD requires an existing
  * database. The API never deletes databases. The first write to any NSF also creates {@code
@@ -36,13 +39,14 @@ import java.util.Locale;
  * Any other new NSF gets the {@code kyber_discussion145.nsf} ACL, with the creating user and the
  * server the file is created on in place of the names in that database. Those lists are written
  * only when the NSF is created. When the payload includes {@code type=acl}, that ACL DXL fully
- * replaces the database ACL and is left as imported. A created NSF other than {@code kyber.nsf}
- * also receives the embedded Kyber database icon unless the payload already contains one.
+ * replaces the database ACL and is left as imported. A created NSF receives the embedded Kyber
+ * database icon unless the payload already contains one. On {@code kyber.nsf} that icon is the
+ * database tile only; it is not a design template.
  *
  * <p>Elements may set {@code "delete": true} with {@code name} and/or {@code unid} to remove a
  * design note (bulk-only cleanup) instead of importing DXL.
  */
-@MinimumAcl(AclLevel.MANAGER)
+@MinimumAcl(AclLevel.READER)
 public class ImportDesignDxl extends AsyncDominoJNXJson {
 
   @Override
@@ -84,7 +88,7 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
     }
     boolean created = openOrCreate(session, target, encryption);
 
-    Database db = session.getDatabaseDomino(target);
+    Database db = openTargetForWrite(session, target, requiredWriteLevel(elements));
     if (created && title == null) {
       title = defaultTitleForNewNsf(target);
     }
@@ -109,6 +113,7 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
           if (isAcl) {
             throw new KeepExceptionWrongDataRequest("Cannot delete ACL via designdxl delete flag");
           }
+          DesignAccess.requireDeleteDocuments(session, db);
           one =
               DesignElementIO.deleteOne(
                   db, type, el.getString("name"), el.getString("unid"));
@@ -188,11 +193,11 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
   }
 
   /**
-   * A database this endpoint creates gets the embedded icon unless it is {@code kyber.nsf} or the
-   * payload already supplies {@code $DBIcon}.
+   * A database this endpoint creates gets the embedded icon unless the payload already supplies
+   * {@code $DBIcon}.
    */
   static boolean shouldApplyDefaultDbIcon(boolean created, String nsfPath, JsonArray elements) {
-    return created && !isDefaultNsfPath(nsfPath) && !payloadSuppliesDbIcon(elements);
+    return created && !payloadSuppliesDbIcon(elements);
   }
 
   private static boolean payloadSuppliesDbIcon(JsonArray elements) {
@@ -213,6 +218,51 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
       }
     }
     return false;
+  }
+
+  /**
+   * Access the caller must already have on an existing target. ACL replacement needs Manager.
+   * Any other element needs Designer. An empty payload does not write.
+   */
+  static AclLevel requiredWriteLevel(JsonArray elements) {
+    boolean design = false;
+    boolean acl = false;
+    if (elements != null) {
+      for (int i = 0; i < elements.size(); i++) {
+        Object value = elements.getValue(i);
+        if (!(value instanceof JsonObject element)) {
+          continue;
+        }
+        String type = DesignBulkTypes.normalize(element.getString("type", ""));
+        if (type.isBlank()) {
+          continue;
+        }
+        if ("acl".equals(type)) {
+          acl = true;
+        } else {
+          design = true;
+        }
+      }
+    }
+    if (acl) {
+      return AclLevel.MANAGER;
+    }
+    if (design) {
+      return AclLevel.DESIGNER;
+    }
+    return null;
+  }
+
+  /**
+   * Opens the target and rejects the call when the authenticated user lacks {@code required} on
+   * that NSF. {@code null} only opens the database.
+   */
+  private static Database openTargetForWrite(
+      KeepJnxSession session, String target, AclLevel required) throws Exception {
+    if (required == null) {
+      return session.getDatabaseDomino(target);
+    }
+    return session.getDatabaseDomino(target, required, Set.of(), Set.of());
   }
 
   private static boolean containsType(JsonArray elements, String type) {
@@ -278,8 +328,9 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
 
   /**
    * Creates {@code kyber.nsf} when the file is missing. Writes the title, ACL, and the same usage
-   * text in About and Using. The Notes client opens About each time the database is opened. No
-   * design templates and no product icon are written.
+   * text in About and Using, and Infoware's logo as the database icon. The Notes client opens
+   * About each time the database is opened. No design templates are written. The logo is not a
+   * template.
    */
   static void ensureEmptyDefaultsNsf(KeepJnxSession session, DominoClient.Encryption encryption)
       throws Exception {
@@ -298,6 +349,15 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
     DesignElementIO.importOne(importer, db, "about", DefaultsDatabaseHelp.aboutDxl(), session);
     DesignElementIO.importOne(importer, db, "using", DefaultsDatabaseHelp.usingDxl(), session);
     DxlDesignPatch.importLaunchSettings(importer, DefaultsDatabaseHelp.notesLaunchAboutDxl(), db);
+    applyProductDbIcon(importer, db, session);
+  }
+
+  private static void applyProductDbIcon(DxlImporter importer, Database db, KeepJnxSession session)
+      throws Exception {
+    String iconDxl =
+        DesignDefaults.productDbIconDxl()
+            .orElseThrow(() -> new IllegalStateException("Embedded Kyber database icon is missing"));
+    DesignElementIO.importOne(importer, db, "image", iconDxl, session);
   }
 
   /**
@@ -330,6 +390,7 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
       }
     }
 
+    DesignAccess.requireCreateDatabase(session);
     Database created = client.createDatabase(server, path, false, true, encryption);
     if (isDefaultNsfPath(path)) {
       DesignAcl.ensureCreatedAcl(created);

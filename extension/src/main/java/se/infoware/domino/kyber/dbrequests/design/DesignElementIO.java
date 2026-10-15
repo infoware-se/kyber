@@ -242,6 +242,9 @@ final class DesignElementIO {
     if (mode == null) {
       mode = DxlDesignPatch.Mode.UPSERT;
     }
+    if (session != null) {
+      DesignAccess.requireWritePrivileges(session, db, t, dxl);
+    }
 
     String name = null;
     String log;
@@ -527,10 +530,13 @@ final class DesignElementIO {
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         signWarning = signNamed(db.getDesign().getNavigator(name), "Navigator", name, dxl);
       }
-      case "jar", "applet", "javasource", "xspproperties", "xpagesresource", "designnote" -> {
+      case "jar", "applet", "javasource", "webcontent", "xspproperties", "xpagesresource", "designnote" -> {
         String requested =
             DesignDxl.requireDesignName(
                 dxl, "note", "fileresource", "navigator", "webservice", "agent", "appletresource");
+        if ("webcontent".equals(t)) {
+          WebContent.requireOutsideWebInf(requested);
+        }
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
         final String bulkType = t;
         BulkOnlyNotes.Entry entry =
@@ -818,16 +824,88 @@ final class DesignElementIO {
           // SelectAllDesignElements also omits — keep bulk identical to COM.
           continue;
         }
+        JsonObject roundTrip = residualRoundTrip(entry.type(), entry.name(), dxl);
+        if (roundTrip == null) {
+          continue;
+        }
         trackUnid(exportedUnids, entry.document());
-        elements.add(
-            new JsonObject()
-                .put("type", entry.type())
-                .put("name", entry.name())
-                .put("dxl", dxl));
+        roundTrip.put("dxl", dxl);
+        elements.add(roundTrip);
       } catch (Exception failed) {
         recordSkip(skipped, entry.type(), entry.name(), failed);
       }
     }
+  }
+
+  /**
+   * Residual note to put in a round trip. Data documents ({@code document}, {@code agentdata}) are
+   * never included. Untitled design with no name stays out. A named note whose DXL root is a real
+   * design element is emitted as that type.
+   *
+   * @return element without {@code dxl}, or null when the note must not be exported
+   */
+  static JsonObject residualRoundTrip(String classifiedType, String fallbackName, String dxl) {
+    String root = DesignDxl.rootLocalName(dxl);
+    if (root == null || isDataDxlRoot(root)) {
+      return null;
+    }
+    String type = classifiedType == null ? "" : classifiedType.trim().toLowerCase(Locale.ROOT);
+    if ("designnote".equals(type) && !designNoteRoot(root)) {
+      String typed = apiTypeForRoot(root);
+      String named = peekDesignName(dxl);
+      if (typed == null || named == null) {
+        return null;
+      }
+      return new JsonObject().put("type", typed).put("name", named);
+    }
+    String name = fallbackName == null ? "" : fallbackName.trim();
+    if (name.isEmpty()) {
+      return null;
+    }
+    return new JsonObject().put("type", type).put("name", name);
+  }
+
+  private static boolean isDataDxlRoot(String root) {
+    return switch (root.toLowerCase(Locale.ROOT)) {
+      case "document", "agentdata" -> true;
+      default -> false;
+    };
+  }
+
+  private static boolean designNoteRoot(String root) {
+    return switch (root.toLowerCase(Locale.ROOT)) {
+      case "note", "fileresource", "navigator", "webservice", "agent", "appletresource" -> true;
+      default -> false;
+    };
+  }
+
+  private static String apiTypeForRoot(String root) {
+    return switch (root.toLowerCase(Locale.ROOT)) {
+      case "view" -> "view";
+      case "folder" -> "folder";
+      case "form" -> "form";
+      case "page" -> "page";
+      case "subform" -> "subform";
+      case "outline" -> "outline";
+      case "frameset" -> "frameset";
+      case "agent" -> "agent";
+      case "scriptlibrary" -> "scriptlibrary";
+      case "imageresource" -> "image";
+      case "sharedfield" -> "sharedfield";
+      case "sharedcolumn" -> "sharedcolumn";
+      default -> null;
+    };
+  }
+
+  private static String peekDesignName(String dxl) {
+    java.util.regex.Matcher name =
+        java.util.regex.Pattern.compile("(?is)<[A-Za-z][A-Za-z0-9_]*\\b[^>]*\\bname\\s*=\\s*['\"]([^'\"]+)['\"]")
+            .matcher(dxl);
+    if (!name.find()) {
+      return null;
+    }
+    String value = name.group(1).trim();
+    return value.isEmpty() ? null : value;
   }
 
   /** True when DXL contains a real note (not prolog-only / whitespace). */
@@ -846,21 +924,26 @@ final class DesignElementIO {
       return false;
     }
     String lower = s.toLowerCase(Locale.ROOT);
-    return lower.contains("<note")
-        || lower.contains("<database")
-        || lower.contains("<form")
-        || lower.contains("<view")
-        || lower.contains("<agent")
-        || lower.contains("<page")
-        || lower.contains("<subform")
-        || lower.contains("<outline")
-        || lower.contains("<frameset")
-        || lower.contains("<folder")
-        || lower.contains("<imageresource")
-        || lower.contains("<scriptlibrary")
-        || lower.contains("<sharedactions")
-        || lower.contains("<sharedfield")
-        || lower.contains("<fileresource");
+    return hasTag(lower, "note")
+        || hasTag(lower, "database")
+        || hasTag(lower, "form")
+        || hasTag(lower, "view")
+        || hasTag(lower, "agent")
+        || hasTag(lower, "page")
+        || hasTag(lower, "subform")
+        || hasTag(lower, "outline")
+        || hasTag(lower, "frameset")
+        || hasTag(lower, "folder")
+        || hasTag(lower, "imageresource")
+        || hasTag(lower, "scriptlibrary")
+        || hasTag(lower, "sharedactions")
+        || hasTag(lower, "sharedfield")
+        || hasTag(lower, "fileresource");
+  }
+
+  /** {@code <agent} must not match {@code <agentdata}. */
+  private static boolean hasTag(String lower, String tag) {
+    return java.util.regex.Pattern.compile("<" + tag + "\\b").matcher(lower).find();
   }
 
   private static void trackUnid(Set<String> exportedUnids, Document doc) {

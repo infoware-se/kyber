@@ -50,6 +50,7 @@ final class DesignDefaults {
     "databasescript",
     "dataconnection",
     "fileresource",
+    "webcontent",
     "folder",
     "form",
     "frameset",
@@ -154,9 +155,9 @@ final class DesignDefaults {
   }
 
   /**
-   * Product database icon applied when {@code PUT /designdxl} creates an NSF. Not a {@code
-   * /defaults} starter — {@code $DBIcon} is always present, and {@code defaults/blank} stays the
-   * Domino blank snapshot.
+   * Infoware logo applied as the database icon when an NSF is created. Not a {@code /defaults}
+   * starter — {@code $DBIcon} is the database tile, and {@code defaults/blank} stays the Domino
+   * blank snapshot.
    */
   static Optional<String> productDbIconDxl() {
     try (InputStream in = DesignDefaults.class.getResourceAsStream("/defaults/kyber-dbicon.dxl")) {

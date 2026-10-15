@@ -34,7 +34,7 @@ final class DxlDesignPatch {
       throws IOException {
     configureCommon(importer, designOption(mode));
     importer.setReplaceDbProperties(false);
-    importer.importDxl(dxl, db);
+    importer.importDxl(DesignDxl.withoutReplicaId(dxl), db);
     return importer.getResultLog();
   }
 
@@ -50,7 +50,7 @@ final class DxlDesignPatch {
       DxlImporter importer, String dxl, Database db, Mode mode) throws IOException {
     configureCommon(importer, designOption(mode));
     importer.setReplaceDbProperties(true);
-    importer.importDxl(dxl, db);
+    importer.importDxl(DesignDxl.withoutReplicaId(dxl), db);
     return importer.getResultLog();
   }
 
@@ -63,7 +63,7 @@ final class DxlDesignPatch {
     importer.setReplaceDbProperties(true);
     importer.setReplicaRequiredForReplaceOrUpdate(false);
     importer.setInputValidationOption(XMLValidationOption.NEVER);
-    importer.importDxl(dxl, db);
+    importer.importDxl(DesignDxl.withoutReplicaId(dxl), db);
     return importer.getResultLog();
   }
 
@@ -79,7 +79,7 @@ final class DxlDesignPatch {
     importer.setUnknownTokenLogOption(DXLLogOption.WARNING);
     importer.setReplicaRequiredForReplaceOrUpdate(false);
     importer.setInputValidationOption(XMLValidationOption.NEVER);
-    importer.importDxl(dxl, db);
+    importer.importDxl(DesignDxl.withoutReplicaId(dxl), db);
     return importer.getResultLog();
   }
 

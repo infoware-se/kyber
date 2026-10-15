@@ -32,6 +32,7 @@ final class DesignBulkTypes {
     dirs.put("dbicon", "");
     dirs.put("image", "images");
     dirs.put("fileresource", "fileresources");
+    dirs.put("webcontent", "webcontent");
     dirs.put("stylesheet", "stylesheets");
     dirs.put("theme", "themes");
     dirs.put("scriptlibrary", "scriptlibraries");
@@ -74,6 +75,7 @@ final class DesignBulkTypes {
           "dbicon",
           "image",
           "fileresource",
+          "webcontent",
           "jar",
           "applet",
           "javasource",

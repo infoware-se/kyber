@@ -14,7 +14,7 @@ import java.util.Optional;
 
 /**
  * CRUD helpers for design notes discovered via {@link BulkOnlyNotes} (dataconnection, jar, applet,
- * javasource).
+ * javasource, webcontent).
  */
 final class ResidualDesign {
 

@@ -18,6 +18,7 @@ public class DeleteView extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String name = RequestParams.requireName(request.incoming);
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
 
     Optional<View> view = db.getDesign().getView(name);
     if (view.isEmpty()) {

@@ -18,6 +18,7 @@ public class DeleteFileResource extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String name = RequestParams.requireName(request.incoming);
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
     Optional<FileResource> opt = db.getDesign().getFileResource(name);
     if (opt.isEmpty()) {
       throw new KeepExceptionWrongDataRequest("FileResource not found: " + name);

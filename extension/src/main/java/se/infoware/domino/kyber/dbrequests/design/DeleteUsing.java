@@ -17,6 +17,7 @@ public class DeleteUsing extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
     Optional<UsingDocument> opt = db.getDesign().getUsingDocument();
     if (opt.isEmpty()) {
       throw new KeepExceptionWrongDataRequest("UsingDocument not found");

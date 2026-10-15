@@ -18,6 +18,7 @@ public class DeleteFolder extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String name = RequestParams.requireName(request.incoming);
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
 
     Optional<Folder> folder = db.getDesign().getFolder(name);
     if (folder.isEmpty()) {

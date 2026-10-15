@@ -17,6 +17,7 @@ public class DeleteWebService extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String name = RequestParams.requireName(request.incoming);
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
     WebServices.Entry entry = WebServices.require(db, WebServices.Kind.PROVIDER, name);
     DesignElement el =
         WebServices.asDesignElement(db, entry.document())

@@ -126,6 +126,20 @@ class NsfCreatePolicyTest {
   }
 
   @Test
+  void writesRequireTheTargetAcl() {
+    JsonArray design =
+        new JsonArray().add(new JsonObject().put("type", "form").put("dxl", "<form/>"));
+    JsonArray acl =
+        new JsonArray().add(new JsonObject().put("type", "acl").put("dxl", "<acl/>"));
+    JsonArray both = design.copy().add(acl.getJsonObject(0));
+    assertEquals(AclLevel.DESIGNER, ImportDesignDxl.requiredWriteLevel(design));
+    assertEquals(AclLevel.MANAGER, ImportDesignDxl.requiredWriteLevel(acl));
+    assertEquals(AclLevel.MANAGER, ImportDesignDxl.requiredWriteLevel(both));
+    assertNull(ImportDesignDxl.requiredWriteLevel(new JsonArray()));
+    assertNull(ImportDesignDxl.requiredWriteLevel(null));
+  }
+
+  @Test
   void newNsfGetsEmbeddedIconUnlessThePayloadSuppliesOne() {
     JsonArray forms =
         new JsonArray().add(new JsonObject().put("type", "form").put("dxl", "<form/>"));
@@ -139,8 +153,8 @@ class NsfCreatePolicyTest {
                     .put("type", "image")
                     .put("dxl", "<imageresource name='$DBIcon'/>"));
     assertTrue(ImportDesignDxl.shouldApplyDefaultDbIcon(true, "app.nsf", forms));
-    assertFalse(ImportDesignDxl.shouldApplyDefaultDbIcon(true, "kyber.nsf", forms));
-    assertFalse(ImportDesignDxl.shouldApplyDefaultDbIcon(true, "Server!!kyber.nsf", forms));
+    assertTrue(ImportDesignDxl.shouldApplyDefaultDbIcon(true, "kyber.nsf", forms));
+    assertTrue(ImportDesignDxl.shouldApplyDefaultDbIcon(true, "Server!!kyber.nsf", forms));
     assertFalse(ImportDesignDxl.shouldApplyDefaultDbIcon(false, "app.nsf", forms));
     assertFalse(ImportDesignDxl.shouldApplyDefaultDbIcon(true, "app.nsf", ownIcon));
     assertFalse(ImportDesignDxl.shouldApplyDefaultDbIcon(true, "app.nsf", ownImage));

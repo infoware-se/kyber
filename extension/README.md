@@ -103,6 +103,7 @@ Mapped to the Designer outline. "In" = typed DXL CRUD; "Bulk" = `/designdxl` onl
 | Application Configuration | Xsp Properties | `/xspproperties` (singleton; GET/POST/PUT/DELETE — optional `WEB-INF/xsp.properties`) |
 | Resources | Images | `/images` |
 | Resources | Files | `/fileresources` |
+| Resources | WebContent | `/webcontent` (files outside `WEB-INF`; `WEB-INF` stays an XPages project note) |
 | Resources | Style Sheets | `/stylesheets` |
 | Resources | Themes | `/themes` |
 | Resources | About Document | `/about` (singleton) |

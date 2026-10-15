@@ -15,6 +15,7 @@ public class DeleteXspProperties extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
+    DesignAccess.requireDeleteDocuments(request.session(), request.db());
     var entry = BulkOnlyNotes.find(request.db(), "xspproperties", NAME);
     if (entry.isEmpty()) {
       throw new KeepExceptionNotFound("Xsp Properties not found: " + NAME);

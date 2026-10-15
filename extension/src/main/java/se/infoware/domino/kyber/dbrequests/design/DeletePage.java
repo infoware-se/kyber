@@ -18,6 +18,7 @@ public class DeletePage extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String name = RequestParams.requireName(request.incoming);
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
 
     Optional<Page> page = db.getDesign().getPage(name);
     if (page.isEmpty()) {

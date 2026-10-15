@@ -18,6 +18,7 @@ public class DeleteForm extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String name = RequestParams.requireName(request.incoming);
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
 
     Optional<Form> form = db.getDesign().getForm(name);
     if (form.isEmpty()) {

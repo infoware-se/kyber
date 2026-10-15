@@ -15,6 +15,7 @@ public class DeleteSharedActions extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String name = RequestParams.requireName(request.incoming);
     Database db = request.db();
+    DesignAccess.requireDeleteDocuments(request.session(), db);
     SharedActionsNotes.require(db, name).delete();
     request.emit(
         new JsonObject().put("success", true).put("type", "sharedactions").put("name", name));
