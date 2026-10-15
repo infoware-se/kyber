@@ -75,18 +75,6 @@ load restapi
 
 `tell restapi reload` leaves the old JAR loaded. Quit, then load.
 
-A machine with the Notes client can restart restapi through Notes COM. Copy [`.env.example`](.env.example) to `.env`, set `DOMINO_SERVER`, copy the JAR, then run [`tools/restart-restapi-com.ps1`](tools/restart-restapi-com.ps1).
-
-### Check the install
-
-The Admin UI lists a catalog entry named `kyber`. This call, with a bearer token, returns the template list:
-
-```text
-GET /api/kyber-v1/defaults?nsfPath=kyber.nsf
-```
-
-A 404 that says the method is not applicable means the new JAR was not loaded. The file in `libs` is named `infoware-kyber.jar`, and restapi was quit and loaded after the copy.
-
 ### Build and install from source
 
 Building needs JDK 21 and Maven 3.9 or newer. The script reads `keep-core`, `keep-extension`, and `keep-jnx-ext` from `%DRAPI_HOME%`.
