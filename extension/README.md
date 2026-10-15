@@ -381,7 +381,7 @@ Always present with the NSF — update only.
 
 ### Database icon (`$DBIcon`)
 
-Always present with the NSF — update only. Not listed under `/images`.
+Always present with the NSF — update only. Not listed under `/images`. `PUT /designdxl` that creates an NSF writes the embedded 64×64 Kyber icon unless the payload already has a `dbicon` (or an image named `$DBIcon`). Design refresh is allowed to replace it.
 
 | Method | Path |
 |--------|------|

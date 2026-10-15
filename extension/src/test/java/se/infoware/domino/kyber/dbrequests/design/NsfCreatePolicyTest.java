@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.hcl.domino.DominoClient;
 import com.hcl.domino.DominoException;
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.junit.jupiter.api.Test;
 
 class NsfCreatePolicyTest {
@@ -42,6 +44,33 @@ class NsfCreatePolicyTest {
         "Kyber Design Elements", ImportDesignDxl.defaultTitleForNewNsf("Server!!kyber.nsf"));
     assertEquals("Kyber Smoke Test", ImportDesignDxl.defaultTitleForNewNsf("kybertest.nsf"));
     assertNull(ImportDesignDxl.defaultTitleForNewNsf("other.nsf"));
+  }
+
+  @Test
+  void newNsfGetsEmbeddedIconUnlessThePayloadSuppliesOne() {
+    JsonArray forms =
+        new JsonArray().add(new JsonObject().put("type", "form").put("dxl", "<form/>"));
+    JsonArray ownIcon =
+        new JsonArray()
+            .add(new JsonObject().put("type", "dbicon").put("dxl", "<imageresource/>"));
+    JsonArray ownImage =
+        new JsonArray()
+            .add(
+                new JsonObject()
+                    .put("type", "image")
+                    .put("dxl", "<imageresource name='$DBIcon'/>"));
+    assertTrue(ImportDesignDxl.shouldApplyDefaultDbIcon(true, forms));
+    assertFalse(ImportDesignDxl.shouldApplyDefaultDbIcon(false, forms));
+    assertFalse(ImportDesignDxl.shouldApplyDefaultDbIcon(true, ownIcon));
+    assertFalse(ImportDesignDxl.shouldApplyDefaultDbIcon(true, ownImage));
+  }
+
+  @Test
+  void prohibitRefreshFlagIsTheLetterP() {
+    assertEquals("34Ci~Q", DbIcon.flagsAllowingRefresh("34Ci~QP"));
+    assertEquals("34Ci~Q", DbIcon.flagsAllowingRefresh("34Ci~Q"));
+    assertTrue(DbIcon.isImportOnlyFlagsExt("D"));
+    assertFalse(DbIcon.isImportOnlyFlagsExt(""));
   }
 
   @Test

@@ -151,6 +151,22 @@ final class DesignDefaults {
     }
   }
 
+  /**
+   * Product database icon applied when {@code PUT /designdxl} creates an NSF. Not a {@code
+   * /defaults} starter — {@code $DBIcon} is always present, and {@code defaults/blank} stays the
+   * Domino blank snapshot.
+   */
+  static Optional<String> productDbIconDxl() {
+    try (InputStream in = DesignDefaults.class.getResourceAsStream("/defaults/kyber-dbicon.dxl")) {
+      if (in == null) {
+        return Optional.empty();
+      }
+      return Optional.of(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+    } catch (Exception e) {
+      return Optional.empty();
+    }
+  }
+
   static JsonObject resolveOne(KeepJnxSession session, String type)
       throws KeepExceptionWrongDataRequest {
     return resolveOne(session, type, null);

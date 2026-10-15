@@ -29,7 +29,8 @@ import java.util.Locale;
  *
  * <p>On create, ensures LocalDomainAdmins / LocalDomainServers as Manager (add or overwrite).
  * When the payload includes {@code type=acl}, that ACL DXL fully replaces the database ACL
- * (overwrite/drop), then LocalDomain* are ensured as Manager again.
+ * (overwrite/drop), then LocalDomain* are ensured as Manager again. A created NSF also receives
+ * the embedded Kyber database icon unless the payload already contains one.
  *
  * <p>Elements may set {@code "delete": true} with {@code name} and/or {@code unid} to remove a
  * design note (bulk-only cleanup) instead of importing DXL.
@@ -136,6 +137,28 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
           "ACL was present in the import payload but was not applied successfully");
     }
 
+    if (shouldApplyDefaultDbIcon(created, elements)) {
+      try {
+        String iconDxl =
+            DesignDefaults.productDbIconDxl()
+                .orElseThrow(
+                    () -> new IllegalStateException("Embedded Kyber database icon is missing"));
+        JsonObject one = DesignElementIO.importOne(importer, db, "image", iconDxl, session);
+        one.put("type", "dbicon");
+        results.add(one);
+        ok++;
+      } catch (Exception e) {
+        failed++;
+        String message = e.getMessage() == null ? e.toString() : e.getMessage();
+        results.add(
+            new JsonObject()
+                .put("success", false)
+                .put("type", "dbicon")
+                .put("name", DesignElementLookup.DBICON_NAME)
+                .put("message", message));
+      }
+    }
+
     JsonObject compile = DesignLotusScriptCompile.compileAll(db);
 
     JsonObject out =
@@ -152,6 +175,34 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
       out.put("dbTitle", title);
     }
     request.emit(out);
+  }
+
+  /**
+   * A database this endpoint creates gets the embedded icon unless the payload already supplies
+   * {@code $DBIcon}.
+   */
+  static boolean shouldApplyDefaultDbIcon(boolean created, JsonArray elements) {
+    return created && !payloadSuppliesDbIcon(elements);
+  }
+
+  private static boolean payloadSuppliesDbIcon(JsonArray elements) {
+    if (containsType(elements, "dbicon")) {
+      return true;
+    }
+    for (int i = 0; i < elements.size(); i++) {
+      Object o = elements.getValue(i);
+      if (!(o instanceof JsonObject jo)) {
+        continue;
+      }
+      if (!"image".equalsIgnoreCase(jo.getString("type", "").trim())) {
+        continue;
+      }
+      String dxl = jo.getString("dxl", "");
+      if (dxl.contains("name='$DBIcon'") || dxl.contains("name=\"$DBIcon\"")) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static boolean containsType(JsonArray elements, String type) {

@@ -55,6 +55,33 @@ class DesignDefaultsClasspathTest {
   }
 
   @Test
+  void productDbIconShipsInTheJar() throws Exception {
+    String dxl = DesignDefaults.productDbIconDxl().orElseThrow();
+    assertTrue(dxl.contains("name='$DBIcon'"));
+    assertTrue(dxl.contains("imagename='kyber-icon.png'"));
+    assertFalse(dxl.contains("noreplace"));
+    assertFalse(dxl.contains("replicaid"));
+    assertFalse(dxl.contains("Dantooine"));
+    assertFalse(dxl.contains("onInfoware"));
+    assertFalse(dxl.contains("OneDrive"));
+    Matcher png =
+        Pattern.compile("(?is)<png>\\s*([A-Za-z0-9+/=\\s]+)\\s*</png>").matcher(dxl);
+    assertTrue(png.find());
+    byte[] raw = Base64.getMimeDecoder().decode(png.group(1).replaceAll("\\s+", ""));
+    assertEquals(3539, raw.length);
+    assertEquals(64, readPngInt(raw, 16));
+    assertEquals(64, readPngInt(raw, 20));
+    assertTrue(DesignDefaults.classpathDxl("dbicon").isEmpty());
+  }
+
+  private static int readPngInt(byte[] png, int offset) {
+    return ((png[offset] & 0xff) << 24)
+        | ((png[offset + 1] & 0xff) << 16)
+        | ((png[offset + 2] & 0xff) << 8)
+        | (png[offset + 3] & 0xff);
+  }
+
+  @Test
   void alwaysPresentSingletonsAreNotEmbeddedStarters() {
     // Always present with NSF — blank baseline only, not create-from-default starters.
     assertTrue(DesignDefaults.classpathDxl("applicationproperties").isEmpty());

@@ -25,7 +25,7 @@ Full endpoint tables and Designer coverage: **[extension/README.md](extension/RE
 
 **Bulk only:** XPages project notes (`WEB-INF/` except `xsp.properties`, i18n `*.properties`, `.settings/`, …) as `xpagesresource`, plus catch-all **`designnote`** for any remaining design note not covered by a typed exporter.
 
-**Bulk + git:** `GET`/`PUT /api/kyber-v1/designdxl` exports/imports all CRUD + ACL + bulk-only + residual design notes. PUT **creates the NSF if missing** (only bulk import; per-type CRUD requires an existing NSF). API never deletes databases. Bridge scripts: [`tools/export-to-repo.ps1`](tools/export-to-repo.ps1), [`tools/import-from-repo.ps1`](tools/import-from-repo.ps1). ACL also has singleton `GET`/`PUT /acl` (Manager for PUT).
+**Bulk + git:** `GET`/`PUT /api/kyber-v1/designdxl` exports/imports all CRUD + ACL + bulk-only + residual design notes. PUT **creates the NSF if missing** (only bulk import; per-type CRUD requires an existing NSF). A created NSF receives the embedded Kyber database icon unless the payload already includes one, and design refresh is allowed to replace that icon. API never deletes databases. Bridge scripts: [`tools/export-to-repo.ps1`](tools/export-to-repo.ps1), [`tools/import-from-repo.ps1`](tools/import-from-repo.ps1). ACL also has singleton `GET`/`PUT /acl` (Manager for PUT).
 
 **Out of first-class typing:** residual untitled notes (`designnote` bulk only).
 

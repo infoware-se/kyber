@@ -319,6 +319,9 @@ final class DesignElementIO {
       case "image" -> {
         name = DesignDxl.requireRootName(dxl, "imageresource");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        if (DesignElementLookup.isDbIconName(name)) {
+          DbIcon.allowDesignRefresh(db);
+        }
         signWarning = signNamed(db.getDesign().getImageResource(name), "ImageResource", name);
       }
       case "fileresource" -> {

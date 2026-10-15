@@ -18,6 +18,7 @@
   - kinded agents, script libraries and Java sources, one element per kind
   - singletons about, using, databasescript, xspproperties: create, 409, get, put, delete, create again, Hello World
   - applicationproperties, dbicon and acl: get + put of the same DXL
+  - a NSF created by this run has the embedded Kyber database icon
   - POST /xpagesproject once, then a second call that creates nothing
 
   kybertest.nsf is left on the server with the created design still in it.
@@ -918,9 +919,21 @@ Ok "xpagesproject idempotent (skipped=$(@($xp2.skipped).Count))"
 foreach ($path in @("applicationproperties", "acl")) {
   Invoke-UpdateOnly $path
 }
-# A NSF created by PUT /designdxl has no $DBIcon. The icon that ships with kyber.nsf is the round-trip.
+# A NSF created by PUT /designdxl receives the embedded icon. An existing smoke NSF keeps
+# whatever icon it already has; kyber.nsf is the round-trip of the product icon.
+if ($bulkResp.created) {
+  $iconRows = @($bulkResp.results | Where-Object { $_.type -eq "dbicon" -and $_.success })
+  if ($iconRows.Count -lt 1) {
+    Fail "new NSF did not receive the embedded database icon"
+  }
+}
 $code = Invoke-Design GET (Design-Url "dbicon") -OutFile $out
-Assert-NotFound "GET /dbicon on $NsfPath" $code (Get-ResponseText)
+if ($code -ne "200") { Fail "GET /dbicon on $NsfPath -> HTTP $code $(Get-ResponseText)" }
+$iconDxl = Get-ResponseText
+if ($iconDxl -notmatch [regex]::Escape("kyber-icon.png")) {
+  Fail "GET /dbicon on $NsfPath is missing the Kyber icon"
+}
+Ok "GET /dbicon ($NsfPath)"
 Invoke-UpdateOnly "dbicon" "kyber.nsf"
 
 foreach ($path in @("about", "using", "databasescript", "xspproperties")) {
