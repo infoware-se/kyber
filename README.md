@@ -23,8 +23,6 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 - [Access](#access)
 - [Coverage](#coverage)
 - [Round trip](#round-trip)
-- [Tools](#tools)
-- [Develop](#develop)
 - [Security](#security)
 
 ## What you can do
@@ -200,44 +198,6 @@ domino/<nsf path>-<replica id>/
 The folders follow Package Explorer. Each note is `<name>-<note id>.dxl`. `manifest.json` is the import index (`type`, path, name). [`tools/import-from-repo.ps1`](tools/import-from-repo.ps1) reads it. `-OutDir` is a repository root, and the NSF folder is created under `domino/` there. A later export replaces that one NSF folder. These trees stay on disk. This repository does not commit them.
 
 Named notes with no Designer folder land in `_designnotes` and are type `designnote`. That type is part of the bulk export. It has no list, get, or delete of its own.
-
-## Tools
-
-The scripts call a running Kyber. Copy [`.env.example`](.env.example) to `.env` in the repo root. `.env` is gitignored. The server does not read it.
-
-| Variable | Use |
-|--|--|
-| `DOMINO_REST_API_DATA_URL` | REST base, such as `https://your-domino-server:8880` |
-| `DOMINO_SERVER` | Server name for the Notes COM restart |
-| `REST_ADMIN_USER`, `REST_ADMIN_PASSWORD` | Login used by the tools |
-
-| Script | What it does |
-|--|--|
-| [`tools/export-to-repo.ps1`](tools/export-to-repo.ps1) | Export one NSF to `domino/<path>-<replica>/` |
-| [`tools/import-from-repo.ps1`](tools/import-from-repo.ps1) | Import that tree. `-InDir` is the repo root or the NSF folder |
-| [`tools/restart-restapi-com.ps1`](tools/restart-restapi-com.ps1) | `tell restapi quit`, then `load restapi`, through Notes COM |
-| [`tools/smoke-kyber-api.ps1`](tools/smoke-kyber-api.ps1) | Live check against `kybertest.nsf`: every typed collection, the singletons, a DXL round trip, and the XPage URL. The design is left in place |
-
-## Develop
-
-```powershell
-cd extension
-.\build.ps1                         # package, including unit tests
-mvn test                            # unit tests only
-..\tools\smoke-kyber-api.ps1        # needs a running Domino REST API
-```
-
-Unit tests need no Domino server. The smoke test does.
-
-| | |
-|--|--|
-| API reference and how to add a type | [extension/README.md](extension/README.md) |
-| OpenAPI | `extension/src/main/resources/openapi/openapi.kyber.json` |
-| Route and tags | `extension/src/main/resources/config/config.json` |
-| Template file name | `kyber.defaultNsf` in `kyber.properties` |
-| Embedded starters | `extension/src/main/resources/defaults/` |
-
-Swagger tags are `design-element` for the collections and `design-handler` for `/defaults` and `/designdxl`. The catalog id stays `kyber`.
 
 ## Security
 
