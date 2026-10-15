@@ -5,39 +5,138 @@ import com.hcl.domino.security.Acl;
 import com.hcl.domino.security.AclEntry;
 import com.hcl.domino.security.AclFlag;
 import com.hcl.domino.security.AclLevel;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * After ACL DXL replace (full overwrite/drop) or NSF create: ensure LocalDomainAdmins /
- * LocalDomainServers are Manager (add or overwrite those two entries only).
+ * ACL entries applied when this API creates a database.
+ *
+ * <p>{@code kyber.nsf} gets the entries in {@link #createdAclEntries()}. Any other new database
+ * gets the shape of {@code kyber_discussion145.nsf}, with the creating user and the server the
+ * file is created on in place of the names stored in that database. An ACL imported later is left
+ * as imported.
  */
 final class DesignAcl {
 
   private static final String LOCAL_DOMAIN_ADMINS = "LocalDomainAdmins";
   private static final String LOCAL_DOMAIN_SERVERS = "LocalDomainServers";
+  /** Designer shows this role as {@code [Configuration]}. */
+  private static final String CONFIGURATION_ROLE = "Configuration";
 
   private DesignAcl() {}
 
-  static void ensureDomainManagers(Database db) {
+  /**
+   * Entries for a new database other than {@code kyber.nsf}. A blank creator or server is omitted.
+   * When both names are the same, only the server entry is written.
+   */
+  static List<StarterEntry> applicationAclEntries(String creator, String server) {
+    String person = blankToNull(creator);
+    String host = blankToNull(server);
+    if (person != null && host != null && person.equalsIgnoreCase(host)) {
+      person = null;
+    }
+    List<StarterEntry> entries = new ArrayList<>();
+    entries.add(entry("-Default-", AclLevel.AUTHOR, EnumSet.of(AclFlag.CREATE_PRFOLDER)));
+    entries.add(entry("Anonymous", AclLevel.NOACCESS, EnumSet.noneOf(AclFlag.class)));
+    entries.add(
+        entry(
+            "OtherDomainServers",
+            AclLevel.NOACCESS,
+            EnumSet.of(AclFlag.SERVER, AclFlag.GROUP)));
+    if (host != null) {
+      entries.add(entry(host, AclLevel.MANAGER, EnumSet.of(AclFlag.SERVER)));
+    }
+    if (person != null) {
+      entries.add(entry(person, AclLevel.MANAGER, EnumSet.of(AclFlag.PERSON)));
+    }
+    entries.add(
+        entry(
+            LOCAL_DOMAIN_ADMINS,
+            AclLevel.MANAGER,
+            EnumSet.of(AclFlag.GROUP),
+            List.of(CONFIGURATION_ROLE)));
+    entries.add(
+        entry(
+            LOCAL_DOMAIN_SERVERS,
+            AclLevel.MANAGER,
+            EnumSet.of(AclFlag.SERVER, AclFlag.GROUP)));
+    return List.copyOf(entries);
+  }
+
+  /** Entries written when this API creates {@code kyber.nsf}. */
+  static List<StarterEntry> createdAclEntries() {
+    return List.of(
+        entry("-Default-", AclLevel.NOACCESS, EnumSet.noneOf(AclFlag.class)),
+        entry("Anonymous", AclLevel.NOACCESS, EnumSet.noneOf(AclFlag.class)),
+        entry(
+            "OtherDomainServers",
+            AclLevel.NOACCESS,
+            EnumSet.of(AclFlag.SERVER, AclFlag.GROUP)),
+        entry("LocalKeepAdmins", AclLevel.MANAGER, EnumSet.of(AclFlag.GROUP)),
+        entry(
+            LOCAL_DOMAIN_ADMINS,
+            AclLevel.MANAGER,
+            EnumSet.of(AclFlag.PERSON, AclFlag.GROUP)),
+        entry(LOCAL_DOMAIN_SERVERS, AclLevel.MANAGER, EnumSet.of(AclFlag.SERVER)));
+  }
+
+  static void ensureApplicationAcl(Database db, String creator, String server) {
     if (db == null) {
       return;
     }
     Acl acl = db.getACL();
-    upsert(acl, LOCAL_DOMAIN_ADMINS, AclLevel.MANAGER, EnumSet.of(AclFlag.GROUP));
-    upsert(acl, LOCAL_DOMAIN_SERVERS, AclLevel.MANAGER, EnumSet.of(AclFlag.SERVER));
+    acl.addRole(CONFIGURATION_ROLE);
+    String host = blankToNull(server);
+    if (host != null) {
+      acl.setAdminServer(host);
+    }
+    for (StarterEntry entry : applicationAclEntries(creator, server)) {
+      upsert(acl, entry);
+    }
     acl.save();
   }
 
-  private static void upsert(
-      Acl acl, String name, AclLevel level, Collection<AclFlag> flags) {
-    Optional<AclEntry> existing = acl.getEntry(name);
+  static void ensureCreatedAcl(Database db) {
+    if (db == null) {
+      return;
+    }
+    Acl acl = db.getACL();
+    for (StarterEntry entry : createdAclEntries()) {
+      upsert(acl, entry);
+    }
+    acl.save();
+  }
+
+  private static StarterEntry entry(String name, AclLevel level, Collection<AclFlag> flags) {
+    return entry(name, level, flags, List.of());
+  }
+
+  private static StarterEntry entry(
+      String name, AclLevel level, Collection<AclFlag> flags, List<String> roles) {
+    return new StarterEntry(name, level, flags, roles);
+  }
+
+  private static String blankToNull(String value) {
+    if (value == null) {
+      return null;
+    }
+    String trimmed = value.trim();
+    return trimmed.isEmpty() ? null : trimmed;
+  }
+
+  record StarterEntry(
+      String name, AclLevel level, Collection<AclFlag> flags, List<String> roles) {}
+
+  private static void upsert(Acl acl, StarterEntry entry) {
+    List<String> roles = entry.roles() == null ? List.of() : entry.roles();
+    Optional<AclEntry> existing = acl.getEntry(entry.name());
     if (existing.isPresent()) {
-      acl.updateEntry(name, name, level, List.of(), flags);
+      acl.updateEntry(entry.name(), entry.name(), entry.level(), roles, entry.flags());
     } else {
-      acl.addEntry(name, level, List.of(), flags);
+      acl.addEntry(entry.name(), entry.level(), roles, entry.flags());
     }
   }
 }

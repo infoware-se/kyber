@@ -1,5 +1,6 @@
 package se.infoware.domino.kyber.dbrequests.design;
 
+import com.hcl.domino.DominoClient;
 import com.hcl.domino.data.Database;
 import com.hcl.domino.dxl.DxlImporter;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
@@ -18,11 +19,11 @@ public class CreateAcl extends AsyncDominoJNXJson {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String dxl = request.incoming.getString("dxl", "");
     DesignDxl.requireRootOnly(dxl, TYPE);
+    ImportDesignDxl.ensureEmptyDefaultsNsf(request.session(), DominoClient.Encryption.None);
 
     Database db = request.db();
     DxlImporter importer = request.session().getDxlImporter();
     String log = DxlDesignPatch.importAcl(importer, dxl, db);
-    DesignAcl.ensureDomainManagers(db);
 
     request.emit(
         new JsonObject().put("success", true).put("type", TYPE).put("log", log));

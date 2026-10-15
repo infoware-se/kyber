@@ -54,6 +54,19 @@ final class DxlDesignPatch {
     return importer.getResultLog();
   }
 
+  /** Updates database launch settings. Design notes, documents, and the ACL stay as they are. */
+  static String importLaunchSettings(DxlImporter importer, String dxl, Database db) throws IOException {
+    importer.setExitOnFirstFatalError(false);
+    importer.setDesignImportOption(DXLImportOption.IGNORE);
+    importer.setDocumentsImportOption(DXLImportOption.IGNORE);
+    importer.setACLImportOption(DXLImportOption.IGNORE);
+    importer.setReplaceDbProperties(true);
+    importer.setReplicaRequiredForReplaceOrUpdate(false);
+    importer.setInputValidationOption(XMLValidationOption.NEVER);
+    importer.importDxl(dxl, db);
+    return importer.getResultLog();
+  }
+
   /**
    * Import root {@code <acl>} DXL. Design notes stay ignored; only ACL is replaced/created.
    */

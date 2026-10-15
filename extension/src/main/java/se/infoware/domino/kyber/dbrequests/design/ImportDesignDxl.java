@@ -21,16 +21,23 @@ import java.util.Locale;
  * <p>HTTP handler remaps query {@code nsfPath} (target) to {@code targetNsfPath} and opens
  * {@code KeepConfig.nsf} as the KEEP connection DB so a missing NSF can be created first.
  *
- * <p>This is the only endpoint that may create an NSF. Per-type CRUD requires an existing database.
- * The API never deletes databases.
+ * <p>This is the only endpoint that may create the target NSF. Per-type CRUD requires an existing
+ * database. The API never deletes databases. The first write to any NSF also creates {@code
+ * kyber.nsf} when that file is missing. That database is left empty of design templates. It gets a
+ * title, the Kyber ACL, and the same usage text in About and Using, so templates can be added
+ * later in Domino Designer.
  *
  * <p>Optional query {@code dbTitle} sets the database title when the NSF is created (ignored if
  * the NSF already exists). Do not use {@code title} — KEEP may populate that from the bootstrap DB.
  *
- * <p>On create, ensures LocalDomainAdmins / LocalDomainServers as Manager (add or overwrite).
- * When the payload includes {@code type=acl}, that ACL DXL fully replaces the database ACL
- * (overwrite/drop), then LocalDomain* are ensured as Manager again. A created NSF also receives
- * the embedded Kyber database icon unless the payload already contains one.
+ * <p>On create of {@code kyber.nsf}, the ACL matches that database: {@code -Default-} and
+ * {@code Anonymous} have no access, {@code OtherDomainServers} has no access, and
+ * {@code LocalKeepAdmins}, {@code LocalDomainAdmins}, and {@code LocalDomainServers} are Manager.
+ * Any other new NSF gets the {@code kyber_discussion145.nsf} ACL, with the creating user and the
+ * server the file is created on in place of the names in that database. Those lists are written
+ * only when the NSF is created. When the payload includes {@code type=acl}, that ACL DXL fully
+ * replaces the database ACL and is left as imported. A created NSF other than {@code kyber.nsf}
+ * also receives the embedded Kyber database icon unless the payload already contains one.
  *
  * <p>Elements may set {@code "delete": true} with {@code name} and/or {@code unid} to remove a
  * design note (bulk-only cleanup) instead of importing DXL.
@@ -72,6 +79,9 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
 
     KeepJnxSession session = request.session();
     DominoClient.Encryption encryption = encryptionOf(request.incoming.getString("encryption"));
+    if (!isDefaultNsfPath(target)) {
+      ensureEmptyDefaultsNsf(session, encryption);
+    }
     boolean created = openOrCreate(session, target, encryption);
 
     Database db = session.getDatabaseDomino(target);
@@ -137,7 +147,7 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
           "ACL was present in the import payload but was not applied successfully");
     }
 
-    if (shouldApplyDefaultDbIcon(created, elements)) {
+    if (shouldApplyDefaultDbIcon(created, target, elements)) {
       try {
         String iconDxl =
             DesignDefaults.productDbIconDxl()
@@ -178,11 +188,11 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
   }
 
   /**
-   * A database this endpoint creates gets the embedded icon unless the payload already supplies
-   * {@code $DBIcon}.
+   * A database this endpoint creates gets the embedded icon unless it is {@code kyber.nsf} or the
+   * payload already supplies {@code $DBIcon}.
    */
-  static boolean shouldApplyDefaultDbIcon(boolean created, JsonArray elements) {
-    return created && !payloadSuppliesDbIcon(elements);
+  static boolean shouldApplyDefaultDbIcon(boolean created, String nsfPath, JsonArray elements) {
+    return created && !isDefaultNsfPath(nsfPath) && !payloadSuppliesDbIcon(elements);
   }
 
   private static boolean payloadSuppliesDbIcon(JsonArray elements) {
@@ -237,14 +247,18 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
    * default until the caller sets one.
    */
   static String defaultTitleForNewNsf(String nsfPath) {
-    String file = fileName(nsfPath);
-    if (file.equalsIgnoreCase(fileName(DesignDefaults.defaultNsfPath()))) {
+    if (isDefaultNsfPath(nsfPath)) {
       return "Kyber Design Elements";
     }
-    if (file.equalsIgnoreCase("kybertest.nsf")) {
+    if (fileName(nsfPath).equalsIgnoreCase("kybertest.nsf")) {
       return "Kyber Smoke Test";
     }
     return null;
+  }
+
+  /** True when the path is the defaults database ({@code kyber.nsf}). */
+  static boolean isDefaultNsfPath(String nsfPath) {
+    return fileName(nsfPath).equalsIgnoreCase(fileName(DesignDefaults.defaultNsfPath()));
   }
 
   private static String fileName(String nsfPath) {
@@ -261,6 +275,30 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
    * Notes {@code ERR_NOEXIST} (259). Low 14 bits cover a packaged status word.
    */
   private static final int ERR_NOEXIST = 259;
+
+  /**
+   * Creates {@code kyber.nsf} when the file is missing. Writes the title, ACL, and the same usage
+   * text in About and Using. The Notes client opens About each time the database is opened. No
+   * design templates and no product icon are written.
+   */
+  static void ensureEmptyDefaultsNsf(KeepJnxSession session, DominoClient.Encryption encryption)
+      throws Exception {
+    String path = DesignDefaults.defaultNsfPath();
+    DominoClient.Encryption chosen =
+        encryption == null ? DominoClient.Encryption.None : encryption;
+    if (!openOrCreate(session, path, chosen)) {
+      return;
+    }
+    Database db = session.getDatabaseDomino(path);
+    String title = defaultTitleForNewNsf(path);
+    if (title != null) {
+      db.setTitle(title);
+    }
+    DxlImporter importer = session.getDxlImporter();
+    DesignElementIO.importOne(importer, db, "about", DefaultsDatabaseHelp.aboutDxl(), session);
+    DesignElementIO.importOne(importer, db, "using", DefaultsDatabaseHelp.usingDxl(), session);
+    DxlDesignPatch.importLaunchSettings(importer, DefaultsDatabaseHelp.notesLaunchAboutDxl(), db);
+  }
 
   /**
    * @return true if the NSF was created
@@ -293,7 +331,15 @@ public class ImportDesignDxl extends AsyncDominoJNXJson {
     }
 
     Database created = client.createDatabase(server, path, false, true, encryption);
-    DesignAcl.ensureDomainManagers(created);
+    if (isDefaultNsfPath(path)) {
+      DesignAcl.ensureCreatedAcl(created);
+    } else {
+      String host = created.getServer();
+      if (host == null || host.isBlank()) {
+        host = server;
+      }
+      DesignAcl.ensureApplicationAcl(created, client.getEffectiveUserName(), host);
+    }
     return true;
   }
 

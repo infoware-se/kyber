@@ -21,7 +21,9 @@ import java.util.Set;
  *
  * <ol>
  *   <li>If {@code kyber.nsf} (or configured default NSF) is openable and has at least one
- *       element of the type (and kind, when kinded) - first match by case-insensitive name order
+ *       element of the type (and kind, when kinded) - first match by case-insensitive name order.
+ *       The database icon is not a template. About and Using are not templates while they still
+ *       contain the usage text written when this database is created.
  *   <li>Else classpath {@code /defaults/{type}.dxl} (embedded JAR fallback)
  * </ol>
  *
@@ -353,7 +355,7 @@ final class DesignDefaults {
       for (int i = 0; i < exported.size(); i++) {
         JsonObject el = exported.getJsonObject(i);
         String t = DesignBulkTypes.normalize(el.getString("type", ""));
-        if (!type.equals(t)) {
+        if (!type.equals(t) || !countsAsStarter(el)) {
           continue;
         }
         if (resolvedKind != null) {
@@ -371,6 +373,22 @@ final class DesignDefaults {
     } catch (Exception e) {
       return Optional.empty();
     }
+  }
+
+  /** The stock database icon is not a design template. */
+  static boolean countsAsStarter(JsonObject el) {
+    if (el == null) {
+      return false;
+    }
+    String type = DesignBulkTypes.normalize(el.getString("type", ""));
+    if ("image".equals(type) && DesignElementLookup.isDbIconName(el.getString("name"))) {
+      return false;
+    }
+    if (("about".equals(type) || "using".equals(type))
+        && DefaultsDatabaseHelp.isUsageText(el.getString("dxl"))) {
+      return false;
+    }
+    return true;
   }
 
   /** First match by case-insensitive name (then natural order). Mutates {@code matches} order. */

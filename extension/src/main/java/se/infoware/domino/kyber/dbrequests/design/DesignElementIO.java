@@ -251,7 +251,6 @@ final class DesignElementIO {
       case "acl" -> {
         DesignDxl.requireRootOnly(dxl, "acl");
         log = DxlDesignPatch.importAcl(importer, dxl, db);
-        DesignAcl.ensureDomainManagers(db);
       }
       case "applicationproperties" -> {
         String root = DesignDxl.requireRootOnlyReturningLocalName(dxl, "note", "database");

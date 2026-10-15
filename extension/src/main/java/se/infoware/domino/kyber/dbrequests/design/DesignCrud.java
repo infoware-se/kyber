@@ -1,5 +1,6 @@
 package se.infoware.domino.kyber.dbrequests.design;
 
+import com.hcl.domino.DominoClient;
 import com.hcl.domino.data.Database;
 import com.hcl.domino.dxl.DxlImporter;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
@@ -62,6 +63,7 @@ final class DesignCrud {
       boolean allowEmptyDefault,
       String... dxlRoots)
       throws Exception {
+    ensureEmptyDefaultsNsf(request);
     String t = DesignBulkTypes.normalize(type);
     String dxl = request.incoming.getString("dxl", "");
     String nameParam = request.incoming.getString("name");
@@ -175,6 +177,7 @@ final class DesignCrud {
       boolean allowEmptyDefault,
       String... dxlRoots)
       throws Exception {
+    ensureEmptyDefaultsNsf(request);
     String t = DesignBulkTypes.normalize(type);
     String dxl = request.incoming.getString("dxl", "");
     String kindParam = request.incoming.getString("kind");
@@ -260,6 +263,7 @@ final class DesignCrud {
       boolean allowEmptyDefault,
       String... dxlRoots)
       throws Exception {
+    ensureEmptyDefaultsNsf(request);
     String t = DesignBulkTypes.normalize(type);
     if ("dbicon".equalsIgnoreCase(type)) {
       t = "dbicon";
@@ -423,4 +427,9 @@ final class DesignCrud {
           return JavaSourceKinds.withName(dxl, name);
         }
       };
+
+  private static void ensureEmptyDefaultsNsf(DbRequestParameters<JsonObject> request)
+      throws Exception {
+    ImportDesignDxl.ensureEmptyDefaultsNsf(request.session(), DominoClient.Encryption.None);
+  }
 }
