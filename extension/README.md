@@ -4,7 +4,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
-| **Version** | 0.24.10 |
+| **Version** | 0.24.11 |
 | **API** | `/api/kyber-v1` |
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
@@ -19,7 +19,11 @@ Manage database **design elements** via Domino REST API. Target database is sele
 | **Update** | `PUT /agents/{name}` (**404** if missing) | `updateAgent` |
 | **Delete** | `DELETE /agents/{name}` | `deleteAgent` |
 
-Same pattern for other named types (`/forms`, `/scriptlibraries`, …). Write responses include exported `dxl`.
+Same pattern for other named types (`/forms`, `/scriptlibraries`, `/xpagesresources`, …). Write responses include exported `dxl`.
+
+A list keeps the name array and adds `elements`: `name`, plus `fileName`, `aliases`, `kind` and `comment` when the note has them. `kind` is filled for agents, script libraries and Java sources. `aliases` is the part of the name after `|`, the name used by a URL or `OpenForm`. A get or write adds `code` when the note has readable LotusScript, JavaScript, Java, an agent formula, or a text file. Binary files such as `.class` and `.jar` stay in `dxl` only.
+
+`code` can be written back on an agent, a script library, a Java source, a file resource, a style sheet, a WebContent file, or an XPages project file. Send `text/plain`, or JSON `{"code":"..."}`. The note keeps its other DXL. A form has several events, so its scripts stay in the DXL.
 
 ## Supported types
 
@@ -56,8 +60,6 @@ Element `type` is the API name (`form`, `about`, `image`, …). The folder is th
 .\tools\export-to-repo.ps1 -RestUrl https://host:8880 -NsfPath test/app.nsf -OutDir D:\other-repo
 # -OutDir is that repo's root. The NSF lands in D:\other-repo\domino\test\app.nsf-<replica id>\.
 # A later export replaces that NSF folder and leaves other databases under domino\ alone.
-# Java in script libraries, agents, applets: strips <javaresource> Base64 and writes sibling .java (default).
-# Keep compiled class in DXL: -ReadableJava:$false
 .\tools\import-from-repo.ps1 -RestUrl https://host:8880 -NsfPath test/restored.nsf -InDir D:\other-repo
 # -InDir may be the repo root when domino\ holds one NSF, or the NSF folder itself.
 ```
@@ -67,7 +69,7 @@ Repo tree (this repo's starter; folders follow Package Explorer). A path with di
 ```
 domino/<nsf path>-<replica id>/
   manifest.json                 # nsfPath, replicaId, type, path, name
-  AppProperties/                # acl, application properties, xsp.properties
+  AppProperties/                # acl, application properties, xspdesign.properties
   Code/Agents/
   Code/Jars/
   Code/Java/                    # package path under here
@@ -96,7 +98,7 @@ domino/<nsf path>-<replica id>/
   SharedElements/Subforms/
   Views/
   WebContent/                   # files outside WEB-INF
-  WebContent/WEB-INF/           # faces-config, classes, … (still xpagesresource)
+  WebContent/WEB-INF/           # faces-config, classes, xsp.properties
   XPages/
   .settings/
   .classpath-….dxl
@@ -112,7 +114,7 @@ Package Explorer also shows JRE System Library, Plug-in Dependencies, Referenced
 
 After PUT, the API compiles LotusScript (script libraries first) and returns a `lotusscript` summary. Notes "Error processing use list module" after a restore usually means code was not compiled — re-import or run Designer **Recompile All LotusScript**. Some complex libraries (e.g. DDM) can still report syntax errors after DXL round-trip — open those in Designer if needed.
 
-**Bulk-only types** (no list/get/put/delete endpoints; only in `/designdxl`): `xpagesresource` (`.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties`, i18n `*.properties`), and `designnote` for a remaining named design note. The export folder for `designnote` is `_designnotes`. Starters: `GET /defaults/{type}` for `xpagesresource` (not `designnote`).
+**Bulk-only type** (no list/get/put/delete endpoints; only in `/designdxl`): `designnote` for a remaining named design note. The export folder is `_designnotes`. XPages project files (`.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties`, i18n `*.properties`) are `xpagesresource` on `/xpagesresources`. Percent-encode a slash in the path (`WEB-INF%2Ffaces-config.xml`). Starters: `GET /defaults/{type}` for `xpagesresource` (not `designnote`).
 
 **Blank NSF baseline** (reference DXL, not starters): [`resources/defaults/blank/`](src/main/resources/defaults/blank/) — `acl.dxl`, `applicationproperties.dxl`, `image-DBIcon.dxl`, `view-default.dxl`, plus `manifest.json` from a Domino blank database.
 
@@ -139,7 +141,7 @@ Sections follow Package Explorer. "In" = typed DXL CRUD; "Bulk" = `/designdxl` o
 | Code | Database Script | `/databasescript` (singleton) |
 | AppProperties | Application Properties | `/applicationproperties` (singleton; GET/PUT update-only, no create/DELETE — always present with NSF) |
 | AppProperties | Database icon (`$DBIcon`) | `/dbicon` (singleton; GET/PUT update-only, no create/DELETE — always present with NSF; not under `/images`; export folder `Resources/Images`) |
-| AppProperties | Xsp Properties | `/xspproperties` (singleton; GET/POST/PUT/DELETE — note name `WEB-INF/xsp.properties`, export folder `AppProperties`) |
+| WebContent/WEB-INF | Xsp Properties | `/xspproperties` (singleton; GET/POST/PUT/DELETE — note name `WEB-INF/xsp.properties`) |
 | Resources | Images | `/images` |
 | Resources | Files | `/fileresources` |
 | WebContent | Files outside `WEB-INF` | `/webcontent` (a name under `WEB-INF` is rejected; those notes stay `xpagesresource`) |
@@ -150,7 +152,7 @@ Sections follow Package Explorer. "In" = typed DXL CRUD; "Bulk" = `/designdxl` o
 | XPages | XPages | `/xpages` (named — list/create + `/{name}` get/update/delete; not a singleton). `POST /xpages` also ensures project skeleton. |
 | Custom Controls | Custom Controls | `/customcontrols` (`.xsp` notes without XPage `K` flag; not Composite Components) |
 | (XPages project) | Bootstrap skeleton | `POST /xpagesproject` — create-if-absent `plugin.xml`, `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, `xsp.properties` |
-| (XPages project) | Other `WEB-INF/` notes | **Bulk only** — type `xpagesresource` |
+| (XPages project) | `.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties` | `/xpagesresources` |
 | Shared Elements | Navigators | `/navigators` |
 | Code | Web Service Providers | `/webservices` + `GET /defaults/webservice` |
 | Code | Web Service Consumers | `/webserviceconsumers` + `GET /defaults/webserviceconsumer` |

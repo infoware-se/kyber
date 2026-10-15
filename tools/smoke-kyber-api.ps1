@@ -379,6 +379,32 @@ function Assert-LibraryHello([string]$Url, [string]$Label, [string]$Kind) {
   Ok "hello $Label"
 }
 
+function Assert-CodeRoundTrip([string]$Item, [string]$MustKeep) {
+  $url = Design-Url $Item
+  $code = Invoke-Design GET $url -OutFile $out
+  Assert-Code "GET code $Item" $code @("200")
+  $original = [string]((Get-ResponseText | ConvertFrom-Json).code)
+  $probeFile = Join-Path $env:TEMP "kyber-code-probe.txt"
+  $probe = if ([string]::IsNullOrWhiteSpace($original)) { "kyber-code" } else { $original + "`r`n' kyber-code" }
+  [IO.File]::WriteAllText($probeFile, $probe)
+  $code = Invoke-Design PUT $url -BodyFile $probeFile -ContentType "text/plain" -OutFile $out
+  Assert-Code "PUT code $Item" $code @("200")
+  $code = Invoke-Design GET $url -OutFile $out
+  Assert-Code "GET code probe $Item" $code @("200")
+  if ((Get-ResponseText) -notmatch "kyber-code") { Fail "$Item code probe missing" }
+  [IO.File]::WriteAllText($probeFile, $original)
+  $code = Invoke-Design PUT $url -BodyFile $probeFile -ContentType "text/plain" -OutFile $out
+  Assert-Code "PUT code restore $Item" $code @("200")
+  $code = Invoke-Design GET $url -OutFile $out
+  Assert-Code "GET code restored $Item" $code @("200")
+  $restored = [string]((Get-ResponseText | ConvertFrom-Json).code)
+  if ($restored -match "kyber-code") { Fail "$Item code probe was left in place" }
+  if ($MustKeep -and $restored -notmatch [regex]::Escape($MustKeep)) {
+    Fail "$Item lost $MustKeep"
+  }
+  Ok "code round trip $Item"
+}
+
 function Assert-HelloWorld([string]$Url, [string]$Label, [string]$Kind = "") {
   if ($Label -like "scriptlibraries/*" -and $Kind -in @("lotusscript", "java")) {
     Assert-LibraryHello $Url $Label $Kind
@@ -712,6 +738,12 @@ function Invoke-NamedCrud([string]$Coll, [string]$Name, [string]$Kind = "") {
 
   $code = Invoke-Design GET (Design-Url $item) -OutFile $out
   Assert-Code "GET $label" $code @("200")
+  if ($Coll -eq "xpages") {
+    $got = Get-ResponseText | ConvertFrom-Json
+    if ($got.fileName -ne "newxpage.xsp") { Fail "XPage fileName '$($got.fileName)'" }
+    if ([string]$got.code -notmatch "xp:view") { Fail "XPage code missing markup" }
+    Ok "XPage fileName=$($got.fileName) code"
+  }
   $putFile = Save-DxlFromGet "GET $label"
   $code = Invoke-Design PUT (Design-Url $item) -BodyFile $putFile -ContentType "text/xml" -OutFile $out
   Assert-Code "PUT $label" $code @("200")
@@ -720,6 +752,14 @@ function Invoke-NamedCrud([string]$Coll, [string]$Name, [string]$Kind = "") {
   Assert-Code "LIST $label" $code @("200")
   if ((Get-ResponseText) -notmatch [regex]::Escape($Name)) {
     Fail "GET /$Coll does not list $Name"
+  }
+  if ($Coll -eq "xpages") {
+    $listed = Get-ResponseText | ConvertFrom-Json
+    $row = @($listed.elements | Where-Object { $_.name -eq $Name })
+    if ($row.Count -lt 1 -or $row[0].fileName -ne "newxpage.xsp") {
+      Fail "XPage list missing fileName newxpage.xsp"
+    }
+    Ok "XPage list fileName=newxpage.xsp"
   }
   Ok "listed $label"
   Assert-HelloWorld (Design-Url $item) $label $Kind
@@ -943,6 +983,32 @@ $created2 = @($xp2.created).Count
 if ($created2 -ne 0) { Fail "2nd xpagesproject should create 0, got $created2" }
 Ok "xpagesproject idempotent (skipped=$(@($xp2.skipped).Count))"
 
+$code = Invoke-Design GET (Design-Url "xpagesresources") -OutFile $out
+Assert-Code "GET /xpagesresources" $code @("200")
+if ((Get-ResponseText) -notmatch [regex]::Escape("WEB-INF/faces-config.xml")) {
+  Fail "xpagesresources missing faces-config: $(Get-ResponseText)"
+}
+$faces = "xpagesresources/" + [uri]::EscapeDataString("WEB-INF/faces-config.xml")
+$code = Invoke-Design GET (Design-Url $faces) -OutFile $out
+Assert-Code "GET faces-config" $code @("200")
+$face = Get-ResponseText | ConvertFrom-Json
+if ([string]$face.fileName -notmatch "faces-config") { Fail "faces-config fileName '$($face.fileName)'" }
+if ([string]$face.code -notmatch "faces-config") { Fail "faces-config code missing" }
+Ok "faces-config fileName=$($face.fileName)"
+
+$probeName = ".settings/kyber-smoke.prefs"
+$probeItem = "xpagesresources/" + [uri]::EscapeDataString($probeName)
+$code = Invoke-Design POST (Design-Url "xpagesresources" ("name=" + [uri]::EscapeDataString($probeName))) `
+  -BodyFile $empty -ContentType "text/xml" -OutFile $out
+Assert-Code "POST xpagesresource probe" $code @("200", "201")
+$code = Invoke-Design GET (Design-Url $probeItem) -OutFile $out
+Assert-Code "GET xpagesresource probe" $code @("200")
+$probe = Get-ResponseText | ConvertFrom-Json
+if ([string]::IsNullOrWhiteSpace([string]$probe.code)) { Fail "xpagesresource probe code missing" }
+$code = Invoke-Design DELETE (Design-Url $probeItem) -OutFile $out
+Assert-Code "DELETE xpagesresource probe" $code @("200")
+Ok "xpagesresource create/get/delete"
+
 foreach ($path in @("applicationproperties", "acl")) {
   Invoke-UpdateOnly $path
 }
@@ -1010,6 +1076,15 @@ $named = @(
 foreach ($el in $named) {
   Invoke-NamedCrud $el.coll $el.name $(if ($el.kind) { $el.kind } else { "" })
 }
+
+Assert-CodeRoundTrip "agents/SmokeAgentLs" "Use `"SmokeLibLs`""
+Assert-CodeRoundTrip "webcontent/SmokeWeb.txt" ""
+Assert-CodeRoundTrip "fileresources/SmokeFile.txt" ""
+Assert-CodeRoundTrip "stylesheets/Smoke.css" ""
+$code = Invoke-Design GET (Design-Url "forms") -OutFile $out
+Assert-Code "GET /forms aliases" $code @("200")
+$formRow = @((Get-ResponseText | ConvertFrom-Json).elements | Where-Object { $_.name -eq "SmokeForm" })
+if ($formRow.Count -lt 1) { Fail "form list missing SmokeForm" }
 
 Invoke-DominoWebSmoke
 

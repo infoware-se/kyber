@@ -50,7 +50,8 @@ final class DesignElementLookup {
       case "fileresource" -> db.getDesign().getFileResource(n).isPresent();
       case "stylesheet" -> db.getDesign().getStyleSheet(n).isPresent();
       case "theme" -> db.getDesign().getTheme(n).isPresent();
-      case "jar", "applet", "javasource", "dataconnection", "webcontent" ->
+      case "jar", "applet", "javasource", "dataconnection", "webcontent", "xpagesresource",
+              "designnote" ->
           BulkOnlyNotes.find(db, t, n).isPresent();
       case "navigator" -> db.getDesign().getNavigator(n).isPresent();
       case "xpage" -> db.getDesign().getXPage(n).isPresent();
@@ -158,7 +159,8 @@ final class DesignElementLookup {
           exportDoc(
               exporter,
               WebServices.find(db, WebServices.Kind.CONSUMER, n).map(WebServices.Entry::document));
-      case "jar", "applet", "javasource", "dataconnection", "webcontent" ->
+      case "jar", "applet", "javasource", "dataconnection", "webcontent", "xpagesresource",
+              "designnote" ->
           exportDoc(exporter, BulkOnlyNotes.find(db, t, n).map(BulkOnlyNotes.Entry::document));
       default -> Optional.empty();
     };

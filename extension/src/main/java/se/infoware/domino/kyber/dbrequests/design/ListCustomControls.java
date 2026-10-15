@@ -5,7 +5,6 @@ import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +16,12 @@ public class ListCustomControls extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
-    List<String> names = new ArrayList<>();
-    for (CustomControls.Entry e : CustomControls.list(db)) {
-      names.add(e.name());
+    List<JsonObject> rows = new ArrayList<>();
+    for (CustomControls.Entry entry : CustomControls.list(db)) {
+      if (entry.name() != null && !entry.name().isBlank()) {
+        rows.add(DesignListing.row(entry.name(), entry.document()));
+      }
     }
-    request.emit(new JsonObject().put("CustomControls", new JsonArray(names)));
+    request.emit(DesignListing.named("CustomControls", rows));
   }
 }

@@ -29,6 +29,6 @@ public class GetView extends AsyncDominoJNXJson {
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();
     String dxl = exporter.exportDocument(view.getDocument());
 
-    request.emit(new JsonObject().put("name", name).put("dxl", dxl));
+    request.emit(DesignPayload.note(name, dxl));
   }
 }

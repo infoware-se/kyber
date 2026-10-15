@@ -23,6 +23,6 @@ public class GetApplicationProperties extends AsyncDominoJNXJson {
     }
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();
     String dxl = exporter.exportDocument(props.getDocument());
-    request.emit(new JsonObject().put("type", "applicationproperties").put("dxl", dxl));
+    request.emit(DesignPayload.note(null, dxl).put("type", "applicationproperties"));
   }
 }

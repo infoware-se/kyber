@@ -29,6 +29,6 @@ public class GetPage extends AsyncDominoJNXJson {
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();
     String dxl = exporter.exportDocument(page.getDocument());
 
-    request.emit(new JsonObject().put("name", name).put("dxl", dxl));
+    request.emit(DesignPayload.note(name, dxl));
   }
 }

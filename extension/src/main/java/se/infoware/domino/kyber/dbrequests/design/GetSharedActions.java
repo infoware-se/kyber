@@ -20,6 +20,6 @@ public class GetSharedActions extends AsyncDominoJNXJson {
     SharedActions el = SharedActionsNotes.require(db, name);
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();
     String dxl = exporter.exportDocument(el.getDocument());
-    request.emit(new JsonObject().put("name", name).put("type", "sharedactions").put("dxl", dxl));
+    request.emit(DesignPayload.note(name, dxl).put("type", "sharedactions"));
   }
 }

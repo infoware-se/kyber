@@ -17,6 +17,6 @@ public class GetCustomControl extends AsyncDominoJNXJson {
     Database db = request.db();
     CustomControls.Entry entry = CustomControls.require(db, name);
     String dxl = CustomControls.exportDxl(db, entry.document());
-    request.emit(new JsonObject().put("name", entry.name()).put("dxl", dxl));
+    request.emit(DesignPayload.note(entry.name(), dxl));
   }
 }

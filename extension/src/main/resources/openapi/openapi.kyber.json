@@ -3,7 +3,7 @@
   "info": {
     "title": "Kyber — Infoware REST API for design elements",
     "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (bulk import only); per-type CRUD requires an existing database. This API never deletes databases. The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
-    "version": "0.24.10"
+    "version": "0.24.11"
   },
   "servers": [
     {
@@ -9278,6 +9278,313 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
+      }
+    },
+    "/xpagesresources": {
+      "summary": "List or create XPages project files",
+      "description": "List XPages project file names (GET) or create one (POST) in the target NSF (?nsfPath=). Covers .classpath, .project, plugin.xml, build.properties, .settings/ and WEB-INF/ except xsp.properties. Get/update/delete use /xpagesresources/{name}.",
+      "parameters": [
+        {
+          "name": "nsfPath",
+          "description": "Domino database filepath",
+          "schema": {
+            "type": "string"
+          },
+          "in": "query",
+          "required": true
+        }
+      ],
+      "post": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "createXPagesResource",
+        "summary": "Create an XPages project file (409 if name exists)",
+        "description": "Create-only. Body: raw DXL (text/xml) with root note. Optional ?name= sets the path, including WEB-INF/faces-config.xml. Empty body creates from starter DXL when ?name= is set. Requires ?nsfPath=. Responds 409 if the name already exists.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "description": "Raw DXL (text/xml).",
+          "content": {
+            "text/xml": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "type": {
+                      "type": "string",
+                      "example": "xpagesresource"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "fileName": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Readable text when the file is not binary."
+                    },
+                    "log": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "409": {
+            "description": "Already exists"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        },
+        "parameters": [
+          {
+            "name": "nsfPath",
+            "description": "Domino database filepath",
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "required": true
+          },
+          {
+            "name": "name",
+            "description": "Project path, such as WEB-INF/faces-config.xml or .classpath.",
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "required": false
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "listXPagesResources",
+        "summary": "List XPages project files in the NSF",
+        "description": "Requires ?nsfPath=. XPagesResources is the name array. elements adds fileName and comment.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "XPagesResources": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "elements": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
+      }
+    },
+    "/xpagesresources/{name}": {
+      "summary": "Get, update, or delete an XPages project file",
+      "description": "Retrieve, replace, or remove one project file (?nsfPath=). Percent-encode a path so it stays one segment, for example WEB-INF%2Ffaces-config.xml.",
+      "parameters": [
+        {
+          "name": "nsfPath",
+          "description": "Domino database filepath",
+          "schema": {
+            "type": "string"
+          },
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "name",
+          "description": "Project path, percent-encoded when it contains a slash",
+          "schema": {
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "getXPagesResource",
+        "summary": "Get an XPages project file as DXL",
+        "description": "Export one project file as Domino DXL. code is the readable text when the file is not binary. Requires ?nsfPath=. 404 if missing.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful retrieval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "fileName": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "dxl": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "updateXPagesResource",
+        "summary": "Replace an XPages project file (404 if missing)",
+        "description": "Update-only. Body: raw DXL (text/xml) with root note. Requires ?nsfPath=. 404 if the name does not exist.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Raw DXL (text/xml).",
+          "content": {
+            "text/xml": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "design-element"
+        ],
+        "operationId": "deleteXPagesResource",
+        "summary": "Delete an XPages project file",
+        "description": "Requires ?nsfPath=. 404 if missing.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
           },
           "400": {
             "$ref": "#/components/responses/400BadRequest"

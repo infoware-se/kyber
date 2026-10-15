@@ -25,6 +25,6 @@ public class GetUsing extends AsyncDominoJNXJson {
     UsingDocument el = opt.get();
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();
     String dxl = exporter.exportDocument(el.getDocument());
-    request.emit(new JsonObject().put("type", "helpusingdocument").put("dxl", dxl));
+    request.emit(DesignPayload.note(null, dxl).put("type", "helpusingdocument"));
   }
 }

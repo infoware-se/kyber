@@ -214,9 +214,6 @@
                          "noteid":  "1ea"
                      },
                      {
-                         "javaSources":  [
-                                             "Code/Agents/JavaAgent.java"
-                                         ],
                          "type":  "agent",
                          "unid":  "E0F8EA0C58E7DA89C1258E48004EB57B",
                          "name":  "newagentjava",
@@ -297,9 +294,6 @@
                          "noteid":  "18a"
                      },
                      {
-                         "javaSources":  [
-                                             "Resources/Applets/DefaultApplet.java"
-                                         ],
                          "type":  "applet",
                          "unid":  "A6C6D4111FED8DEAC1258E480040858F",
                          "name":  "newapplet",
@@ -460,7 +454,7 @@
                          "noteid":  "15a"
                      },
                      {
-                         "path":  "AppProperties/xsp.properties-12a.dxl",
+                         "path":  "WebContent/WEB-INF/xsp.properties-12a.dxl",
                          "type":  "xspproperties",
                          "unid":  "FD323AD2895146C5C1258E43002142D7",
                          "name":  "WEB-INF/xsp.properties",

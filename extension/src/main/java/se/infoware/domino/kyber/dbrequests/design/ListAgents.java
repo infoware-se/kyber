@@ -1,15 +1,12 @@
 package se.infoware.domino.kyber.dbrequests.design;
 
 import com.hcl.domino.data.Database;
+import com.hcl.domino.dxl.DxlExporter;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /** List names — GET collection path (e.g. /agents)?nsfPath= */
 @MinimumAcl(AclLevel.READER)
@@ -18,17 +15,17 @@ public class ListAgents extends AsyncDominoJNXJson {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     Database db = request.db();
-    List<String> names = new ArrayList<>();
-    db.getDesign()
-        .getAgents()
-        .forEach(
+    DxlExporter exporter = db.getParentDominoClient().createDxlExporter();
+    request.emit(
+        DesignListing.elements(
+            "Agents",
+            db.getDesign().getAgents(),
             el -> {
-              String title = el.getTitle();
-              if (title != null && !title.isBlank()) {
-                names.add(title);
+              try {
+                return AgentKinds.detect(exporter.exportDocument(el.getDocument()));
+              } catch (Exception ex) {
+                return null;
               }
-            });
-    Collections.sort(names);
-    request.emit(new JsonObject().put("Agents", new JsonArray(names)));
+            }));
   }
 }

@@ -25,6 +25,6 @@ public class GetDatabaseScript extends AsyncDominoJNXJson {
     DatabaseScriptLibrary el = opt.get();
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();
     String dxl = exporter.exportDocument(el.getDocument());
-    request.emit(new JsonObject().put("type", "databasescript").put("dxl", dxl));
+    request.emit(DesignPayload.note(null, dxl).put("type", "databasescript"));
   }
 }

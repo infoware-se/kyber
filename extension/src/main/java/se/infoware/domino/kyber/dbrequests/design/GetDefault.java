@@ -22,6 +22,7 @@ public class GetDefault extends AsyncDominoJNXJson {
     type = URLDecoder.decode(type, StandardCharsets.UTF_8);
     String kind = request.incoming.getString("kind");
     JsonObject one = DesignDefaults.resolveOne(request.session(), type, kind);
+    DesignPayload.enrich(one, one.getString("dxl"));
     request.emit(one.put("defaultNsf", DesignDefaults.defaultNsfPath()));
   }
 }

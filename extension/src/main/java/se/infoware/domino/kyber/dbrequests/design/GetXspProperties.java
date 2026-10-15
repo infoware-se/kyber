@@ -26,9 +26,6 @@ public class GetXspProperties extends AsyncDominoJNXJson {
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();
     String dxl = exporter.exportDocument(entry.get().document());
     request.emit(
-        new JsonObject()
-            .put("type", "xspproperties")
-            .put("name", entry.get().name())
-            .put("dxl", dxl));
+        DesignPayload.note(entry.get().name(), dxl).put("type", "xspproperties"));
   }
 }

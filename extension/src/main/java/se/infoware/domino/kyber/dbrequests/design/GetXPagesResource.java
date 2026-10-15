@@ -1,0 +1,22 @@
+package se.infoware.domino.kyber.dbrequests.design;
+
+import com.hcl.domino.data.Database;
+import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
+import com.hcl.domino.keep.dbrequests.DbRequestParameters;
+import com.hcl.domino.keep.security.acl.MinimumAcl;
+import com.hcl.domino.security.AclLevel;
+import io.vertx.core.json.JsonObject;
+
+/** Export one XPages project file as DXL - GET /xpagesresources/{name}?nsfPath= */
+@MinimumAcl(AclLevel.READER)
+public class GetXPagesResource extends AsyncDominoJNXJson {
+
+  @Override
+  public void process(DbRequestParameters<JsonObject> request) throws Exception {
+    String name = RequestParams.requireName(request.incoming);
+    Database db = request.db();
+    BulkOnlyNotes.Entry entry = ResidualDesign.require(db, "xpagesresource", name);
+    String dxl = ResidualDesign.exportDxl(db, entry.document());
+    request.emit(DesignPayload.note(entry.name(), dxl));
+  }
+}

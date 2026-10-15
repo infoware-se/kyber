@@ -17,9 +17,6 @@ public class GetDbIcon extends AsyncDominoJNXJson {
         DesignElementLookup.exportDxl(request.db(), "dbicon", DesignElementLookup.DBICON_NAME)
             .orElseThrow(() -> new KeepExceptionNotFound("DbIcon not found"));
     request.emit(
-        new JsonObject()
-            .put("type", "dbicon")
-            .put("name", DesignElementLookup.DBICON_NAME)
-            .put("dxl", dxl));
+        DesignPayload.note(DesignElementLookup.DBICON_NAME, dxl).put("type", "dbicon"));
   }
 }

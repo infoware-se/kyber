@@ -35,6 +35,6 @@ public class GetFrameset extends AsyncDominoJNXJson {
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();
     String dxl = exporter.exportDocument(frameset.getDocument());
 
-    request.emit(new JsonObject().put("name", name).put("dxl", dxl));
+    request.emit(DesignPayload.note(name, dxl));
   }
 }

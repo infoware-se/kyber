@@ -17,11 +17,6 @@ public class GetJavaSource extends AsyncDominoJNXJson {
     Database db = request.db();
     BulkOnlyNotes.Entry entry = ResidualDesign.require(db, "javasource", name);
     String dxl = ResidualDesign.exportDxl(db, entry.document());
-    JsonObject out = new JsonObject().put("name", entry.name()).put("dxl", dxl);
-    String kind = JavaSourceKinds.detect(dxl);
-    if (kind != null) {
-      out.put("kind", kind);
-    }
-    request.emit(out);
+    request.emit(DesignPayload.note(entry.name(), dxl));
   }
 }

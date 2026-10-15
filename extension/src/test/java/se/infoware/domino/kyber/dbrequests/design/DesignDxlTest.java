@@ -94,6 +94,25 @@ class DesignDxlTest {
     assertEquals(kept, DesignDxl.withClassIndex(kept));
   }
 
+  @Test
+  void starterXPageClassFilesRebuildTheIndexInItemOrder() throws Exception {
+    String dxl =
+        new String(
+            DesignDxlTest.class.getResourceAsStream("/defaults/xpage.dxl").readAllBytes(),
+            java.nio.charset.StandardCharsets.UTF_8);
+    dxl =
+        java.util.regex.Pattern.compile("(?s)<item name='\\$ClassIndexItem'>.*?</item>")
+            .matcher(dxl)
+            .replaceFirst(
+                java.util.regex.Matcher.quoteReplacement(
+                    "<item name='$ClassIndexItem'><textlist/></item>"));
+    String out = DesignDxl.withClassIndex(dxl);
+    int page = out.indexOf("<text>WEB-INF/classes/xsp/Newxpage$NewxpagePage.class</text>");
+    int host = out.indexOf("<text>WEB-INF/classes/xsp/Newxpage.class</text>");
+    assertTrue(page >= 0 && host > page);
+    assertFalse(out.contains("xsp/page/compiled"));
+  }
+
   /** A class-data item whose class file names {@code internalName}, plus a package-path decoy. */
   private static String classItem(String itemName, String internalName) {
     byte[] name = internalName.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1);

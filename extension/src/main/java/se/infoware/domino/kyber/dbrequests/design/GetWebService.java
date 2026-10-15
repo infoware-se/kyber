@@ -17,6 +17,6 @@ public class GetWebService extends AsyncDominoJNXJson {
     Database db = request.db();
     WebServices.Entry entry = WebServices.require(db, WebServices.Kind.PROVIDER, name);
     String dxl = WebServices.exportDxl(db, entry.document());
-    request.emit(new JsonObject().put("name", entry.name()).put("dxl", dxl));
+    request.emit(DesignPayload.note(entry.name(), dxl));
   }
 }

@@ -19,6 +19,6 @@ public class GetAcl extends AsyncDominoJNXJson {
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();
     StringWriter sw = new StringWriter();
     exporter.exportACL(db, sw);
-    request.emit(new JsonObject().put("type", "acl").put("dxl", sw.toString()));
+    request.emit(DesignPayload.note(null, sw.toString()).put("type", "acl"));
   }
 }

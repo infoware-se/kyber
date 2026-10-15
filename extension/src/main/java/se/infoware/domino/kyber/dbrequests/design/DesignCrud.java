@@ -69,8 +69,25 @@ final class DesignCrud {
     String nameParam = request.incoming.getString("name");
     String source = "dxl";
     String name;
+    boolean codeWrite = codeWrite(request.incoming, dxl);
+    if (codeWrite) {
+      requireCodeType(t);
+    }
 
-    if (dxl == null || dxl.isBlank()) {
+    if (codeWrite && mode == DxlDesignPatch.Mode.REPLACE) {
+      if (nameParam == null || nameParam.isBlank()) {
+        throw new KeepExceptionWrongDataRequest("name is required");
+      }
+      String wanted = nameParam.trim();
+      name = wanted;
+      Database db = request.db();
+      notFoundIfMissing(db, t, wanted);
+      String current =
+          DesignElementLookup.exportDxl(db, t, wanted)
+              .orElseThrow(() -> new KeepExceptionNotFound(t + " not found: " + wanted));
+      dxl = DesignCode.apply(current, request.incoming.getString("code", ""), t);
+      source = "code";
+    } else if (dxl == null || dxl.isBlank()) {
       if (!allowEmptyDefault || mode != DxlDesignPatch.Mode.CREATE) {
         throw new KeepExceptionWrongDataRequest("dxl body is required");
       }
@@ -82,12 +99,13 @@ final class DesignCrud {
         DesignElementLookup.normalizeImageNameCheck(name);
       }
       JsonObject starter = DesignDefaults.resolveOne(request.session(), t);
-      dxl =
-          DesignDxl.forNewNote(
-              "webcontent".equals(t)
-                  ? WebContent.withName(starter.getString("dxl", ""), name)
-                  : DesignDxl.withName(starter.getString("dxl", ""), name, dxlRoots));
-      source = "default";
+      dxl = DesignDxl.forNewNote(rewriteName(t, starter.getString("dxl", ""), name, dxlRoots));
+      if (codeWrite) {
+        dxl = DesignCode.apply(dxl, request.incoming.getString("code", ""), t);
+        source = "code";
+      } else {
+        source = "default";
+      }
     } else {
       String fromDxl =
           "sharedactions".equals(t)
@@ -99,12 +117,7 @@ final class DesignCrud {
               fromDxl,
               nameParam,
               mode,
-              (body, wanted) ->
-                  "sharedactions".equals(t)
-                      ? DesignDxl.withName(body, wanted, "sharedactions")
-                      : "webcontent".equals(t)
-                          ? WebContent.withName(body, wanted)
-                          : DesignDxl.withName(body, wanted, dxlRoots));
+              (body, wanted) -> rewriteName(t, body, wanted, dxlRoots));
       dxl = named.dxl();
       name = named.name();
       if ("image".equals(t)) {
@@ -151,6 +164,7 @@ final class DesignCrud {
     if (imported.containsKey("signWarning")) {
       out.put("signWarning", imported.getString("signWarning"));
     }
+    DesignPayload.enrich(out, exported);
     request.emit(out);
   }
 
@@ -189,8 +203,29 @@ final class DesignCrud {
     String kind;
     String name;
     String source;
+    boolean codeWrite = codeWrite(request.incoming, dxl);
+    if (codeWrite) {
+      requireCodeType(t);
+    }
 
-    if (dxl == null || dxl.isBlank()) {
+    if (codeWrite && mode == DxlDesignPatch.Mode.REPLACE) {
+      if (nameParam == null || nameParam.isBlank()) {
+        throw new KeepExceptionWrongDataRequest("name is required");
+      }
+      String wanted = nameParam.trim();
+      name = wanted;
+      Database db = request.db();
+      notFoundIfMissing(db, t, wanted);
+      String current =
+          DesignElementLookup.exportDxl(db, t, wanted)
+              .orElseThrow(() -> new KeepExceptionNotFound(t + " not found: " + wanted));
+      kind =
+          kindParam != null && !kindParam.isBlank()
+              ? kinds.normalize(kindParam)
+              : kinds.detectOrDefault(current);
+      dxl = DesignCode.apply(current, request.incoming.getString("code", ""), t);
+      source = "code";
+    } else if (dxl == null || dxl.isBlank()) {
       if (!allowEmptyDefault) {
         throw new KeepExceptionWrongDataRequest("dxl body is required");
       }
@@ -205,7 +240,12 @@ final class DesignCrud {
       name = nameParam.trim();
       JsonObject starter = DesignDefaults.resolveOne(request.session(), t, kind);
       dxl = DesignDxl.forNewNote(kinds.withName(starter.getString("dxl", ""), name));
-      source = "default";
+      if (codeWrite) {
+        dxl = DesignCode.apply(dxl, request.incoming.getString("code", ""), t);
+        source = "code";
+      } else {
+        source = "default";
+      }
     } else {
       String fromDxl = DesignDxl.requireDesignName(dxl, dxlRoots);
       kind =
@@ -245,6 +285,7 @@ final class DesignCrud {
     if (imported.containsKey("signWarning")) {
       out.put("signWarning", imported.getString("signWarning"));
     }
+    DesignPayload.enrich(out, exported);
     request.emit(out);
   }
 
@@ -330,7 +371,33 @@ final class DesignCrud {
     if (imported.containsKey("signWarning")) {
       out.put("signWarning", imported.getString("signWarning"));
     }
+    DesignPayload.enrich(out, exported);
     request.emit(out);
+  }
+
+  private static boolean codeWrite(JsonObject incoming, String dxl) {
+    return incoming.containsKey("code") && (dxl == null || dxl.isBlank());
+  }
+
+  private static void requireCodeType(String type) throws KeepExceptionWrongDataRequest {
+    if (!DesignCode.accepts(type)) {
+      throw new KeepExceptionWrongDataRequest(
+          "code is accepted for agent, scriptlibrary, javasource, webcontent, fileresource, stylesheet, and xpagesresource");
+    }
+  }
+
+  private static String rewriteName(String type, String dxl, String name, String... dxlRoots)
+      throws KeepExceptionWrongDataRequest {
+    if ("sharedactions".equals(type)) {
+      return DesignDxl.withName(dxl, name, "sharedactions");
+    }
+    if ("webcontent".equals(type)) {
+      return WebContent.withName(dxl, name);
+    }
+    if ("xpagesresource".equals(type)) {
+      return XPagesResource.withName(dxl, name);
+    }
+    return DesignDxl.withName(dxl, name, dxlRoots);
   }
 
   private static JsonObject resolveSingletonDefault(KeepJnxSession session, String type)

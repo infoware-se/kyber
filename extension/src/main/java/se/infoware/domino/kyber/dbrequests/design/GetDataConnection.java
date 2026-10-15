@@ -17,6 +17,6 @@ public class GetDataConnection extends AsyncDominoJNXJson {
     Database db = request.db();
     BulkOnlyNotes.Entry entry = ResidualDesign.require(db, "dataconnection", name);
     String dxl = ResidualDesign.exportDxl(db, entry.document());
-    request.emit(new JsonObject().put("name", entry.name()).put("dxl", dxl));
+    request.emit(DesignPayload.note(entry.name(), dxl));
   }
 }
