@@ -1,35 +1,101 @@
 # Kyber — Infoware REST API for design elements
 
-Manages Domino database **design elements** via `nsfPath` using typed DXL CRUD. Not an HCL product — runs as a KEEP/DRAPI extension JAR.
+Kyber is complete CRUD for the design elements in a Domino NSF. The design you send and store is [DXL](#dxl), the XML Domino Designer already documents. The elements you want to reuse live in [`kyber.nsf`](#templates-in-kybernsf) on the server, and an empty create copies one of them.
+
+Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware product, not an HCL product, and it is published under [Apache-2.0](LICENSE).
 
 | | |
 |--|--|
-| **JAR** | `infoware-kyber.jar` |
-| **API** | `/api/kyber-v1` |
-| **Catalog** | OpenAPI version id **`kyber`** (Admin UI card title) |
-| **Swagger tags** | **`design-element`** (typed CRUD), **`design-handler`** (`/defaults*` + bulk `/designdxl`) |
-| **Defaults NSF** | `kyber.nsf` (property `kyber.defaultNsf`) |
 | **Version** | 0.24.11 |
-| **License** | [Apache-2.0](LICENSE) |
-| **Repo** | https://github.com/infoware-se/kyber |
+| **API** | `/api/kyber-v1` |
+| **JAR** | `infoware-kyber.jar` |
+| **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
+| **Swagger tags** | `design-element` for typed CRUD, `design-handler` for `/defaults` and `/designdxl` |
+| **Template NSF** | `kyber.nsf` (`kyber.defaultNsf`) |
+| **Reference** | [extension/README.md](extension/README.md) |
+| **Source** | https://github.com/infoware-se/kyber |
 
-Full endpoint tables and Designer coverage: **[extension/README.md](extension/README.md)**.
+## Contents
 
-## What’s in / what’s out
+- [What you can do](#what-you-can-do)
+- [Install](#install)
+- [Quick start](#quick-start)
+- [Access](#access)
+- [Coverage](#coverage)
+- [Round trip](#round-trip)
+- [Tools](#tools)
+- [Develop](#develop)
+- [Security](#security)
 
-**In (CRUD):** Forms, Views, Folders, Framesets, Pages, Subforms, Shared Fields/Columns, Outlines, Navigators, Agents (**LotusScript / Formula / Simple action / Java / Imported Java**), Shared Actions, Script Libraries (**LotusScript / client JS / SSJS / Java**), Code → Java sources (**class / interface / enum**), Jars, Applets, **Web Service Providers/Consumers**, Data Connections, Database Script, Images, Files, WebContent (not under WEB-INF), Style Sheets, Themes, About/Using, XPages, **Custom Controls**, XPages project files (`.classpath`, `.project`, `plugin.xml`, `WEB-INF/` except `xsp.properties`) on `/xpagesresources`, Wiring Properties, Composite Applications/Components, Application Properties, **DB icon (`$DBIcon`)**, Xsp Properties, ACL. Lists also return `elements` (`fileName`, `aliases`, `kind`, `comment`). A get adds `code` when the note has readable source or text. That text can be written back with `text/plain` or `{"code":"..."}` on an agent, a script library, a Java source, a text file, or an XPages project file.
+## What you can do
 
-**Starters:** `GET /defaults` and `GET /defaults/{type}` — if `kyber.nsf` has elements of that type, prefer first match by name; else embedded DXL in the JAR (`resources/defaults/`). Script libraries: `?kind=lotusscript|javascript|ssjs|java`. Agents: `?kind=lotusscript|formula|simpleaction|java|importedjava`. Java sources: `?kind=class|interface|enum`. Create: raw DXL body, or empty body with `?kind=&name=` for script libraries, agents, and javasources.
+### Every design element
 
-**Blank NSF baseline:** snapshot of what Domino puts in a new blank database lives under [`extension/src/main/resources/defaults/blank/`](extension/src/main/resources/defaults/blank/) (`acl`, `applicationproperties`, `$DBIcon`, untitled default view) + `manifest.json` — reference so sync does not treat these as removable app design.
+Each design element has its own collection. A form is `/forms`, an agent is `/agents`, an XPage is `/xpages`. The same five calls cover views, folders, pages, framesets, shared elements, script libraries, Java, jars, applets, web services, resources, WebContent, themes, composite applications, and XPages project files. The full list is [Coverage](#coverage). Every call names the database with `?nsfPath=`.
 
-**Bulk only:** A named design note that is not one of the typed elements is `designnote`. A note with no name is left out. Documents are not design and are not exported.
+| | |
+|--|--|
+| **List** | `GET /{collection}?nsfPath=` |
+| **Create** | `POST /{collection}?nsfPath=&name=` |
+| **Get** | `GET /{collection}/{name}?nsfPath=` |
+| **Update** | `PUT /{collection}/{name}?nsfPath=` |
+| **Delete** | `DELETE /{collection}/{name}?nsfPath=` |
 
-**Bulk + git:** `GET`/`PUT /api/kyber-v1/designdxl` exports and imports the typed elements, the ACL, the bulk-only notes, and named leftovers. PUT **creates the NSF if missing** (only bulk import; per-type CRUD requires an existing NSF) and drops the source `replicaid`, so the target keeps its own. A created NSF receives the embedded Kyber database icon unless the payload already includes one, and design refresh is allowed to replace that icon. The API never deletes databases. [`tools/export-to-repo.ps1`](tools/export-to-repo.ps1) writes `domino/<nsf path>-<replica id>/` in the current directory, using the same folders as Package Explorer. `-OutDir` is a repo root and gets that same tree. Named leftovers land in `_designnotes`. [`tools/import-from-repo.ps1`](tools/import-from-repo.ps1) reads `manifest.json`. ACL also has singleton `GET`/`PUT /acl` (Manager for PUT).
+A list returns the names, and an `elements` array with `fileName`, `aliases`, `kind`, and `comment` when the note has them. `aliases` is the part of the name after `|`, the name a URL or `OpenForm` uses. A get returns the DXL. When the note is one script or one text file, the get also returns that text as `code`.
 
-**Out of first-class typing:** named leftovers are bulk `designnote` only. Notes with no name, and documents, are not exported.
+The ACL, the application properties, and the database icon are get and put. Domino creates those three with the NSF. A named note with no collection of its own travels in the [round trip](#round-trip) as `designnote`. Documents are application data. A note with no name, such as `$FormulaClass`, is left out of an export.
 
-## Build & install
+### DXL
+
+Create, update, and the round trip use Domino DXL, sent as `text/xml`. It is the same XML Designer exports and imports. The grammar is the DTD that ships with Designer, `xmlschemas/domino_*.dtd`.
+
+`code` is the readable text inside a note that has one body: an agent, a script library, a Java source, a file resource, a style sheet, a WebContent file, or an XPages project file. Send it back as `text/plain` or `{"code":"..."}`. Kyber replaces that body and keeps the rest of the DXL. A form has many events, so its scripts stay in the DXL.
+
+### Templates in kyber.nsf
+
+`kyber.nsf` is the template library, an ordinary NSF on the server. Design the forms, agents, script libraries, and other elements you want to reuse, and store them there. The file name is `kyber.defaultNsf` in `kyber.properties`, and the default is `kyber.nsf`.
+
+`GET /defaults` lists the template types. `GET /defaults/{type}` returns the first element of that type, in case-insensitive name order. Agents, script libraries, and Java sources take `?kind=` so the match is the right kind. An empty create copies that element into the target NSF and names it with `?name=`. For those three types the empty create is `?kind=&name=`. When `kyber.nsf` has no element of that type, Kyber uses the starter embedded in the JAR under `resources/defaults/`.
+
+Kyber creates `kyber.nsf` on the first design write when the file is missing. The new file has a title, an ACL, and About and Using text that describes the database. It holds no templates until you add them. While that About and Using text is still the text Kyber wrote, those two documents are usage text and are not templates. The database icon is the tile for `kyber.nsf` and is not a template either. Replace an element in `kyber.nsf` and the next empty create uses the replacement.
+
+## Install
+
+The Domino server stays up. Installing Kyber restarts the `restapi` task only.
+
+| You need | |
+|--|--|
+| **Server** | HCL Domino with Domino REST API already running. On Windows the home is usually `C:\Domino\restapi`. |
+| **Account** | A REST user. On the target NSF: Reader to list and get, Designer to change design, Manager to replace the ACL or to create the database. Creating a database also needs the server right to create new databases. |
+| **To build** | JDK 21 and Maven 3.9 or newer. The build reads `keep-core`, `keep-extension`, and `keep-jnx-ext` from `%DRAPI_HOME%`. |
+
+### Install a release
+
+1. Download `infoware-kyber-<version>.jar` from the [releases](https://github.com/infoware-se/kyber/releases). The version in the table above is the current one.
+2. Copy it to `%DRAPI_HOME%\libs\infoware-kyber.jar`.
+3. In that same folder, remove any older `infoware-kyber*.jar`, and any leftover `keep-design-*.jar` or `iws-design-*.jar`.
+4. From the Domino console:
+
+```text
+tell restapi quit
+load restapi
+```
+
+`tell restapi reload` leaves the old JAR loaded. Quit, then load.
+
+A machine with the Notes client can restart restapi through Notes COM. Copy [`.env.example`](.env.example) to `.env`, set `DOMINO_SERVER`, copy the JAR, then run [`tools/restart-restapi-com.ps1`](tools/restart-restapi-com.ps1).
+
+### Check the install
+
+The Admin UI lists a catalog entry named `kyber`. This call, with a bearer token, returns the template list:
+
+```text
+GET /api/kyber-v1/defaults?nsfPath=kyber.nsf
+```
+
+A 404 that says the method is not applicable means the new JAR was not loaded. The file in `libs` is named `infoware-kyber.jar`, and restapi was quit and loaded after the copy.
+
+### Build and install from source
 
 ```powershell
 cd extension
@@ -37,8 +103,146 @@ $env:DRAPI_HOME = "C:\Domino\restapi"
 .\build.ps1 -InstallToDrapi
 ```
 
-Installs `infoware-kyber.jar` into `%DRAPI_HOME%\libs\` (replaces any previous Kyber/legacy design JARs). Restart with `-InstallToDrapi`: Notes COM `tell restapi quit` → replace JAR → `load restapi` (see [`tools/restart-restapi-com.ps1`](tools/restart-restapi-com.ps1)).
+The script runs the tests, writes `extension\target\infoware-kyber.jar`, quits restapi, replaces the JAR in `%DRAPI_HOME%\libs\`, and loads restapi. `.\build.ps1` without `-InstallToDrapi` only builds.
 
-## Auth
+## Quick start
 
-Copy [`.env.example`](.env.example) to `.env` in the repo root. Tools read `DOMINO_REST_API_DATA_URL`, `DOMINO_SERVER`, and `REST_ADMIN_USER` / `REST_ADMIN_PASSWORD` from that file. `.env` is gitignored.
+Sign in. The token is the `bearer` field:
+
+```powershell
+$base = "https://your-domino-server:8880"
+$auth = Invoke-RestMethod -Method POST -Uri "$base/api/v1/auth" `
+    -ContentType "application/json" `
+    -Body '{"username":"user","password":"secret"}'
+$headers = @{ Authorization = "Bearer $($auth.bearer)" }
+```
+
+List the forms in a database that already exists:
+
+```powershell
+Invoke-RestMethod -Method GET `
+    -Uri "$base/api/kyber-v1/forms?nsfPath=apps/mydb.nsf" `
+    -Headers $headers
+```
+
+Create a form from the template in `kyber.nsf`. An empty body copies the template. `name` is the new element's name:
+
+```powershell
+Invoke-RestMethod -Method POST `
+    -Uri "$base/api/kyber-v1/forms?nsfPath=apps/mydb.nsf&name=Contact" `
+    -Headers $headers
+```
+
+Send your own design as DXL (`Content-Type: text/xml`). A full form is in the [manual example](extension/README.md#manual-test). A path such as `mail/user.nsf` is one `nsfPath` value. Percent-encode a slash inside an element name: `WEB-INF%2Ffaces-config.xml`.
+
+Per-type create needs an existing NSF. `PUT /api/kyber-v1/designdxl?nsfPath=&dbTitle=` is the call that creates a missing NSF and imports a whole design. The target keeps its own replica id. Kyber never deletes a database.
+
+A second create of the same name returns **409**. A missing element comes back as **404** or **400**, and the message says it was not found.
+
+## Access
+
+The call runs as the signed-in user. The limit is that user's ACL on the target NSF.
+
+| ACL | Allowed |
+|--|--|
+| Reader | List and get |
+| Designer | Create, update, and delete design. The ACL itself stays with Manager. |
+| Manager | Replace the ACL, and create a database |
+
+A Manager may create shared and personal folders, views, and agents. Domino keeps those rights on the Manager level and does not store them as separate checkboxes. Delete documents stays a stored flag at every level. Designer and below need the design checkboxes stored on the ACL entry.
+
+## Coverage
+
+Collections are plural. A get, update, or delete adds `/{name}`.
+
+| Designer | Elements | Collection |
+|--|--|--|
+| Forms, Views, Folders, Pages, Framesets | one collection each | `/forms` `/views` `/folders` `/pages` `/framesets` |
+| Shared Elements | subforms, fields, columns, outlines, navigators | `/subforms` `/sharedfields` `/sharedcolumns` `/outlines` `/navigators` |
+| Code | agents, shared actions, script libraries, Java, jars, web service providers and consumers | `/agents` `/sharedactions` `/scriptlibraries` `/javasources` `/jars` `/webservices` `/webserviceconsumers` |
+| Code | database script | `/databasescript` |
+| Resources | images, files, style sheets, themes, applets, data connections, About, Using | `/images` `/fileresources` `/stylesheets` `/themes` `/applets` `/dataconnections` `/about` `/using` |
+| WebContent | files outside `WEB-INF` | `/webcontent` |
+| XPages | XPages, custom controls | `/xpages` `/customcontrols` |
+| XPages project | `.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties` | `/xpagesresources` |
+| WebContent/WEB-INF | `xsp.properties` | `/xspproperties` |
+| Composite Applications | wiring properties, applications, components | `/wiringproperties` `/compositeapplications` `/compositecomponents` |
+| Application | properties, database icon (`$DBIcon`), ACL | `/applicationproperties` `/dbicon` `/acl` |
+
+Three types take `?kind=` on an empty create:
+
+| Type | `kind` |
+|--|--|
+| Agent | `lotusscript` `formula` `simpleaction` `java` `importedjava` |
+| Script library | `lotusscript` `javascript` `ssjs` `java` |
+| Java source | `class` `interface` `enum` |
+
+About, Using, the database script, and Xsp Properties are one note per database: the calls sit on the collection path, with no `/{name}`. Application properties, the database icon, and the ACL are get and put on that same shape. `$DBIcon` is `/dbicon`. `GET /images` does not list it. A WebContent name under `WEB-INF` is rejected. Those notes are `/xpagesresources`, except `xsp.properties`, which is `/xspproperties`.
+
+`POST /xpages` also ensures the XPages project skeleton when it is missing. `POST /xpagesproject` creates those files on its own: `plugin.xml`, `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, and `xsp.properties`. Designer writes `META-INF/MANIFEST.MF` and `Local/plugin/Activator.java` when the project is opened. JRE System Library, Plug-in Dependencies, Referenced Libraries, and Data are views Designer builds. They are not design notes. `.classpath` and `plugin.xml` carry the JRE and plug-in references. Jars stored in the NSF are under `/jars`.
+
+The blank-NSF baseline is the snapshot of what Domino puts in a new empty database: [`extension/src/main/resources/defaults/blank/`](extension/src/main/resources/defaults/blank/) holds `acl`, application properties, `$DBIcon`, the untitled default view, and `manifest.json`. A sync uses it so those notes are not treated as application design to remove. The files there are a reference. They are not the templates in `kyber.nsf`.
+
+Endpoint tables for each collection are in [extension/README.md](extension/README.md).
+
+## Round trip
+
+`GET /api/kyber-v1/designdxl?nsfPath=` exports the design as `{ nsfPath, elements: [{ type, name?, dxl }], skipped }`. `PUT` of that document imports it. This is the only call that creates a missing NSF. Per-type create needs a database that already exists. On create, `dbTitle` sets the database title. The source `replicaid` is removed, so the target keeps its own. A new NSF receives the embedded Kyber database icon unless the payload already includes one, and a later design refresh is allowed to replace that icon. The ACL is also `GET`/`PUT /acl`, and replacing it requires Manager. Kyber never deletes a database.
+
+[`tools/export-to-repo.ps1`](tools/export-to-repo.ps1) writes that export to disk:
+
+```text
+domino/<nsf path>-<replica id>/
+  manifest.json
+  Forms/  Views/  Code/  Resources/  WebContent/  XPages/  …
+```
+
+The folders follow Package Explorer. Each note is `<name>-<note id>.dxl`. `manifest.json` is the import index (`type`, path, name). [`tools/import-from-repo.ps1`](tools/import-from-repo.ps1) reads it. `-OutDir` is a repository root, and the NSF folder is created under `domino/` there. A later export replaces that one NSF folder. These trees stay on disk. This repository does not commit them.
+
+Named notes with no Designer folder land in `_designnotes` and are type `designnote`. That type is part of the bulk export. It has no list, get, or delete of its own.
+
+## Tools
+
+The scripts call a running Kyber. Copy [`.env.example`](.env.example) to `.env` in the repo root. `.env` is gitignored. The server does not read it.
+
+| Variable | Use |
+|--|--|
+| `DOMINO_REST_API_DATA_URL` | REST base, such as `https://your-domino-server:8880` |
+| `DOMINO_SERVER` | Server name for the Notes COM restart |
+| `REST_ADMIN_USER`, `REST_ADMIN_PASSWORD` | Login used by the tools |
+
+| Script | What it does |
+|--|--|
+| [`tools/export-to-repo.ps1`](tools/export-to-repo.ps1) | Export one NSF to `domino/<path>-<replica>/` |
+| [`tools/import-from-repo.ps1`](tools/import-from-repo.ps1) | Import that tree. `-InDir` is the repo root or the NSF folder |
+| [`tools/restart-restapi-com.ps1`](tools/restart-restapi-com.ps1) | `tell restapi quit`, then `load restapi`, through Notes COM |
+| [`tools/smoke-kyber-api.ps1`](tools/smoke-kyber-api.ps1) | Live check against `kybertest.nsf`: every typed collection, the singletons, a DXL round trip, and the XPage URL. The design is left in place |
+
+## Develop
+
+```powershell
+cd extension
+.\build.ps1                         # package, including unit tests
+mvn test                            # unit tests only
+..\tools\smoke-kyber-api.ps1        # needs a running Domino REST API
+```
+
+Unit tests need no Domino server. The smoke test does.
+
+| | |
+|--|--|
+| API reference and how to add a type | [extension/README.md](extension/README.md) |
+| OpenAPI | `extension/src/main/resources/openapi/openapi.kyber.json` |
+| Route and tags | `extension/src/main/resources/config/config.json` |
+| Template file name | `kyber.defaultNsf` in `kyber.properties` |
+| Embedded starters | `extension/src/main/resources/defaults/` |
+
+Swagger tags are `design-element` for the collections and `design-handler` for `/defaults` and `/designdxl`. The catalog id stays `kyber`.
+
+## Security
+
+A design call runs as the authenticated REST user and stops at that user's ACL on the target NSF. Report a vulnerability in private, not in a public issue: [open a security advisory](https://github.com/infoware-se/kyber/security/advisories/new). The policy is [SECURITY.md](SECURITY.md).
+
+## License
+
+[Apache-2.0](LICENSE).

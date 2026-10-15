@@ -9,7 +9,13 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
 
-Manage database **design elements** via Domino REST API. Target database is selected with query param **`nsfPath`**. Standard collection CRUD:
+Kyber is complete CRUD for the design elements in an NSF. The target database is the query param **`nsfPath`**.
+
+The body of a create, an update, and a round trip is Domino DXL (`text/xml`). That XML is the format Designer already documents. Its grammar is the DTD shipped with Designer, `xmlschemas/domino_*.dtd`. A get also returns `code` when the note has one script or one text file, and that text can be written back. The stored design remains the DXL. A form has many events, so its scripts stay in the DXL.
+
+`kyber.nsf` is the template library. The property `kyber.defaultNsf` names it and defaults to `kyber.nsf`. Put the design elements you want to reuse in that database. `GET /defaults/{type}` returns the first match by name, with `?kind=` for an agent, a script library, or a Java source. An empty create copies that element into the target NSF. When the template database has no such element, Kyber uses the starter embedded in the JAR under `resources/defaults/`. Kyber creates `kyber.nsf` on the first design write if the file is missing. The new file explains itself in About and Using and holds no templates until you add them. Those two documents, and the database icon, are not templates.
+
+Standard collection CRUD:
 
 | | Path | operationId |
 |--|------|-------------|
@@ -50,7 +56,7 @@ All paths are under `/api/kyber-v1` and require `?nsfPath=`.
 
 Swagger tag: **`design-handler`** for `/defaults`, `/defaults/{type}`, and `/designdxl` (per-type CRUD stays under **`design-element`**).
 
-**Defaults resolution** (`GET /defaults/{type}`): if `kyber.nsf` (or `kyber.defaultNsf`) is available and contains that type (and `?kind=` when kinded), use the **first** match by case-insensitive name; otherwise the embedded JAR starter under `resources/defaults/`.
+**Templates** live in `kyber.nsf`, or whichever NSF `kyber.defaultNsf` names. `GET /defaults/{type}` returns the first element of that type, matched by case-insensitive name, and `?kind=` when the type has kinds. An empty create copies it into the target NSF. When the template database has no such element, Kyber uses the starter embedded in the JAR under `resources/defaults/`.
 
 Element `type` is the API name (`form`, `about`, `image`, …). The folder is the Package Explorer name (`Forms`, `Resources`, `Resources/Images`, …). Bridge scripts in [`tools/`](../tools/):
 
@@ -481,7 +487,11 @@ XPages Custom Controls (Designer "Custom Controls") — `.xsp` design notes with
 | PUT | `/api/kyber-v1/customcontrols/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/kyber-v1/customcontrols/{name}?nsfPath=` |
 
-## Build
+## Install
+
+The server install is in the [repository README](../README.md#install): copy the release JAR to `%DRAPI_HOME%\libs\infoware-kyber.jar`, remove older Kyber and legacy design JARs, then `tell restapi quit` and `load restapi`. `tell restapi reload` does not load a replaced JAR.
+
+Build from this directory and install in one step:
 
 ```powershell
 cd extension
@@ -489,9 +499,7 @@ $env:DRAPI_HOME = "C:\Domino\restapi"
 .\build.ps1 -InstallToDrapi
 ```
 
-**Output:** `target/infoware-kyber.jar` → `$env:DRAPI_HOME\libs\`.
-
-Restart: Notes COM `tell restapi quit` then `load restapi` (or `tools/restart-restapi-com.ps1` / `build.ps1 -InstallToDrapi`). Do not rely on `tell restapi reload` when swapping JARs.
+**Output:** `target/infoware-kyber.jar`, copied to `%DRAPI_HOME%\libs\infoware-kyber.jar`. JDK 21 and Maven 3.9 or newer. The script reads `keep-core`, `keep-extension`, and `keep-jnx-ext` from `%DRAPI_HOME%`.
 
 ## Tests
 
