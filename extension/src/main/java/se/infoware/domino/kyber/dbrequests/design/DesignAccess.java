@@ -5,6 +5,7 @@ import com.hcl.domino.keep.dbrequests.KeepJnxSession;
 import com.hcl.domino.keep.exceptions.KeepExceptionInsufficientAccess;
 import com.hcl.domino.security.AclAccess;
 import com.hcl.domino.security.AclFlag;
+import com.hcl.domino.security.AclLevel;
 import com.hcl.domino.security.ServerAclType;
 import java.util.EnumSet;
 import java.util.Locale;
@@ -17,11 +18,14 @@ import java.util.regex.Pattern;
  * <p>Creating an NSF is a server right ({@link ServerAclType#CREATE_DATABASE}), not an entry in
  * the new file. Deleting a design note needs the database ACL checkbox Delete documents.
  * LotusScript and Java agents, and shared or personal folders and views, need their own
- * checkboxes. Access level does not grant a checkbox that is off.
+ * checkboxes when Domino stores them. Delete documents can be off at every level.
  *
  * <p>Flags come from {@code Acl.lookupAccess} on the KEEP user's name list. The server id is not
- * consulted. A Designer or Manager level does not fill in a checkbox that is absent on that
- * entry.
+ * consulted. A Designer level does not fill in a checkbox that is absent on that entry. Domino
+ * does not store Create shared folders/views, Create personal folders/views, Create LotusScript/Java
+ * agents, or Create private agents on a Manager entry, because a Manager cannot turn those boxes
+ * off. A Manager is therefore treated as having them. Delete documents stays a stored flag at
+ * every level, including Manager.
  */
 final class DesignAccess {
 
@@ -95,8 +99,24 @@ final class DesignAccess {
         db.getACL()
             .lookupAccess(
                 session.getClient().getEffectiveUserNamesList(session.getUserName()));
-    Set<AclFlag> flags = access.getAclFlags();
-    return flags == null ? Set.of() : flags;
+    return withManagerImpliedFlags(access.getAclLevel(), access.getAclFlags());
+  }
+
+  /**
+   * Manager entries omit the design-creation checkboxes. Domino treats those boxes as on and
+   * drops the attributes on import. Designer and below keep only the flags that are stored.
+   */
+  static Set<AclFlag> withManagerImpliedFlags(AclLevel level, Set<AclFlag> flags) {
+    Set<AclFlag> stored = flags == null ? Set.of() : flags;
+    if (level != AclLevel.MANAGER) {
+      return stored;
+    }
+    EnumSet<AclFlag> implied = stored.isEmpty() ? EnumSet.noneOf(AclFlag.class) : EnumSet.copyOf(stored);
+    implied.add(AclFlag.CREATE_FOLDER);
+    implied.add(AclFlag.CREATE_PRFOLDER);
+    implied.add(AclFlag.CREATE_LOTUSSCRIPT);
+    implied.add(AclFlag.CREATE_PRAGENT);
+    return implied;
   }
 
   private static void deny(String checkbox) throws KeepExceptionInsufficientAccess {

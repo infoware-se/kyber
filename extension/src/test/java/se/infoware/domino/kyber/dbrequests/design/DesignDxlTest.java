@@ -54,6 +54,21 @@ class DesignDxlTest {
   }
 
   @Test
+  void formulaClassViewHasNoDesignNameAndStaysOutOfTheRoundTrip() {
+    String dxl =
+        """
+        <?xml version='1.0'?>
+        <view xmlns='http://www.lotus.com/dxl' noviewformat='true'>
+        <item name='$FormulaClass'><text>1</text></item>
+        </view>
+        """;
+    assertNull(DesignDxl.designName(dxl));
+    assertNull(DesignElementExport.residualRoundTrip("view", "$FormulaClass", dxl));
+    assertThrows(
+        KeepExceptionWrongDataRequest.class, () -> DesignDxl.requireDesignName(dxl, "view"));
+  }
+
+  @Test
   void withoutReplicaIdKeepsTheDesignNote() {
     String dxl =
         "<form name='X' replicaid='C1258E90004E3F19'><noteinfo unid='U'/></noteinfo></form>";

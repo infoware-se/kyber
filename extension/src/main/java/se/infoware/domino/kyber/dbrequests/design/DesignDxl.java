@@ -50,6 +50,21 @@ final class DesignDxl {
    * Accepts any of the given root local names. Uses the {@code name} attribute when present;
    * otherwise reads item {@code $TITLE} (common for note-form design exports).
    */
+  /**
+   * Design name from the {@code name} attribute or {@code $TITLE}. Null when the note has neither,
+   * which is how Domino exports a system view such as {@code $FormulaClass}.
+   */
+  static String designName(String dxl) {
+    if (dxl == null || dxl.isBlank()) {
+      return null;
+    }
+    try {
+      return designNameFromRoot(parseRoot(dxl));
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
   /** First element local name, ignoring the XML declaration and doctype. */
   static String rootLocalName(String dxl) {
     if (dxl == null || dxl.isBlank()) {
@@ -186,6 +201,25 @@ final class DesignDxl {
     return escaped.replace("\"", "&quot;");
   }
 
+  private static Element parseRoot(String dxl) throws Exception {
+    if (dxl == null || dxl.isBlank()) {
+      throw new KeepExceptionWrongDataRequest("dxl body is required");
+    }
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setValidating(false);
+    factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+    factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+    factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+    factory.setExpandEntityReferences(false);
+    Document doc = factory.newDocumentBuilder().parse(new InputSource(new StringReader(dxl)));
+    Element root = doc.getDocumentElement();
+    if (root == null) {
+      throw new KeepExceptionWrongDataRequest("invalid design DXL: missing root element");
+    }
+    return root;
+  }
+
   private static String designNameFromRoot(Element root) {
     String name = root.getAttribute("name");
     if (name != null && !name.isBlank()) {
@@ -209,24 +243,14 @@ final class DesignDxl {
       throw new KeepExceptionWrongDataRequest("expected DXL root element is required");
     }
 
-    Document doc;
+    Element root;
     try {
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      factory.setNamespaceAware(true);
-      factory.setValidating(false);
-      factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-      factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-      factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-      factory.setExpandEntityReferences(false);
-      doc = factory.newDocumentBuilder().parse(new InputSource(new StringReader(dxl)));
+      root = parseRoot(dxl);
+    } catch (KeepExceptionWrongDataRequest e) {
+      throw e;
     } catch (Exception e) {
       String message = e.getMessage() == null ? e.toString() : e.getMessage();
       throw new KeepExceptionWrongDataRequest("invalid design DXL: " + message);
-    }
-
-    Element root = doc.getDocumentElement();
-    if (root == null) {
-      throw new KeepExceptionWrongDataRequest("invalid design DXL: missing root element");
     }
 
     String localName = root.getLocalName() != null ? root.getLocalName() : root.getTagName();

@@ -213,12 +213,12 @@ final class DesignElementExport {
                     DesignElement.NamedDesignElement::getTitle, String.CASE_INSENSITIVE_ORDER))
             .toList();
     for (DesignElement.NamedDesignElement el : list) {
+      String dxl = exporter.exportDocument(el.getDocument());
+      if (DesignDxl.designName(dxl) == null) {
+        continue;
+      }
       trackUnid(exportedUnids, el.getDocument());
-      elements.add(
-          new JsonObject()
-              .put("type", type)
-              .put("name", el.getTitle())
-              .put("dxl", exporter.exportDocument(el.getDocument())));
+      elements.add(new JsonObject().put("type", type).put("name", el.getTitle()).put("dxl", dxl));
     }
   }
 
@@ -267,6 +267,9 @@ final class DesignElementExport {
       try {
         Document doc = el.getDocument();
         String dxl = exporter.exportDocument(doc);
+        if (DesignDxl.designName(dxl) == null) {
+          continue;
+        }
         trackUnid(exportedUnids, doc);
         elements.add(
             new JsonObject().put("type", type).put("name", el.getTitle()).put("dxl", dxl));
@@ -415,7 +418,7 @@ final class DesignElementExport {
    */
   static JsonObject residualRoundTrip(String classifiedType, String fallbackName, String dxl) {
     String root = DesignDxl.rootLocalName(dxl);
-    if (root == null || isDataDxlRoot(root)) {
+    if (root == null || isDataDxlRoot(root) || DesignDxl.designName(dxl) == null) {
       return null;
     }
     String type = classifiedType == null ? "" : classifiedType.trim().toLowerCase(Locale.ROOT);
