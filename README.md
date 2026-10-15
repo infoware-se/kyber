@@ -9,7 +9,7 @@ Manages Domino database **design elements** via `nsfPath` using typed DXL CRUD. 
 | **Catalog** | OpenAPI version id **`kyber`** (Admin UI card title) |
 | **Swagger tags** | **`design-element`** (typed CRUD), **`design-handler`** (`/defaults*` + bulk `/designdxl`) |
 | **Defaults NSF** | `kyber.nsf` (property `kyber.defaultNsf`) |
-| **Version** | 0.24.6 |
+| **Version** | 0.24.7 |
 | **License** | [Apache-2.0](LICENSE) |
 | **Repo** | https://github.com/infoware-se/kyber |
 
