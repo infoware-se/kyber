@@ -301,7 +301,8 @@ final class DesignElementImport {
                         new KeepExceptionServer(
                             "CustomControl %s not loadable as DesignElement after import",
                             resolvedName));
-        signWarning = safeSign(el, dxl);
+        // Design-element sign/save rewrites the note and drops $ClassData0.
+        signWarning = signRawNote(Optional.of(el), "CustomControl", name, dxl);
       }
       case "webservice" -> {
         String requested =
@@ -352,7 +353,8 @@ final class DesignElementImport {
       case "xpage" -> {
         name = DesignDxl.requireDesignName(dxl, "note", "fileresource", "xpage");
         log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        signWarning = signNamed(db.getDesign().getXPage(name), "XPage", name, dxl);
+        // Design-element sign/save rewrites the note and drops $ClassData0.
+        signWarning = signRawNote(db.getDesign().getXPage(name), "XPage", name, dxl);
       }
       case "wiringproperties" -> {
         name = DesignDxl.requireDesignName(dxl, "note", "fileresource");

@@ -69,6 +69,68 @@ class DesignDxlTest {
   }
 
   @Test
+  void emptyClassIndexIsRebuiltFromThePageClassBytes() {
+    String inner = classItem("$ClassData0", "xsp/Newxpage$NewxpagePage");
+    String outer = classItem("$ClassData1", "xsp/Newxpage");
+    String dxl =
+        """
+        <note>
+        %s
+        %s
+        <item name='$ClassIndexItem'><textlist/></item>
+        </note>
+        """
+            .formatted(inner, outer);
+    String out = DesignDxl.withClassIndex(dxl);
+    int page = out.indexOf("<text>WEB-INF/classes/xsp/Newxpage$NewxpagePage.class</text>");
+    int host = out.indexOf("<text>WEB-INF/classes/xsp/Newxpage.class</text>");
+    assertTrue(page >= 0 && host > page);
+    assertFalse(out.contains("xsp/page"));
+    assertFalse(out.contains("<textlist/>"));
+    String kept =
+        dxl.replace(
+            "<item name='$ClassIndexItem'><textlist/></item>",
+            "<item name='$ClassIndexItem'><textlist><text>WEB-INF/classes/xsp/Keep.class</text></textlist></item>");
+    assertEquals(kept, DesignDxl.withClassIndex(kept));
+  }
+
+  /** A class-data item whose class file names {@code internalName}, plus a package-path decoy. */
+  private static String classItem(String itemName, String internalName) {
+    byte[] name = internalName.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1);
+    java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+    out.write(0x61);
+    out.write(new byte[7], 0, 7);
+    out.write(0xCA);
+    out.write(0xFE);
+    out.write(0xBA);
+    out.write(0xBE);
+    writeU2(out, 0);
+    writeU2(out, 55);
+    writeU2(out, 3);
+    out.write(1);
+    writeU2(out, name.length);
+    out.write(name, 0, name.length);
+    out.write(7);
+    writeU2(out, 1);
+    writeU2(out, 0x21);
+    writeU2(out, 2);
+    writeU2(out, 2);
+    writeU2(out, 0);
+    writeU2(out, 0);
+    writeU2(out, 0);
+    writeU2(out, 0);
+    byte[] decoy = "xsp/page/compiled/AbstractCompiledPage".getBytes(java.nio.charset.StandardCharsets.ISO_8859_1);
+    out.write(decoy, 0, decoy.length);
+    String payload = java.util.Base64.getEncoder().encodeToString(out.toByteArray());
+    return "<item name='" + itemName + "'><rawitemdata type='1'>" + payload + "</rawitemdata></item>";
+  }
+
+  private static void writeU2(java.io.ByteArrayOutputStream out, int value) {
+    out.write((value >> 8) & 0xFF);
+    out.write(value & 0xFF);
+  }
+
+  @Test
   void withoutReplicaIdKeepsTheDesignNote() {
     String dxl =
         "<form name='X' replicaid='C1258E90004E3F19'><noteinfo unid='U'/></noteinfo></form>";

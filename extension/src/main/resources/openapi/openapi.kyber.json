@@ -3,7 +3,7 @@
   "info": {
     "title": "Kyber — Infoware REST API for design elements",
     "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) with a typed root element. Bulk GET/PUT /designdxl transfers all supported elements as CRUD-identical DXL. PUT /designdxl creates the NSF if missing (bulk import only); per-type CRUD requires an existing database. This API never deletes databases. The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
-    "version": "0.24.9"
+    "version": "0.24.10"
   },
   "servers": [
     {

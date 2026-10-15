@@ -10,7 +10,8 @@
   Target NSF path (relative to Domino data directory)
 
 .PARAMETER InDir
-  Input directory containing manifest.json and .dxl files (default: .\kyber)
+  NSF folder (manifest.json inside it) or a repo root that contains domino\.
+  When omitted, uses the only design tree under .\domino. Pass the NSF folder when several are there.
 
 .PARAMETER Token
   Bearer JWT. If omitted, authenticates with env / .env credentials
@@ -25,7 +26,7 @@
 param(
   [Parameter(Mandatory = $true)][string]$RestUrl,
   [Parameter(Mandatory = $true)][string]$NsfPath,
-  [string]$InDir = ".\kyber",
+  [string]$InDir = "",
   [string]$Token = "",
   [string]$Encryption = "",
   [switch]$SkipCertificateCheck
@@ -92,6 +93,31 @@ function Get-BearerToken {
     -Headers @{} -ContentType "application/json" `
     -Body (@{ username = $user; password = $pass } | ConvertTo-Json)
   return $auth.bearer
+}
+
+function Resolve-OneDesignTree([string]$DominoDir) {
+  $found = @()
+  if (Test-Path -LiteralPath $DominoDir) {
+    $found = @(Get-ChildItem -LiteralPath $DominoDir -Recurse -Filter manifest.json -File)
+  }
+  if ($found.Count -eq 1) { return $found[0].DirectoryName }
+  if ($found.Count -eq 0) {
+    throw "Pass -InDir. No design tree under $DominoDir"
+  }
+  $list = ($found | ForEach-Object { $_.DirectoryName }) -join ", "
+  throw "Pass -InDir. Several design trees: $list"
+}
+
+if (-not $InDir) {
+  $InDir = Resolve-OneDesignTree (Join-Path (Get-Location).Path "domino")
+} else {
+  if (-not [System.IO.Path]::IsPathRooted($InDir)) {
+    $InDir = Join-Path (Get-Location).Path $InDir
+  }
+  $direct = Join-Path $InDir "manifest.json"
+  if (-not (Test-Path -LiteralPath $direct)) {
+    $InDir = Resolve-OneDesignTree (Join-Path $InDir "domino")
+  }
 }
 
 $manifestPath = Join-Path $InDir "manifest.json"

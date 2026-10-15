@@ -9,7 +9,10 @@
   Target NSF path (relative to Domino data directory)
 
 .PARAMETER OutDir
-  Output directory (default: .\kyber)
+  Repo root. The NSF is written to <OutDir>\domino\<nsf path>-<replica id>.
+  When omitted, OutDir is the current directory, so another repo gets the same
+  tree. A path with folders keeps those folders: mail/user.nsf becomes
+  domino/mail/user.nsf-<replica id>. Only that NSF folder is replaced.
 
 .PARAMETER Token
   Bearer JWT. If omitted, authenticates with DOMINO_REST_USER / DOMINO_REST_PASSWORD from env or .env
@@ -33,7 +36,7 @@
 param(
   [Parameter(Mandatory = $true)][string]$RestUrl,
   [Parameter(Mandatory = $true)][string]$NsfPath,
-  [string]$OutDir = ".\kyber",
+  [string]$OutDir = "",
   [string]$Token = "",
   [string[]]$SkipTypes = @(),
   [bool]$ReadableJava = $true,
@@ -138,6 +141,34 @@ function Get-DxlUnid([string]$Dxl) {
   return $null
 }
 
+function Get-DxlReplicaId([string]$Dxl) {
+  $m = [regex]::Match($Dxl, "(?i)\breplicaid\s*=\s*['""]([^'""]+)['""]")
+  if (-not $m.Success) { return $null }
+  $id = ($m.Groups[1].Value -replace ':', '').ToUpperInvariant()
+  if ($id -notmatch '^[0-9A-F]+$') { return $null }
+  return $id
+}
+
+# domino/<nsf path>-<replica id>. Folders in the NSF path stay folders.
+function Get-DominoNsfDir([string]$NsfPath, [string]$ReplicaId, [string]$Root) {
+  $p = ($NsfPath -replace '\\', '/').Trim()
+  if ($p -match '!!') { $p = ($p -split '!!', 2)[-1] }
+  $p = $p.Trim('/')
+  if (-not $p) { throw "nsf path is empty" }
+  if (-not $ReplicaId) { throw "Export has no replica id" }
+  $parts = @($p -split '/' | Where-Object { $_ })
+  $safe = [System.Collections.Generic.List[string]]::new()
+  foreach ($part in $parts) {
+    $s = ($part -replace '[:*?"<>|]', '_').Trim().TrimEnd('.')
+    if (-not $s) { $s = '_' }
+    $safe.Add($s)
+  }
+  $last = $safe.Count - 1
+  $safe[$last] = "$($safe[$last])-$ReplicaId"
+  $rel = (@('domino') + $safe) -join [IO.Path]::DirectorySeparatorChar
+  return Join-Path $Root $rel
+}
+
 # API type -> repo folder (CRUD + typed bulk). Empty = use type name as folder.
 # Folder names match Domino Designer Package Explorer, not the API type names.
 $script:RepoDirByType = [ordered]@{
@@ -170,7 +201,7 @@ $script:RepoDirByType = [ordered]@{
   applet                = "Resources/Applets"
   javasource            = "Code/Java"
   xpagesresource        = "."
-  designnote            = "designnotes"
+  designnote            = "_designnotes"
   customcontrol         = "CustomControls"
   xpage                 = "XPages"
   wiringproperties      = "CompositeApplications"
@@ -207,8 +238,13 @@ function Get-ExportDir([string]$Type, [string]$Doctype, [string]$Name) {
   }
   if ($t -eq "xpagesresource") {
     $parent = Get-DesignParent $Name
-    if ($parent) { return $parent }
-    return "."
+    if (-not $parent) { return "." }
+    $norm = $parent -replace '\\', '/'
+    # Designer shows WEB-INF inside WebContent, not at the project root.
+    if ($norm -eq "WEB-INF" -or $norm.StartsWith("WEB-INF/")) {
+      return "WebContent/$norm"
+    }
+    return $norm
   }
 
   if ($t -and $script:RepoDirByType.Contains($t)) {
@@ -239,15 +275,23 @@ if (-not $RestUrl) {
   if (-not $RestUrl) { $RestUrl = $env:DOMINO_REST_API_DATA_URL }
 }
 $RestUrl = $RestUrl.TrimEnd("/")
-if (-not [System.IO.Path]::IsPathRooted($OutDir)) {
-  $OutDir = Join-Path (Get-Location).Path $OutDir
-}
 $bearer = Get-BearerToken
 $headers = @{ Authorization = "Bearer $bearer" }
 
 $uri = "$RestUrl/api/kyber-v1/designdxl?nsfPath=$([uri]::EscapeDataString($NsfPath))"
 Write-Host "GET $uri"
 $payload = Invoke-Drapi -Method GET -Uri $uri -Headers $headers
+
+$replicaId = $null
+foreach ($el in @($payload.elements)) {
+  $replicaId = Get-DxlReplicaId ([string]$el.dxl)
+  if ($replicaId) { break }
+}
+$root = if ($OutDir) { $OutDir } else { (Get-Location).Path }
+if (-not [System.IO.Path]::IsPathRooted($root)) {
+  $root = Join-Path (Get-Location).Path $root
+}
+$OutDir = Get-DominoNsfDir -NsfPath $NsfPath -ReplicaId $replicaId -Root $root
 
 $skipped = @($payload.skipped | Where-Object { $_ })
 if ($skipped.Count -gt 0) {
@@ -332,6 +376,7 @@ $manifest = @{
   elementCount = $index.Count
   elements = $index
 }
+if ($replicaId) { $manifest.replicaId = $replicaId }
 $manifestPath = Join-Path $OutDir "manifest.json"
 [System.IO.File]::WriteAllText(
   $manifestPath,

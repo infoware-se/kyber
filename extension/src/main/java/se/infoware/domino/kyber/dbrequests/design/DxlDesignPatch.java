@@ -38,7 +38,7 @@ final class DxlDesignPatch {
       throws IOException {
     configureCommon(importer, designOption(mode));
     importer.setReplaceDbProperties(false);
-    importer.importDxl(DesignDxl.withoutReplicaId(dxl), db);
+    importer.importDxl(DesignDxl.withClassIndex(DesignDxl.withoutReplicaId(dxl)), db);
     return importer.getResultLog();
   }
 

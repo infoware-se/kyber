@@ -172,9 +172,14 @@ $put.results | ForEach-Object {
 
 $env:REST_ADMIN_USER = $user
 $env:REST_ADMIN_PASSWORD = $pass
-& (Join-Path $PSScriptRoot "export-to-repo.ps1") -RestUrl $base -NsfPath "kyber.nsf" -OutDir (Join-Path $RepoRoot "kyber")
+Push-Location $RepoRoot
+try {
+  & (Join-Path $PSScriptRoot "export-to-repo.ps1") -RestUrl $base -NsfPath "kyber.nsf"
+} finally {
+  Pop-Location
+}
 
-Get-ChildItem (Join-Path $RepoRoot "kyber\javasources") -Filter "*minimal*.dxl" | ForEach-Object {
+Get-ChildItem (Join-Path $RepoRoot "domino") -Recurse -Filter "*minimal*.dxl" | ForEach-Object {
   $dxl = Get-Content -Raw $_.FullName
   if ($dxl -match '(?s)<item name=''\$FileData''[^>]*>\s*<rawitemdata[^>]*>\s*([A-Za-z0-9+/=\s]+)') {
     $raw = [Convert]::FromBase64String(($Matches[1] -replace '\s',''))

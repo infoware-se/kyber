@@ -2,6 +2,7 @@
     "exportedAt":  "2026-10-14T14:22:00.3768808Z",
     "layout":  "package-explorer",
     "nsfPath":  "kyber.nsf",
+    "replicaId":  "C1258E90004E3F19",
     "elements":  [
                      {
                          "path":  "AppProperties/acl.dxl",
@@ -315,7 +316,7 @@
                          "noteid":  "182"
                      },
                      {
-                         "path":  "designnotes/newscriptlibraryjavascript-216.dxl",
+                         "path":  "_designnotes/newscriptlibraryjavascript-216.dxl",
                          "type":  "designnote",
                          "unid":  "9B5A9A6E1FD99CC4C1258E48004EDCEB",
                          "name":  "newscriptlibraryjavascript",
@@ -323,7 +324,7 @@
                          "noteid":  "216"
                      },
                      {
-                         "path":  "designnotes/newscriptlibraryssjs-21e.dxl",
+                         "path":  "_designnotes/newscriptlibraryssjs-21e.dxl",
                          "type":  "designnote",
                          "unid":  "26EB7301878F9D27C1258E48004EE8A8",
                          "name":  "newscriptlibraryssjs",
@@ -443,7 +444,7 @@
                          "noteid":  "13e"
                      },
                      {
-                         "path":  "WEB-INF/classes/plugin/Activator.class-15e.dxl",
+                         "path":  "WebContent/WEB-INF/classes/plugin/Activator.class-15e.dxl",
                          "type":  "xpagesresource",
                          "unid":  "2E93240705FB9044C1258E440046F231",
                          "name":  "WEB-INF/classes/plugin/Activator.class",
@@ -451,7 +452,7 @@
                          "noteid":  "15e"
                      },
                      {
-                         "path":  "WEB-INF/faces-config.xml-15a.dxl",
+                         "path":  "WebContent/WEB-INF/faces-config.xml-15a.dxl",
                          "type":  "xpagesresource",
                          "unid":  "D0E1672688461BA1C1258E440046F220",
                          "name":  "WEB-INF/faces-config.xml",

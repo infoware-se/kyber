@@ -2,8 +2,14 @@ package se.infoware.domino.kyber.dbrequests.design;
 
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -149,6 +155,181 @@ final class DesignDxl {
       return dxl;
     }
     return dxl.replaceAll("(?i)\\s+replicaid=(['\"])[^'\"]*\\1", "");
+  }
+
+  /**
+   * Fill an empty {@code $ClassIndexItem} from the class file stored in each {@code $ClassData}
+   * item, in item order. That order is how the XPages runtime maps the index onto {@code
+   * $ClassData0}, {@code $ClassData1}, and so on. A list that already names classes is left as it
+   * is.
+   */
+  static String withClassIndex(String dxl) {
+    if (dxl == null || dxl.isBlank() || !dxl.contains("$ClassData")) {
+      return dxl;
+    }
+    if (classIndexNamesClasses(dxl)) {
+      return dxl;
+    }
+    List<String> classes = xspClassNames(dxl);
+    if (classes.isEmpty()) {
+      return dxl;
+    }
+    String item = classIndexItem(classes);
+    Matcher empty =
+        Pattern.compile(
+                "(?s)<item\\s+name=(['\"])\\$ClassIndexItem\\1[^>]*>\\s*<textlist\\s*(?:/>|>\\s*</textlist>)\\s*</item>")
+            .matcher(dxl);
+    if (empty.find()) {
+      return empty.replaceFirst(Matcher.quoteReplacement(item));
+    }
+    Matcher close = Pattern.compile("(?s)</([A-Za-z][\\w:.-]*)>\\s*$").matcher(dxl);
+    if (!close.find()) {
+      return dxl;
+    }
+    return close.replaceFirst(Matcher.quoteReplacement(item + "</" + close.group(1) + ">"));
+  }
+
+  private static boolean classIndexNamesClasses(String dxl) {
+    Matcher item =
+        Pattern.compile("(?s)<item\\s+name=(['\"])\\$ClassIndexItem\\1[^>]*>(.*?)</item>")
+            .matcher(dxl);
+    return item.find() && item.group(2).contains("<text>");
+  }
+
+  private static List<String> xspClassNames(String dxl) {
+    List<String> classes = new ArrayList<>();
+    Matcher data =
+        Pattern.compile("(?s)<item\\s+name=(['\"])\\$ClassData\\d*\\1[^>]*>(.*?)</item>")
+            .matcher(dxl);
+    while (data.find()) {
+      Matcher raw =
+          Pattern.compile("(?s)<rawitemdata\\b[^>]*>(.*?)</rawitemdata>").matcher(data.group(2));
+      if (!raw.find()) {
+        continue;
+      }
+      byte[] bytes;
+      try {
+        bytes = Base64.getMimeDecoder().decode(raw.group(1).replaceAll("\\s", ""));
+      } catch (IllegalArgumentException ex) {
+        continue;
+      }
+      String defined = thisClassName(bytes);
+      if (defined != null && defined.startsWith("xsp/")) {
+        classes.add(defined);
+        continue;
+      }
+      Matcher names =
+          Pattern.compile("xsp/[A-Za-z_][A-Za-z0-9_$]*(?![A-Za-z0-9_$/])")
+              .matcher(new String(bytes, StandardCharsets.ISO_8859_1));
+      Set<String> found = new LinkedHashSet<>();
+      while (names.find()) {
+        found.add(names.group());
+      }
+      classes.addAll(found);
+    }
+    return classes;
+  }
+
+  /** The class file's {@code this_class}, after a Domino file header if one is present. */
+  private static String thisClassName(byte[] bytes) {
+    try {
+      return definedClassName(bytes);
+    } catch (IndexOutOfBoundsException ex) {
+      return null;
+    }
+  }
+
+  private static String definedClassName(byte[] bytes) {
+    int magic = indexOf(bytes, new byte[] {(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE});
+    if (magic < 0 || magic + 10 > bytes.length) {
+      return null;
+    }
+    int p = magic + 8;
+    int count = u2(bytes, p);
+    p += 2;
+    if (count < 2) {
+      return null;
+    }
+    String[] utf8 = new String[count];
+    int[] classUtf8 = new int[count];
+    for (int i = 1; i < count; i++) {
+      if (p >= bytes.length) {
+        return null;
+      }
+      int tag = bytes[p++] & 0xFF;
+      switch (tag) {
+        case 1 -> {
+          if (p + 2 > bytes.length) {
+            return null;
+          }
+          int len = u2(bytes, p);
+          p += 2;
+          if (len < 0 || p + len > bytes.length) {
+            return null;
+          }
+          utf8[i] = new String(bytes, p, len, StandardCharsets.ISO_8859_1);
+          p += len;
+        }
+        case 7, 8, 16, 19, 20 -> {
+          if (p + 2 > bytes.length) {
+            return null;
+          }
+          classUtf8[i] = u2(bytes, p);
+          p += 2;
+        }
+        case 3, 4, 9, 10, 11, 12, 17, 18 -> p += 4;
+        case 5, 6 -> {
+          p += 8;
+          i++;
+        }
+        case 15 -> p += 3;
+        default -> {
+          return null;
+        }
+      }
+    }
+    if (p + 4 > bytes.length) {
+      return null;
+    }
+    int thisClass = u2(bytes, p + 2);
+    if (thisClass <= 0 || thisClass >= count) {
+      return null;
+    }
+    int nameIndex = classUtf8[thisClass];
+    if (nameIndex <= 0 || nameIndex >= count) {
+      return null;
+    }
+    return utf8[nameIndex];
+  }
+
+  private static int u2(byte[] bytes, int offset) {
+    return ((bytes[offset] & 0xFF) << 8) | (bytes[offset + 1] & 0xFF);
+  }
+
+  private static int indexOf(byte[] bytes, byte[] needle) {
+    for (int i = 0; i + needle.length <= bytes.length; i++) {
+      boolean match = true;
+      for (int j = 0; j < needle.length; j++) {
+        if (bytes[i + j] != needle[j]) {
+          match = false;
+          break;
+        }
+      }
+      if (match) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  private static String classIndexItem(List<String> classes) {
+    StringBuilder text = new StringBuilder();
+    text.append("<item name='$ClassIndexItem'><textlist>");
+    for (String cls : classes) {
+      text.append("<text>WEB-INF/classes/").append(cls).append(".class</text>");
+    }
+    text.append("</textlist></item>");
+    return text.toString();
   }
 
   private static String replaceRootNameAttribute(String dxl, String wanted) {

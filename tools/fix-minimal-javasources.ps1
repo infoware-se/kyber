@@ -163,14 +163,18 @@ $put.results | ForEach-Object {
   if ($_.log) { Write-Host "   log:" $_.log.Substring(0, [Math]::Min(200, $_.log.Length)) }
 }
 
-# Export kyber folder
+# Export back under domino/<path>-<replica id>
 $env:REST_ADMIN_USER = $user
 $env:REST_ADMIN_PASSWORD = $pass
-& (Join-Path $PSScriptRoot "export-to-repo.ps1") -RestUrl $base -NsfPath "kyber.nsf" `
-  -OutDir (Join-Path $RepoRoot "kyber")
+Push-Location $RepoRoot
+try {
+  & (Join-Path $PSScriptRoot "export-to-repo.ps1") -RestUrl $base -NsfPath "kyber.nsf"
+} finally {
+  Pop-Location
+}
 
 # Verify decoded source from export
-$files = Get-ChildItem (Join-Path $RepoRoot "kyber\javasources") -Filter "*minimal*"
+$files = Get-ChildItem (Join-Path $RepoRoot "domino") -Recurse -Filter "*minimal*"
 foreach ($f in $files) {
   if ($f.Extension -ne '.dxl') { continue }
   $dxl = Get-Content -Raw $f.FullName

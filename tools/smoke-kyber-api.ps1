@@ -21,7 +21,7 @@
   - a NSF created by this run has the embedded Kyber database icon
   - POST /xpagesproject once, then a second call that creates nothing
   - export-to-repo.ps1 writes kybertest.nsf to a temp folder, then import-from-repo.ps1
-    restores that tree into kybersmoke-import.nsf. The repo kyber/ templates are not touched.
+    restores that tree into kybersmoke-import.nsf. The repo domino/ templates are not touched.
   - after that, DELETE each smoked element and the Hello World document, then create the
     design again so kybertest.nsf still holds it. -SkipDelete leaves everything in place.
 
@@ -1013,8 +1013,9 @@ foreach ($el in $named) {
 
 Invoke-DominoWebSmoke
 
-# Export the smoked NSF and import it into a second database. Repo kyber/ stays the template tree.
+# Export the smoked NSF and import it into a second database. Repo domino/ stays the template tree.
 $exportDir = Join-Path $env:TEMP "kyber-smoke-export"
+if (Test-Path -LiteralPath $exportDir) { Remove-Item -LiteralPath $exportDir -Recurse -Force }
 $importNsf = "kybersmoke-import.nsf"
 $roundTrip = @{
   RestUrl = $base
@@ -1026,8 +1027,10 @@ try {
 } catch {
   Fail "export-to-repo: $($_.Exception.Message)"
 }
-$manifestPath = Join-Path $exportDir "manifest.json"
-if (-not (Test-Path $manifestPath)) { Fail "export did not write manifest.json" }
+$manifestFile = @(Get-ChildItem -LiteralPath $exportDir -Recurse -Filter manifest.json -File)
+if ($manifestFile.Count -ne 1) { Fail "export did not write one manifest.json under $exportDir" }
+$manifestPath = $manifestFile[0].FullName
+$exportDir = $manifestFile[0].DirectoryName
 $manifest = Get-Content -Raw $manifestPath | ConvertFrom-Json
 foreach ($need in @("form", "webcontent", "fileresource", "xpage", "acl", "image")) {
   if (@($manifest.elements | Where-Object { $_.type -eq $need }).Count -lt 1) {

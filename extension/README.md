@@ -4,7 +4,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
-| **Version** | 0.24.9 |
+| **Version** | 0.24.10 |
 | **API** | `/api/kyber-v1` |
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
@@ -48,38 +48,77 @@ Swagger tag: **`design-handler`** for `/defaults`, `/defaults/{type}`, and `/des
 
 **Defaults resolution** (`GET /defaults/{type}`): if `kyber.nsf` (or `kyber.defaultNsf`) is available and contains that type (and `?kind=` when kinded), use the **first** match by case-insensitive name; otherwise the embedded JAR starter under `resources/defaults/`.
 
-Element `type` values match repo layout (`form`, `about`, `image`, …). Bridge scripts in repo root [`tools/`](../tools/):
+Element `type` is the API name (`form`, `about`, `image`, …). The folder is the Package Explorer name (`Forms`, `Resources`, `Resources/Images`, …). Bridge scripts in [`tools/`](../tools/):
 
 ```powershell
-.\tools\export-to-repo.ps1 -RestUrl https://host:8880 -NsfPath test/app.nsf -OutDir .\kyber
+.\tools\export-to-repo.ps1 -RestUrl https://host:8880 -NsfPath test/app.nsf
+# Writes .\domino\test\app.nsf-<replica id>\ in the current directory.
+.\tools\export-to-repo.ps1 -RestUrl https://host:8880 -NsfPath test/app.nsf -OutDir D:\other-repo
+# -OutDir is that repo's root. The NSF lands in D:\other-repo\domino\test\app.nsf-<replica id>\.
+# A later export replaces that NSF folder and leaves other databases under domino\ alone.
 # Java in script libraries, agents, applets: strips <javaresource> Base64 and writes sibling .java (default).
 # Keep compiled class in DXL: -ReadableJava:$false
-.\tools\import-from-repo.ps1 -RestUrl https://host:8880 -NsfPath test/restored.nsf -InDir .\kyber
+.\tools\import-from-repo.ps1 -RestUrl https://host:8880 -NsfPath test/restored.nsf -InDir D:\other-repo
+# -InDir may be the repo root when domino\ holds one NSF, or the NSF folder itself.
 ```
 
-Repo tree (folders follow Package Explorer; this repo ships starters under [`kyber/`](../kyber/)):
+Repo tree (this repo's starter; folders follow Package Explorer). A path with directories keeps them: `mail/user.nsf` becomes `domino/mail/user.nsf-<replica id>/`. File names are `<design name>-<note id>.dxl`.
 
 ```
-kyber/
-  manifest.json          # type (API), doctype, path, name?
-  Forms/newform-….dxl
-  Views/newview-….dxl
-  Resources/Images/….dxl
-  Resources/….dxl
-  ...
+domino/<nsf path>-<replica id>/
+  manifest.json                 # nsfPath, replicaId, type, path, name
+  AppProperties/                # acl, application properties, xsp.properties
+  Code/Agents/
+  Code/Jars/
+  Code/Java/                    # package path under here
+  Code/ScriptLibraries/
+  Code/WebServices/
+  Code/WebServiceConsumer/
+  Code/actions/
+  Code/dbscript.lsdb-….dxl
+  CompositeApplications/
+  CustomControls/
+  Folders/
+  Forms/
+  Framesets/
+  Pages/
+  Resources/                    # about, using
+  Resources/Applets/
+  Resources/DataConnections/
+  Resources/Files/
+  Resources/Images/             # includes $DBIcon
+  Resources/StyleSheets/
+  Resources/Themes/
+  SharedElements/Columns/
+  SharedElements/Fields/
+  SharedElements/Navigators/
+  SharedElements/Outlines/
+  SharedElements/Subforms/
+  Views/
+  WebContent/                   # files outside WEB-INF
+  WebContent/WEB-INF/           # faces-config, classes, … (still xpagesresource)
+  XPages/
+  .settings/
+  .classpath-….dxl
+  .project-….dxl
+  build.properties-….dxl
+  plugin.xml-….dxl
+  _designnotes/                 # named notes with no Package Explorer folder
 ```
 
-`import-from-repo.ps1` reads `manifest.json` (API `type` + path).
+Package Explorer also shows JRE System Library, Plug-in Dependencies, Referenced Libraries, Data, and `META-INF`. Those are not design notes. `.classpath` and `plugin.xml` carry the JRE and plug-in references. Jars stored in the NSF are under `Code/Jars`. Designer creates `META-INF/MANIFEST.MF` when the XPages project is opened. Documents stay out of this export. A note with no name, such as the system view `$FormulaClass`, is left out.
+
+`import-from-repo.ps1` reads `manifest.json` (`type` + path) and sends the DXL. The API removes `replicaid` before Domino reads it, so the target database keeps its own replica id.
 
 After PUT, the API compiles LotusScript (script libraries first) and returns a `lotusscript` summary. Notes "Error processing use list module" after a restore usually means code was not compiled — re-import or run Designer **Recompile All LotusScript**. Some complex libraries (e.g. DDM) can still report syntax errors after DXL round-trip — open those in Designer if needed.
 
-**Bulk-only types** (no list/get/put/delete endpoints; only in `/designdxl`): `xpagesresource` (incl. `WEB-INF/` except `xsp.properties`, i18n `*.properties`, `.settings/`, `icons/`, `Local/`), and catch-all `designnote` for any other remaining design note (UNID-deduped after typed exporters). Starters: `GET /defaults/{type}` for `xpagesresource` (not `designnote`).
+**Bulk-only types** (no list/get/put/delete endpoints; only in `/designdxl`): `xpagesresource` (`.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties`, i18n `*.properties`), and `designnote` for a remaining named design note. The export folder for `designnote` is `_designnotes`. Starters: `GET /defaults/{type}` for `xpagesresource` (not `designnote`).
 
 **Blank NSF baseline** (reference DXL, not starters): [`resources/defaults/blank/`](src/main/resources/defaults/blank/) — `acl.dxl`, `applicationproperties.dxl`, `image-DBIcon.dxl`, `view-default.dxl`, plus `manifest.json` from a Domino blank database.
 
 ## Coverage (Domino Designer)
 
-Mapped to the Designer outline. "In" = typed DXL CRUD; "Bulk" = `/designdxl` only.
+Sections follow Package Explorer. "In" = typed DXL CRUD; "Bulk" = `/designdxl` only.
 
 ### Included
 
@@ -98,12 +137,12 @@ Mapped to the Designer outline. "In" = typed DXL CRUD; "Bulk" = `/designdxl` onl
 | Code | Shared Actions | `/sharedactions/{name}` |
 | Code | Script Libraries | `/scriptlibraries` — kinds `lotusscript` \| `javascript` \| `ssjs` \| `java` (defaults + empty-body create) |
 | Code | Database Script | `/databasescript` (singleton) |
-| Application Configuration | Application Properties | `/applicationproperties` (singleton; GET/PUT update-only, no create/DELETE — always present with NSF) |
-| Application Configuration | Database icon (`$DBIcon`) | `/dbicon` (singleton; GET/PUT update-only, no create/DELETE — always present with NSF; not under `/images`) |
-| Application Configuration | Xsp Properties | `/xspproperties` (singleton; GET/POST/PUT/DELETE — optional `WEB-INF/xsp.properties`) |
+| AppProperties | Application Properties | `/applicationproperties` (singleton; GET/PUT update-only, no create/DELETE — always present with NSF) |
+| AppProperties | Database icon (`$DBIcon`) | `/dbicon` (singleton; GET/PUT update-only, no create/DELETE — always present with NSF; not under `/images`; export folder `Resources/Images`) |
+| AppProperties | Xsp Properties | `/xspproperties` (singleton; GET/POST/PUT/DELETE — note name `WEB-INF/xsp.properties`, export folder `AppProperties`) |
 | Resources | Images | `/images` |
 | Resources | Files | `/fileresources` |
-| Resources | WebContent | `/webcontent` (files outside `WEB-INF`; `WEB-INF` stays an XPages project note) |
+| WebContent | Files outside `WEB-INF` | `/webcontent` (a name under `WEB-INF` is rejected; those notes stay `xpagesresource`) |
 | Resources | Style Sheets | `/stylesheets` |
 | Resources | Themes | `/themes` |
 | Resources | About Document | `/about` (singleton) |
@@ -117,31 +156,37 @@ Mapped to the Designer outline. "In" = typed DXL CRUD; "Bulk" = `/designdxl` onl
 | Code | Web Service Consumers | `/webserviceconsumers` + `GET /defaults/webserviceconsumer` |
 | Code | Java (class/interface/enum) | `/javasources` — kinds `class` \| `interface` \| `enum` |
 | Code | Jars | `/jars` |
-| Data | Data Connections | `/dataconnections` |
+| Resources | Data Connections | `/dataconnections` (export folder `Resources/DataConnections`) |
 | Resources | Applets | `/applets` |
 | Composite Applications | Wiring Properties | `/wiringproperties` |
 | Composite Applications | Applications | `/compositeapplications` |
 | Composite Applications | Components | `/compositecomponents` |
-| Database | ACL | `/acl` (singleton; also in bulk) |
+| AppProperties | ACL | `/acl` (singleton; also in bulk; export file `AppProperties/acl.dxl`) |
 
 Singletons: most use `GET` / `POST` (create) / `PUT` (update) / `DELETE` on the collection path. Exceptions: **ACL** (GET/PUT, no DELETE); **Application Properties** and **`$DBIcon`** (GET/PUT only — always present with the NSF, no create/DELETE).
 
-### Not included (CRUD or bulk)
+### Not a design export
 
-| Designer section | Element | Reason |
-|------------------|---------|--------|
-| (residual) | Untitled / unclassified design notes | Catch-all bulk type `designnote` only |
+| What you see | What happens |
+|--------------|----------------|
+| Named note with no Package Explorer folder | Bulk type `designnote`, folder `_designnotes` |
+| Note with no name (`$FormulaClass` and similar) | Omitted |
+| Data (documents) | Omitted |
+| JRE System Library, Plug-in Dependencies, Referenced Libraries, `META-INF` | Not stored as design notes. Pointers live in `.classpath` and `plugin.xml`. Designer writes `META-INF/MANIFEST.MF` when the project opens. |
 
 ### KEEP ACL (endpoint access)
 
 | ACL | Operations |
 |-----|------------|
 | Reader | list, get |
-| Designer | create, update, delete (ACL PUT requires Manager) |
+| Designer | create, update, delete of design (not ACL) |
+| Manager | ACL replace, and creating a database |
+
+A Manager is treated as allowed to create shared and personal folders/views and LotusScript/Java agents, including private ones. Domino does not store those checkboxes on a Manager entry. Delete documents stays a stored flag at every level, including Manager. Designer and below still need the checkbox stored on the ACL entry. Creating a database also needs the server right to create databases. The API never deletes a database.
 
 ## Endpoints
 
-Named types share the same CRUD shape: **list** `GET /{types}`, **create** `POST /{types}` (optional `?name=`; empty body + `?kind=&name=` for kinded types), **get/update/delete** on `/{types}/{name}`.
+Named types share the same CRUD shape: **list** `GET /{types}`, **create** `POST /{types}` (optional `?name=`; empty body + `?kind=&name=` for kinded types), **get/update/delete** on `/{types}/{name}`. WebContent, jars, applets, data connections, web service providers and consumers, wiring properties, and composite applications and components use that shape. Their tables are not repeated below. WebContent rejects a name under `WEB-INF`.
 
 ### Pages
 
@@ -457,7 +502,7 @@ cd extension
 mvn test
 ```
 
-Live smoke against DRAPI. `tools/smoke-kyber-api.ps1` creates `kybertest.nsf` and runs list/create/get/put/delete for every typed CRUD collection (including agent, script-library and Java-source kinds), plus singleton create/update and get/put for application properties, the database icon and the ACL. Each created element is written again with `Hello World` and read back. LotusScript, formula and simple-action agents are then run, and each run writes `Hello World` onto a document. The LotusScript agent calls `SmokeLibLs`. Deleted elements are created again so the NSF stays populated. Domino URL commands then open the database, form, page, about document, using document, view, folder, navigator, frameset, icon, image, file, stylesheet, agents, web service and XPage. `?CreateDocument` saves a document that the view, `?OpenDocument` and `?EditDocument` show as `Hello World`, and `?DeleteDocument` removes it:
+Live smoke against DRAPI. `tools/smoke-kyber-api.ps1` creates `kybertest.nsf` and runs list/create/get/put/delete for every typed CRUD collection (including agent, script-library and Java-source kinds), plus singleton create/update and get/put for application properties, the database icon and the ACL. Each created element is written again with `Hello World` and read back. LotusScript, formula and simple-action agents are then run, and each run writes `Hello World` onto a document. The LotusScript agent calls `SmokeLibLs`. Deleted elements are created again so the NSF stays populated. Domino URL commands then open the database, form, page, about document, using document, view, folder, navigator, frameset, icon, image, file, stylesheet, agents, web service and XPage. `?CreateDocument` saves a document that the view, `?OpenDocument` and `?EditDocument` show as `Hello World`, and `?DeleteDocument` removes it. The run exports `kybertest.nsf` and imports that tree into `kybersmoke-import.nsf`. The imported design keeps the target database's replica id:
 
 ```powershell
 .\tools\smoke-kyber-api.ps1
