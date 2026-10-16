@@ -1,17 +1,18 @@
 package se.infoware.domino.kyber.dbrequests.design;
 
-import com.hcl.domino.data.Document;
-import com.hcl.domino.design.DesignElement;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Designer comment written when Kyber creates or updates a design note.
+ * Designer comment on a design note.
  *
- * <p>{@code Kyber 0.24.17 Infoware}, or {@code Kyber 0.24.17 Infoware - } plus the comment that was
- * already there. An earlier Kyber prefix is replaced so a second update does not stack it.
+ * <p>The design comment lives in the DXL. A {@code comment} attribute is kept as imported. When the
+ * DXL has no comment attribute, the comment that was on the note before the import is put back.
+ *
+ * <p>{@link #apply(String, String)} is the historical {@code Kyber x.y.z Infoware} prefix. Writes
+ * do not call it.
  */
 final class DesignComment {
 
@@ -87,22 +88,4 @@ final class DesignComment {
     return imported != null ? imported : loadedComment;
   }
 
-  static void stamp(DesignElement element, String dxl) {
-    if (element == null) {
-      return;
-    }
-    element.setComment(apply(sourceComment(dxl, element.getComment()), version()));
-  }
-
-  static void stamp(Document document, String dxl) {
-    if (document == null) {
-      return;
-    }
-    String current = "";
-    if (document.hasItem("$Comment")) {
-      current =
-          document.getFirstItem("$Comment").map(item -> item.get(String.class, "")).orElse("");
-    }
-    document.replaceItemValue("$Comment", apply(sourceComment(dxl, current), version()));
-  }
 }

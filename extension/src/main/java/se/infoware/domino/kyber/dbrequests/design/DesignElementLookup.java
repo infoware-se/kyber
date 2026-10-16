@@ -82,6 +82,28 @@ final class DesignElementLookup {
     };
   }
 
+  /**
+   * Comment currently stored on the named note, or null when the note is missing or has none.
+   * Failures are ignored so a write can continue and leave the imported comment as it is.
+   */
+  static String existingComment(Database db, String type, String name) {
+    try {
+      String t = DesignBulkTypes.normalize(type);
+      String lookup = name;
+      if ("dbicon".equals(t)
+          || (name != null && DBICON_NAME.equalsIgnoreCase(name.trim()))) {
+        t = "dbicon";
+        lookup = DBICON_NAME;
+      }
+      if (!exists(db, t, lookup)) {
+        return null;
+      }
+      return exportDxl(db, t, lookup).map(DesignPayload::commentText).orElse(null);
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
   static Optional<String> exportDxl(Database db, String type, String name) throws Exception {
     String t = DesignBulkTypes.normalize(type);
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();

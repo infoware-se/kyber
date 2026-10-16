@@ -6,7 +6,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.24.17 |
+| **Version** | 0.24.18 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
@@ -51,13 +51,13 @@ Each design element has its own collection. A form is `/forms`, an agent is `/ag
 | **Update** | `PUT /{collection}/{name}?nsfPath=` |
 | **Delete** | `DELETE /{collection}/{name}?nsfPath=` |
 
-A list returns the names, and an `elements` array with `fileName`, `aliases`, `kind`, and `comment` when the note has them. `aliases` is the part of the name after `|`, the name a URL or `OpenForm` uses. A get returns the DXL. When the note is one script or one text file, the get also returns that text as `code`.
+A list returns the names, and an `elements` array with `fileName`, `aliases` and `kind` when the note has them. `aliases` is the part of the name after `|`, the name a URL or `OpenForm` uses. A get returns the DXL. When the note is one script or one text file, the get also returns that text as `code`.
 
 The ACL, the application properties, and the database icon are get and put. Domino creates those three with the NSF. A named note with no collection of its own travels in the [round trip](#round-trip) as `designnote`. Documents are application data. A note with no name, such as `$FormulaClass`, is left out of an export.
 
 ### DXL
 
-Create, update, and the round trip use Domino DXL, sent as `text/xml`. It is the same XML Designer exports and imports. The grammar is the DTD that ships with Designer, `xmlschemas/domino_*.dtd`.
+Create, update, and the round trip use Domino DXL. Send it as `text/xml`, or as `application/json` with `dxl` set to that DXL. The design comment is the `comment` attribute in the DXL. A payload without that attribute leaves the comment already on the note. A write of LotusScript adds `compiled: true` after the compile. `signedBy` is the Notes name that signed the note.
 
 `code` is the readable text inside a note that has one body: an agent, a script library, a Java source, a file resource, a style sheet, a WebContent file, or an XPages project file. Send it back as `text/plain` or `{"code":"..."}`. Kyber replaces that body and keeps the rest of the DXL. A form has many events, so its scripts stay in the DXL.
 

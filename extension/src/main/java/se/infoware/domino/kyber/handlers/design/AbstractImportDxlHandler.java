@@ -8,13 +8,13 @@ import io.vertx.ext.web.RoutingContext;
 import java.util.Locale;
 
 /**
- * Shared HTTP handler for design-element create/replace via raw DXL - same pattern as HCL {@code
- * UpdateDxl}.
+ * Shared HTTP handler for design-element create/replace.
  *
- * <p>Reads the raw request body as string and puts it on the payload as {@code dxl}. A {@code
- * text/plain} body, or JSON {@code {"code":"..."}}, is the readable text for a note with one body.
- * Subclasses are KEEP operationId entry points ({@code CreatePage}, {@code CreateOutline}, ...).
- * The database request, not this handler, enforces the target NSF ACL for the logged-in user.
+ * <p>Reads the raw request body. {@code text/xml} is DXL. {@code text/plain} and JSON {@code
+ * {"code":"..."}} are the readable text for a note with one body. JSON with {@code dxl} is the same
+ * object a get returns. Subclasses are KEEP operationId entry points ({@code CreatePage}, {@code
+ * CreateOutline}, ...). The database request, not this handler, enforces the target NSF ACL for
+ * the logged-in user.
  */
 public abstract class AbstractImportDxlHandler extends DefaultJsonHandler {
 
@@ -26,16 +26,8 @@ public abstract class AbstractImportDxlHandler extends DefaultJsonHandler {
                 .onFailure(promise::fail)
                 .onSuccess(
                     params -> {
-                      String raw = context.body().asString();
-                      if (raw == null) {
-                        raw = "";
-                      }
-                      if (isPlainText(context)) {
-                        params.put("code", raw);
-                        params.put("dxl", "");
-                      } else if (!putJsonCode(params, raw)) {
-                        params.put("dxl", raw);
-                      }
+                      DesignWriteBody.apply(
+                          params, context.body().asString(), isPlainText(context));
                       promise.complete(params);
                     }));
   }
@@ -43,25 +35,5 @@ public abstract class AbstractImportDxlHandler extends DefaultJsonHandler {
   private static boolean isPlainText(RoutingContext context) {
     String type = context.request().getHeader("Content-Type");
     return type != null && type.toLowerCase(Locale.ROOT).contains("text/plain");
-  }
-
-  /** JSON {@code {"code":"..."}} without a DXL field. Returns true when that shape was stored. */
-  private static boolean putJsonCode(JsonObject params, String raw) {
-    String trimmed = raw.stripLeading();
-    if (!trimmed.startsWith("{")) {
-      return false;
-    }
-    try {
-      JsonObject body = new JsonObject(raw);
-      if (!body.containsKey("code") || body.containsKey("dxl")) {
-        return false;
-      }
-      String code = body.getString("code");
-      params.put("code", code == null ? "" : code);
-      params.put("dxl", "");
-      return true;
-    } catch (Exception ex) {
-      return false;
-    }
   }
 }

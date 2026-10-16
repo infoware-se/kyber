@@ -22,7 +22,7 @@ class DesignPayloadTest {
     String dxl = new String(getClass().getResourceAsStream("/defaults/agent.dxl").readAllBytes(), StandardCharsets.UTF_8);
     JsonObject out = DesignPayload.note("Default-LotusScriptAgent", dxl);
     assertEquals("lotusscript", out.getString("kind"));
-    assertTrue(out.getString("comment").contains("help.hcl-software.com"));
+    assertFalse(out.containsKey("comment"));
     assertTrue(out.getString("code").contains("Option Declare"));
     assertNull(out.getString("fileName"));
   }

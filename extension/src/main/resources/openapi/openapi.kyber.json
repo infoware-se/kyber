@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Kyber — Infoware REST API for design elements",
-    "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) with a typed root element. GET /export is the design export and PUT /import is the design import of all supported elements as DXL. The design import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database whose catalog category is KyberEnabled. POST /database creates a missing NSF after the server privilege Create databases & templates and sets the catalog category KyberEnabled. DELETE /database deletes an NSF that has catalog category KyberEnabled and needs Manager on that NSF. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist and those paths are not returned. The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists, has catalog category KyberEnabled, and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
-    "version": "0.24.17"
+    "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) or application/json whose dxl property is that DXL. The design comment is the comment attribute in the DXL. A LotusScript write returns compiled, and signedBy is the Notes name that signed the note. GET /export is the design export and PUT /import is the design import of all supported elements as DXL. The design import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database whose catalog category is KyberEnabled. POST /database creates a missing NSF after the server privilege Create databases & templates and sets the catalog category KyberEnabled. DELETE /database deletes an NSF that has catalog category KyberEnabled and needs Manager on that NSF. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist and those paths are not returned. The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists, has catalog category KyberEnabled, and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
+    "version": "0.24.18"
   },
   "servers": [
     {
@@ -13,7 +13,7 @@
   "tags": [
     {
       "name": "design-element",
-      "description": "Per-type and singleton design-element CRUD against an NSF (?nsfPath=) whose catalog category is KyberEnabled. Create/update bodies are raw DXL (text/xml) with a typed root. Named collections support list/create on the collection path and get/update/delete on /{name}. Application Properties and the database icon are always present (GET/PUT only)."
+      "description": "Per-type and singleton design-element CRUD against an NSF (?nsfPath=) whose catalog category is KyberEnabled. Create/update bodies are raw DXL (text/xml) or the JSON object a get returns. Named collections support list/create on the collection path and get/update/delete on /{name}. Application Properties and the database icon are always present (GET/PUT only)."
     },
     {
       "name": "design-handler",
@@ -150,7 +150,7 @@
         ],
         "operationId": "getDefaultDesign",
         "summary": "Get a design template",
-        "description": "Returns one design template: type, name, dxl, source (api or nsf), and kind when the type has one. Pass kind for an agent (lotusscript, formula, simpleaction, java, importedjava), a script library (lotusscript, javascript, ssjs, java), or a Java source (class, interface, enum). The response includes noteId, plus aliases, kind, and comment when the note has them.",
+        "description": "Returns one design template: type, name, dxl, source (api or nsf), and kind when the type has one. Pass kind for an agent (lotusscript, formula, simpleaction, java, importedjava), a script library (lotusscript, javascript, ssjs, java), or a Java source (class, interface, enum). The response includes noteId, plus aliases and kind when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -201,10 +201,6 @@
                         "interface",
                         "enum"
                       ]
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -431,6 +427,14 @@
                         "dxl": {
                           "type": "string",
                           "description": "Required unless delete=true"
+                        },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
                         }
                       }
                     }
@@ -694,7 +698,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -735,10 +744,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -794,7 +807,7 @@
         ],
         "operationId": "listPages",
         "summary": "List page names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of pages in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of pages in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -817,7 +830,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -835,10 +848,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -892,7 +901,7 @@
         ],
         "operationId": "getPage",
         "summary": "Get page as DXL",
-        "description": "Export one page as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one page as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -921,10 +930,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -1016,7 +1021,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -1057,10 +1067,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -1129,7 +1143,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -1170,10 +1189,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -1229,7 +1252,7 @@
         ],
         "operationId": "listOutlines",
         "summary": "List outline names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of outlines in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of outlines in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1252,7 +1275,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -1270,10 +1293,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -1327,7 +1346,7 @@
         ],
         "operationId": "getOutline",
         "summary": "Get outline as DXL",
-        "description": "Export one outline as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one outline as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1356,10 +1375,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -1451,7 +1466,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -1492,10 +1512,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -1564,7 +1588,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -1605,10 +1634,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -1664,7 +1697,7 @@
         ],
         "operationId": "listFramesets",
         "summary": "List frameset names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of framesets in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of framesets in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1687,7 +1720,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -1705,10 +1738,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -1762,7 +1791,7 @@
         ],
         "operationId": "getFrameset",
         "summary": "Get frameset as DXL",
-        "description": "Export one frameset as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one frameset as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1791,10 +1820,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -1886,7 +1911,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -1927,10 +1957,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -1999,7 +2033,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -2040,10 +2079,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -2099,7 +2142,7 @@
         ],
         "operationId": "listForms",
         "summary": "List form names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of forms in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of forms in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2122,7 +2165,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -2140,10 +2183,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -2197,7 +2236,7 @@
         ],
         "operationId": "getForm",
         "summary": "Get form as DXL",
-        "description": "Export one form as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one form as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2226,10 +2265,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -2321,7 +2356,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -2362,10 +2402,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -2434,7 +2478,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -2475,10 +2524,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -2534,7 +2587,7 @@
         ],
         "operationId": "listViews",
         "summary": "List view names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of views in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of views in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2557,7 +2610,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -2575,10 +2628,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -2632,7 +2681,7 @@
         ],
         "operationId": "getView",
         "summary": "Get view as DXL",
-        "description": "Export one view as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one view as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2661,10 +2710,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -2756,7 +2801,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -2797,10 +2847,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -2869,7 +2923,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -2910,10 +2969,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -2969,7 +3032,7 @@
         ],
         "operationId": "listFolders",
         "summary": "List folder names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of folders in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of folders in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2992,7 +3055,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -3010,10 +3073,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -3067,7 +3126,7 @@
         ],
         "operationId": "getFolder",
         "summary": "Get folder as DXL",
-        "description": "Export one folder as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one folder as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3096,10 +3155,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -3191,7 +3246,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -3232,10 +3292,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -3304,7 +3368,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -3345,10 +3414,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -3404,7 +3477,7 @@
         ],
         "operationId": "listSubforms",
         "summary": "List subform names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of subforms in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of subforms in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3427,7 +3500,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -3445,10 +3518,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -3502,7 +3571,7 @@
         ],
         "operationId": "getSubform",
         "summary": "Get subform as DXL",
-        "description": "Export one subform as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one subform as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3531,10 +3600,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -3625,7 +3690,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -3666,10 +3736,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -3738,7 +3812,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -3779,10 +3858,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -3838,7 +3921,7 @@
         ],
         "operationId": "listSharedFields",
         "summary": "List shared field names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of shared fields in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of shared fields in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3861,7 +3944,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -3879,10 +3962,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -3936,7 +4015,7 @@
         ],
         "operationId": "getSharedField",
         "summary": "Get shared field as DXL",
-        "description": "Export one shared field as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one shared field as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3965,10 +4044,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -4059,7 +4134,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -4100,10 +4180,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -4172,7 +4256,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -4213,10 +4302,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -4272,7 +4365,7 @@
         ],
         "operationId": "listSharedColumns",
         "summary": "List shared column names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of shared columns in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of shared columns in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4295,7 +4388,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -4313,10 +4406,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -4370,7 +4459,7 @@
         ],
         "operationId": "getSharedColumn",
         "summary": "Get shared column as DXL",
-        "description": "Export one shared column as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one shared column as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4399,10 +4488,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -4493,7 +4578,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -4534,10 +4624,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -4606,7 +4700,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -4647,10 +4746,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -4706,7 +4809,7 @@
         ],
         "operationId": "listImages",
         "summary": "List image resource names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of image resources in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of image resources in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4729,7 +4832,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -4747,10 +4850,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -4804,7 +4903,7 @@
         ],
         "operationId": "getImage",
         "summary": "Get image resource as DXL",
-        "description": "Export one image resource as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one image resource as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4833,10 +4932,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -4927,7 +5022,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -4968,10 +5068,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -5040,7 +5144,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -5081,10 +5190,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -5140,7 +5253,7 @@
         ],
         "operationId": "listFileResources",
         "summary": "List file resource names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of file resources in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of file resources in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5163,7 +5276,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -5181,10 +5294,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -5238,7 +5347,7 @@
         ],
         "operationId": "getFileResource",
         "summary": "Get file resource as DXL",
-        "description": "Export one file resource as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one file resource as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5267,10 +5376,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -5361,7 +5466,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -5402,10 +5512,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -5474,7 +5588,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -5515,10 +5634,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -5574,7 +5697,7 @@
         ],
         "operationId": "listStyleSheets",
         "summary": "List style sheet names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of style sheets in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of style sheets in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5597,7 +5720,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -5615,10 +5738,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -5672,7 +5791,7 @@
         ],
         "operationId": "getStyleSheet",
         "summary": "Get style sheet as DXL",
-        "description": "Export one style sheet as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one style sheet as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5701,10 +5820,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -5795,7 +5910,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -5836,10 +5956,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -5908,7 +6032,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -5949,10 +6078,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -6008,7 +6141,7 @@
         ],
         "operationId": "listThemes",
         "summary": "List theme names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of themes in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of themes in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6031,7 +6164,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -6049,10 +6182,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -6106,7 +6235,7 @@
         ],
         "operationId": "getTheme",
         "summary": "Get theme as DXL",
-        "description": "Export one theme as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one theme as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6135,10 +6264,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -6229,7 +6354,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -6270,10 +6400,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -6321,7 +6455,7 @@
         ],
         "operationId": "getAcl",
         "summary": "Get ACL as DXL",
-        "description": "Export the database ACL via DxlExporter.exportACL. Requires ?nsfPath=. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export the database ACL via DxlExporter.exportACL. Requires ?nsfPath=. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6351,10 +6485,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -6397,7 +6527,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -6454,7 +6589,7 @@
         ],
         "operationId": "getAbout",
         "summary": "Get About document as DXL",
-        "description": "Export the About document as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export the About document as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6484,10 +6619,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -6535,7 +6666,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -6573,10 +6709,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -6674,7 +6814,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -6712,10 +6857,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -6777,7 +6926,7 @@
         ],
         "operationId": "getUsing",
         "summary": "Get Using document as DXL",
-        "description": "Export the Using document as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export the Using document as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6807,10 +6956,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -6858,7 +7003,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -6896,10 +7046,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -6997,7 +7151,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -7035,10 +7194,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -7146,7 +7309,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -7187,6 +7355,14 @@
                         "type": "string"
                       }
                     },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "kind": {
                       "type": "string",
                       "description": "Agent kind.",
@@ -7197,10 +7373,6 @@
                         "java",
                         "importedjava"
                       ]
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -7273,7 +7445,7 @@
         ],
         "operationId": "listAgents",
         "summary": "List agent names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of agents in the target database. elements adds noteId, plus aliases, kind, and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of agents in the target database. elements adds noteId, plus aliases and kind when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7296,7 +7468,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases, kind, and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases and kind when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -7325,10 +7497,6 @@
                               "java",
                               "importedjava"
                             ]
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -7382,7 +7550,7 @@
         ],
         "operationId": "getAgent",
         "summary": "Get agent as DXL",
-        "description": "Export one agent as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases, kind, and comment when the note has them.",
+        "description": "Export one agent as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and kind when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7422,10 +7590,6 @@
                         "java",
                         "importedjava"
                       ]
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -7516,7 +7680,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -7557,6 +7726,14 @@
                         "type": "string"
                       }
                     },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "kind": {
                       "type": "string",
                       "description": "Agent kind.",
@@ -7567,10 +7744,6 @@
                         "java",
                         "importedjava"
                       ]
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -7664,7 +7837,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -7705,6 +7883,14 @@
                         "type": "string"
                       }
                     },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "kind": {
                       "type": "string",
                       "description": "Script library kind.",
@@ -7714,10 +7900,6 @@
                         "ssjs",
                         "java"
                       ]
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -7789,7 +7971,7 @@
         ],
         "operationId": "listScriptLibraries",
         "summary": "List script library names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of script libraries in the target database. elements adds noteId, plus aliases, kind, and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of script libraries in the target database. elements adds noteId, plus aliases and kind when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7812,7 +7994,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases, kind, and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases and kind when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -7840,10 +8022,6 @@
                               "ssjs",
                               "java"
                             ]
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -7897,7 +8075,7 @@
         ],
         "operationId": "getScriptLibrary",
         "summary": "Get script library as DXL",
-        "description": "Export one script library as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases, kind, and comment when the note has them.",
+        "description": "Export one script library as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and kind when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7936,10 +8114,6 @@
                         "ssjs",
                         "java"
                       ]
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -8030,7 +8204,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -8071,6 +8250,14 @@
                         "type": "string"
                       }
                     },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "kind": {
                       "type": "string",
                       "description": "Script library kind.",
@@ -8080,10 +8267,6 @@
                         "ssjs",
                         "java"
                       ]
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -8153,7 +8336,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -8194,10 +8382,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -8253,7 +8445,7 @@
         ],
         "operationId": "listSharedActions",
         "summary": "List Shared Actions note names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of Shared Actions notes in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of Shared Actions notes in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8276,7 +8468,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -8294,10 +8486,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -8351,7 +8539,7 @@
         ],
         "operationId": "getSharedActions",
         "summary": "Get Shared Actions note as DXL",
-        "description": "Export one Shared Actions note as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one Shared Actions note as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8384,10 +8572,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -8482,7 +8666,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -8523,10 +8712,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -8574,7 +8767,7 @@
         ],
         "operationId": "getApplicationProperties",
         "summary": "Get Application Properties as DXL",
-        "description": "Export Application Properties as Domino DXL. Always present on a normal NSF. Requires ?nsfPath=. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export Application Properties as Domino DXL. Always present on a normal NSF. Requires ?nsfPath=. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8604,10 +8797,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -8650,7 +8839,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -8687,10 +8881,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -8738,7 +8936,7 @@
         ],
         "operationId": "getXspProperties",
         "summary": "Get XPages xsp.properties as DXL",
-        "description": "Export XPages xsp.properties as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export XPages xsp.properties as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8772,10 +8970,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -8818,7 +9012,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -8855,10 +9054,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -8907,7 +9110,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -8944,10 +9152,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -9034,7 +9246,7 @@
         ],
         "operationId": "getDatabaseScript",
         "summary": "Get Database Script as DXL",
-        "description": "Export the Database Script as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export the Database Script as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9064,10 +9276,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -9115,7 +9323,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -9153,10 +9366,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -9254,7 +9471,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -9292,10 +9514,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -9378,7 +9604,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -9416,16 +9647,20 @@
                       "type": "string",
                       "description": "File name Domino uses for the page. Renaming the design leaves it unchanged. The XPage URL and a custom control reference use this name."
                     },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "aliases": {
                       "type": "array",
                       "description": "Names after |, used by a URL or OpenForm.",
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -9482,7 +9717,7 @@
         ],
         "operationId": "listXPages",
         "summary": "List XPage names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of XPages in the target database. elements adds noteId, plus fileName, aliases, and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of XPages in the target database. elements adds noteId, plus fileName and aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9505,7 +9740,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus fileName, aliases, and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus fileName and aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -9527,10 +9762,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -9584,7 +9815,7 @@
         ],
         "operationId": "getXPage",
         "summary": "Get XPage as DXL",
-        "description": "Export one XPage as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus fileName, aliases, and comment when the note has them.",
+        "description": "Export one XPage as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus fileName and aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9617,10 +9848,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -9711,7 +9938,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -9749,16 +9981,20 @@
                       "type": "string",
                       "description": "File name Domino uses for the page. Renaming the design leaves it unchanged. The XPage URL and a custom control reference use this name."
                     },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "aliases": {
                       "type": "array",
                       "description": "Names after |, used by a URL or OpenForm.",
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -9823,7 +10059,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -9861,16 +10102,20 @@
                       "type": "string",
                       "description": "File name Domino uses for the page. Renaming the design leaves it unchanged. The XPage URL and a custom control reference use this name."
                     },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "aliases": {
                       "type": "array",
                       "description": "Names after |, used by a URL or OpenForm.",
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -9927,7 +10172,7 @@
         ],
         "operationId": "listCustomControls",
         "summary": "List custom control names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of custom controls in the target database. elements adds noteId, plus fileName, aliases, and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of custom controls in the target database. elements adds noteId, plus fileName and aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -9950,7 +10195,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus fileName, aliases, and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus fileName and aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -9972,10 +10217,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -10029,7 +10270,7 @@
         ],
         "operationId": "getCustomControl",
         "summary": "Get custom control as DXL",
-        "description": "Export one custom control as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus fileName, aliases, and comment when the note has them.",
+        "description": "Export one custom control as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus fileName and aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10062,10 +10303,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -10151,7 +10388,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -10189,16 +10431,20 @@
                       "type": "string",
                       "description": "File name Domino uses for the page. Renaming the design leaves it unchanged. The XPage URL and a custom control reference use this name."
                     },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "aliases": {
                       "type": "array",
                       "description": "Names after |, used by a URL or OpenForm.",
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -10263,7 +10509,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -10304,10 +10555,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -10363,7 +10618,7 @@
         ],
         "operationId": "listWebServices",
         "summary": "List web service provider names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of web service providers in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of web service providers in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10386,7 +10641,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -10404,10 +10659,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -10461,7 +10712,7 @@
         ],
         "operationId": "getWebService",
         "summary": "Get web service provider as DXL",
-        "description": "Export one web service provider as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one web service provider as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10490,10 +10741,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -10579,7 +10826,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -10620,10 +10872,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -10687,7 +10943,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -10728,10 +10989,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -10787,7 +11052,7 @@
         ],
         "operationId": "listWebServiceConsumers",
         "summary": "List web service consumer names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of web service consumers in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of web service consumers in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10810,7 +11075,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -10828,10 +11093,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -10885,7 +11146,7 @@
         ],
         "operationId": "getWebServiceConsumer",
         "summary": "Get web service consumer as DXL",
-        "description": "Export one web service consumer as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one web service consumer as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10914,10 +11175,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -11003,7 +11260,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -11044,10 +11306,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -11111,7 +11377,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -11152,10 +11423,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -11211,7 +11486,7 @@
         ],
         "operationId": "listNavigators",
         "summary": "List navigator names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of navigators in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of navigators in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -11234,7 +11509,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -11252,10 +11527,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -11309,7 +11580,7 @@
         ],
         "operationId": "getNavigator",
         "summary": "Get navigator as DXL",
-        "description": "Export one navigator as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one navigator as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -11338,10 +11609,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -11427,7 +11694,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -11468,10 +11740,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -11535,7 +11811,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -11576,10 +11857,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -11635,7 +11920,7 @@
         ],
         "operationId": "listDataConnections",
         "summary": "List data connection names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of data connections in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of data connections in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -11658,7 +11943,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -11676,10 +11961,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -11733,7 +12014,7 @@
         ],
         "operationId": "getDataConnection",
         "summary": "Get data connection as DXL",
-        "description": "Export one data connection as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one data connection as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -11762,10 +12043,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -11851,7 +12128,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -11892,10 +12174,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -11959,7 +12245,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -12000,10 +12291,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -12059,7 +12354,7 @@
         ],
         "operationId": "listJars",
         "summary": "List JAR names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of JARs in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of JARs in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -12082,7 +12377,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -12100,10 +12395,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -12157,7 +12448,7 @@
         ],
         "operationId": "getJar",
         "summary": "Get JAR as DXL",
-        "description": "Export one JAR as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one JAR as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -12186,10 +12477,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -12275,7 +12562,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -12316,10 +12608,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -12383,7 +12679,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -12424,10 +12725,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -12483,7 +12788,7 @@
         ],
         "operationId": "listXPagesResources",
         "summary": "List XPages project files in the NSF",
-        "description": "Requires ?nsfPath=. XPagesResources is the name array. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. XPagesResources is the name array. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -12506,7 +12811,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -12524,10 +12829,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -12581,7 +12882,7 @@
         ],
         "operationId": "getXPagesResource",
         "summary": "Get an XPages project file as DXL",
-        "description": "Export one project file as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one project file as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -12610,10 +12911,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -12659,7 +12956,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -12699,10 +13001,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -12797,7 +13103,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -12838,10 +13149,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -12897,7 +13212,7 @@
         ],
         "operationId": "listWebContent",
         "summary": "List WebContent files in the NSF",
-        "description": "Requires ?nsfPath=. Returns WebContent file names. elements adds noteId, plus aliases and comment when the note has them. WEB-INF is not included.",
+        "description": "Requires ?nsfPath=. Returns WebContent file names. elements adds noteId, plus aliases when the note has them. WEB-INF is not included.",
         "x-keep-version": 1,
         "security": [
           {
@@ -12920,7 +13235,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -12938,10 +13253,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -12995,7 +13306,7 @@
         ],
         "operationId": "getWebContent",
         "summary": "Get WebContent file as DXL",
-        "description": "Export one WebContent file as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one WebContent file as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -13024,10 +13335,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -13113,7 +13420,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -13154,10 +13466,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -13221,7 +13537,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -13262,10 +13583,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -13321,7 +13646,7 @@
         ],
         "operationId": "listApplets",
         "summary": "List applet names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of applets in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of applets in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -13344,7 +13669,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -13362,10 +13687,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -13419,7 +13740,7 @@
         ],
         "operationId": "getApplet",
         "summary": "Get applet as DXL",
-        "description": "Export one applet as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one applet as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -13448,10 +13769,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -13537,7 +13854,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -13578,10 +13900,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -13668,7 +13994,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -13709,6 +14040,14 @@
                         "type": "string"
                       }
                     },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "kind": {
                       "type": "string",
                       "description": "Java source kind.",
@@ -13717,10 +14056,6 @@
                         "interface",
                         "enum"
                       ]
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -13791,7 +14126,7 @@
         ],
         "operationId": "listJavaSources",
         "summary": "List Java source names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of Java sources in the target database. elements adds noteId, plus aliases, kind, and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of Java sources in the target database. elements adds noteId, plus aliases and kind when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -13814,7 +14149,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases, kind, and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases and kind when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -13841,10 +14176,6 @@
                               "interface",
                               "enum"
                             ]
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -13898,7 +14229,7 @@
         ],
         "operationId": "getJavaSource",
         "summary": "Get Java source as DXL",
-        "description": "Export one Java source as Domino DXL. Requires ?nsfPath=. 404 if missing. Name is the Java path ending in .java (e.g. se/infoware/kyber/NewJava.java). The response includes noteId, plus aliases, kind, and comment when the note has them.",
+        "description": "Export one Java source as Domino DXL. Requires ?nsfPath=. 404 if missing. Name is the Java path ending in .java (e.g. se/infoware/kyber/NewJava.java). The response includes noteId, plus aliases and kind when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -13936,10 +14267,6 @@
                         "interface",
                         "enum"
                       ]
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -14025,7 +14352,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -14066,6 +14398,14 @@
                         "type": "string"
                       }
                     },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "kind": {
                       "type": "string",
                       "description": "Java source kind.",
@@ -14074,10 +14414,6 @@
                         "interface",
                         "enum"
                       ]
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string",
@@ -14142,7 +14478,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -14183,10 +14524,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -14242,7 +14587,7 @@
         ],
         "operationId": "listWiringProperties",
         "summary": "List wiring properties names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of wiring properties in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of wiring properties in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -14265,7 +14610,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -14283,10 +14628,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -14340,7 +14681,7 @@
         ],
         "operationId": "getWiringProperties",
         "summary": "Get wiring properties as DXL",
-        "description": "Export one wiring properties as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one wiring properties as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -14369,10 +14710,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -14458,7 +14795,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -14499,10 +14841,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -14566,7 +14912,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -14607,10 +14958,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -14666,7 +15021,7 @@
         ],
         "operationId": "listCompositeApplications",
         "summary": "List composite application names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of composite applications in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of composite applications in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -14689,7 +15044,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -14707,10 +15062,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -14764,7 +15115,7 @@
         ],
         "operationId": "getCompositeApplication",
         "summary": "Get composite application as DXL",
-        "description": "Export one composite application as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one composite application as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -14793,10 +15144,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -14882,7 +15229,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -14923,10 +15275,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -14990,7 +15346,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -15031,10 +15392,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -15090,7 +15455,7 @@
         ],
         "operationId": "listCompositeComponents",
         "summary": "List composite component names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of composite components in the target database. elements adds noteId, plus aliases and comment when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of composite components in the target database. elements adds noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -15113,7 +15478,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases and comment when the note has them.",
+                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -15131,10 +15496,6 @@
                             "items": {
                               "type": "string"
                             }
-                          },
-                          "comment": {
-                            "type": "string",
-                            "description": "Design comment when the note has one."
                           }
                         },
                         "required": [
@@ -15188,7 +15549,7 @@
         ],
         "operationId": "getCompositeComponent",
         "summary": "Get composite component as DXL",
-        "description": "Export one composite component as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export one composite component as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -15217,10 +15578,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -15306,7 +15663,12 @@
                 "type": "string"
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -15347,10 +15709,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -15398,7 +15764,7 @@
         ],
         "operationId": "getDbIcon",
         "summary": "Get database icon as DXL",
-        "description": "Export the $DBIcon image resource as Domino DXL. Always present on a normal NSF. Requires ?nsfPath=. The response includes noteId, plus aliases and comment when the note has them.",
+        "description": "Export the $DBIcon image resource as Domino DXL. Always present on a normal NSF. Requires ?nsfPath=. The response includes noteId, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -15428,10 +15794,6 @@
                       "items": {
                         "type": "string"
                       }
-                    },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
                     },
                     "dxl": {
                       "type": "string"
@@ -15479,7 +15841,12 @@
                 }
               }
             }
-          }
+          ,
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignWriteEnvelope"
+              }
+            }}
         },
         "responses": {
           "200": {
@@ -15517,10 +15884,14 @@
                         "type": "string"
                       }
                     },
-                    "comment": {
-                      "type": "string",
-                      "description": "Design comment when the note has one."
-                    },
+                        "compiled": {
+                          "type": "boolean",
+                          "description": "True when LotusScript in this note was compiled during the write."
+                        },
+                        "signedBy": {
+                          "type": "string",
+                          "description": "Notes name that signed the note."
+                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
@@ -15558,7 +15929,35 @@
       }
     },
     "schemas": {
-      "ErrorMessage": {
+          "DesignWriteEnvelope": {
+      "type": "object",
+      "description": "dxl is the design to store. The design comment is the comment attribute in that DXL. name and kind are used when the path or query did not already set them.",
+      "properties": {
+        "dxl": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "noteId": {
+          "type": "string"
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "kind": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string",
+          "description": "Readable text for a note with one body. Ignored when dxl is present."
+        }
+      }
+    },
+"ErrorMessage": {
         "title": "Root Type for ErrorMessage",
         "description": "Detailed error message, might contain stacktrace",
         "type": "object",

@@ -133,7 +133,7 @@ class OpenApiDesignSpecTest {
     assertNotNull(element.getJsonObject("noteId"));
     assertNotNull(element.getJsonObject("aliases"));
     assertFalse(element.containsKey("kind"));
-    assertNotNull(element.getJsonObject("comment"));
+    assertFalse(element.containsKey("comment"));
 
     JsonObject got = schemaProps(paths, "/forms/{name}", "get");
     assertFalse(got.containsKey("code"));
@@ -141,7 +141,7 @@ class OpenApiDesignSpecTest {
     assertNotNull(got.getJsonObject("aliases"));
     assertFalse(got.containsKey("fileName"));
     assertFalse(got.containsKey("kind"));
-    assertNotNull(got.getJsonObject("comment"));
+    assertFalse(got.containsKey("comment"));
 
     JsonObject agent =
         schemaProps(paths, "/agents", "get")
@@ -166,6 +166,15 @@ class OpenApiDesignSpecTest {
     JsonObject source = schemaProps(paths, "/forms", "post").getJsonObject("source");
     assertEquals("dxl,code,default", enumOf(source));
     assertNotNull(schemaProps(paths, "/forms", "post").getJsonObject("dxl"));
+    JsonObject libraryPut = paths.getJsonObject("/scriptlibraries/{name}").getJsonObject("put");
+    assertNotNull(
+        libraryPut
+            .getJsonObject("requestBody")
+            .getJsonObject("content")
+            .getJsonObject("application/json"));
+    JsonObject libraryWritten = schemaProps(paths, "/scriptlibraries/{name}", "put");
+    assertNotNull(libraryWritten.getJsonObject("compiled"));
+    assertNotNull(libraryWritten.getJsonObject("signedBy"));
 
     JsonObject template = schemaProps(paths, "/defaults/{type}", "get");
     assertEquals("api,nsf", enumOf(template.getJsonObject("source")));

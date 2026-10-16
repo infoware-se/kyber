@@ -164,6 +164,12 @@ final class DesignCrud {
     if (imported.containsKey("signWarning")) {
       out.put("signWarning", imported.getString("signWarning"));
     }
+    if (imported.containsKey("signedBy")) {
+      out.put("signedBy", imported.getString("signedBy"));
+    }
+    if (imported.containsKey("compiled")) {
+      out.put("compiled", imported.getBoolean("compiled"));
+    }
     DesignPayload.enrich(out, exported);
     request.emit(out);
   }
@@ -285,6 +291,12 @@ final class DesignCrud {
     if (imported.containsKey("signWarning")) {
       out.put("signWarning", imported.getString("signWarning"));
     }
+    if (imported.containsKey("signedBy")) {
+      out.put("signedBy", imported.getString("signedBy"));
+    }
+    if (imported.containsKey("compiled")) {
+      out.put("compiled", imported.getBoolean("compiled"));
+    }
     DesignPayload.enrich(out, exported);
     request.emit(out);
   }
@@ -355,7 +367,8 @@ final class DesignCrud {
 
     DxlImporter importer = request.session().getDxlImporter();
     JsonObject imported =
-        DesignElementImport.importOne(importer, db, importType, dxl, request.session(), importMode);
+        DesignElementImport.importOne(
+            importer, db, importType, dxl, request.session(), importMode);
     String exported = DesignElementLookup.exportDxl(db, t, existsName).orElse(dxl);
 
     JsonObject out =
@@ -370,6 +383,12 @@ final class DesignCrud {
     }
     if (imported.containsKey("signWarning")) {
       out.put("signWarning", imported.getString("signWarning"));
+    }
+    if (imported.containsKey("signedBy")) {
+      out.put("signedBy", imported.getString("signedBy"));
+    }
+    if (imported.containsKey("compiled")) {
+      out.put("compiled", imported.getBoolean("compiled"));
     }
     DesignPayload.enrich(out, exported);
     request.emit(out);

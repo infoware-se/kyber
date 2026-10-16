@@ -4,7 +4,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
-| **Version** | 0.24.17 |
+| **Version** | 0.24.18 |
 | **API** | `/api/kyber-v1` |
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
@@ -12,7 +12,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 Kyber is complete CRUD for the design elements in an NSF. The target database is the query param **`nsfPath`**.
 
-The body of a create, an update, and a round trip is Domino DXL (`text/xml`). That XML is the format Designer already documents. Its grammar is the DTD shipped with Designer, `xmlschemas/domino_*.dtd`. A get also returns `code` when the note has one script or one text file, and that text can be written back. The stored design remains the DXL. A form has many events, so its scripts stay in the DXL.
+The body of a create, an update, and a round trip is Domino DXL. Send `text/xml`, or `application/json` with `dxl` set to that DXL. The design comment is the `comment` attribute in the DXL. A payload without that attribute leaves the comment already on the note. A LotusScript write returns `compiled: true`. `signedBy` is the Notes name that signed the note. The grammar is the DTD shipped with Designer, `xmlschemas/domino_*.dtd`. A get also returns `code` when the note has one script or one text file, and that text can be written back. The stored design remains the DXL. A form has many events, so its scripts stay in the DXL.
 
 `kyber.nsf` is the template library. The property `kyber.defaultNsf` names it and defaults to `kyber.nsf`. Put the design elements you want to reuse in that database. `GET /defaults/{type}` returns the first match by name, with `?kind=` for an agent, a script library, or a Java source. An empty create copies that element into the target NSF. When the template database has no such element, Kyber uses the starter in the API. `source` is `nsf` or `api`. Kyber creates `kyber.nsf` on the first design write if the file is missing. The new file explains itself in About and Using and holds no templates until you add them. Those two documents, and the database icon, are not templates.
 
@@ -28,7 +28,7 @@ Standard collection CRUD:
 
 Same pattern for other named types (`/forms`, `/scriptlibraries`, `/xpagesresources`, …). Write responses include exported `dxl`.
 
-A list keeps the name array and adds `elements`: `name`, plus `fileName`, `aliases`, `kind` and `comment` when the note has them. `kind` is filled for agents, script libraries and Java sources. `aliases` is the part of the name after `|`, the name used by a URL or `OpenForm`. A get or write adds `code` when the note has readable LotusScript, JavaScript, Java, an agent formula, or a text file. Binary files such as `.class` and `.jar` stay in `dxl` only.
+A list keeps the name array and adds `elements`: `name`, plus `fileName`, `aliases` and `kind` when the note has them. `kind` is filled for agents, script libraries and Java sources. `aliases` is the part of the name after `|`, the name used by a URL or `OpenForm`. A get or write adds `code` when the note has readable LotusScript, JavaScript, Java, an agent formula, or a text file. Binary files such as `.class` and `.jar` stay in `dxl` only.
 
 `code` can be written back on an agent, a script library, a Java source, a file resource, a style sheet, a WebContent file, or an XPages project file. Send `text/plain`, or JSON `{"code":"..."}`. The note keeps its other DXL. A form has several events, so its scripts stay in the DXL.
 

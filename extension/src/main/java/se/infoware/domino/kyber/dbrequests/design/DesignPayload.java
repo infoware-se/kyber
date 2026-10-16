@@ -35,14 +35,13 @@ final class DesignPayload {
     return out;
   }
 
-  /** Adds fileName, comment, kind and code when the DXL has them and the field is still empty. */
+  /** Adds fileName, kind and code when the DXL has them and the field is still empty. */
   static void enrich(JsonObject out, String dxl) {
     if (out == null || dxl == null || dxl.isBlank()) {
       return;
     }
     String fileName = itemText(dxl, "FileNames");
     putIfAbsent(out, "fileName", fileName);
-    putIfAbsent(out, "comment", commentOf(dxl));
     putIfAbsent(out, "kind", kindOf(dxl, fileName == null ? itemText(dxl, "TITLE") : fileName));
     putIfAbsent(out, "code", codeOf(dxl, fileName));
     putIfAbsent(out, "noteId", NoteIds.fromDxl(dxl));
@@ -92,6 +91,10 @@ final class DesignPayload {
       return JavaSourceKinds.detect(dxl);
     }
     return null;
+  }
+
+  static String commentText(String dxl) {
+    return commentOf(dxl);
   }
 
   private static String commentOf(String dxl) {
