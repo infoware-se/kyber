@@ -28,6 +28,7 @@
     Name-noteid.dxl and the export element. The import replicaId is a different NSF.
   - GET /databases replicaId for kybertest.nsf matches that export.
   - POST /database refuses KeepConfig.nsf. A missing NSF is created, and a second create of that file is 409. The file stays.
+  - DELETE /database refuses KeepConfig.nsf. A disposable NSF is created and then deleted. kybertest.nsf stays.
   - after that, DELETE each smoked element and the Hello World document, then create the
     design again so kybertest.nsf still holds it. -SkipDelete leaves everything in place.
 
@@ -1307,6 +1308,34 @@ if ($code -in @("200", "201")) {
   Ok "POST /database needs Create databases & templates"
 } else {
   Fail "POST /database -> HTTP $code $(Get-ResponseText)"
+}
+
+$code = Invoke-Design DELETE (Design-UrlOn "KeepConfig.nsf" "database") -OutFile $out
+if ($code -ne "400" -or (Get-ResponseText) -notmatch "KeepConfig") {
+  Fail "DELETE /database KeepConfig -> HTTP $code $(Get-ResponseText)"
+}
+Ok "DELETE /database refuses KeepConfig.nsf"
+
+$deleteNsf = "kyber-delete.nsf"
+$code = Invoke-Design POST (Design-UrlOn $deleteNsf "database" "dbTitle=Kyber%20Delete") -OutFile $out
+if ($code -in @("200", "201", "409")) {
+  $code = Invoke-Design DELETE (Design-UrlOn $deleteNsf "database") -OutFile $out
+  if ($code -ne "200") { Fail "DELETE /database $deleteNsf -> HTTP $code $(Get-ResponseText)" }
+  $deletedDb = Get-Content $out -Raw | ConvertFrom-Json
+  if (-not $deletedDb.success) { Fail "DELETE /database did not report success" }
+  if ([string]$deletedDb.nsfPath -ne $deleteNsf) { Fail "DELETE /database nsfPath '$($deletedDb.nsfPath)'" }
+  Assert-ReplicaId "DELETE /database" $deletedDb.replicaId
+  $code = Invoke-Design POST (Design-UrlOn $deleteNsf "database" "dbTitle=Kyber%20Delete") -OutFile $out
+  if ($code -notin @("200", "201")) {
+    Fail "DELETE /database left $deleteNsf in place -> HTTP $code $(Get-ResponseText)"
+  }
+  $code = Invoke-Design DELETE (Design-UrlOn $deleteNsf "database") -OutFile $out
+  if ($code -ne "200") { Fail "DELETE /database second $deleteNsf -> HTTP $code $(Get-ResponseText)" }
+  Ok "DELETE /database removed $deleteNsf"
+} elseif ($code -eq "403") {
+  Ok "DELETE /database skipped; POST /database needs Create databases & templates"
+} else {
+  Fail "POST /database $deleteNsf -> HTTP $code $(Get-ResponseText)"
 }
 
 Write-Host "SMOKE PASSED ($NsfPath kept, $($named.Count) named elements plus singletons)" -ForegroundColor Green

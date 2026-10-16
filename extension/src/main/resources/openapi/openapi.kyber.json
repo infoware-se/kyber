@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Kyber — Infoware REST API for design elements",
-    "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) with a typed root element. GET /export is the design export and PUT /import is the design import of all supported elements as DXL. The design import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database whose catalog category is KyberEnabled. POST /database creates a missing NSF after the server privilege Create databases & templates and sets the catalog category KyberEnabled. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist and those paths are not returned. The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists, has catalog category KyberEnabled, and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
-    "version": "0.24.16"
+    "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) with a typed root element. GET /export is the design export and PUT /import is the design import of all supported elements as DXL. The design import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database whose catalog category is KyberEnabled. POST /database creates a missing NSF after the server privilege Create databases & templates and sets the catalog category KyberEnabled. DELETE /database deletes an NSF that has catalog category KyberEnabled and needs Manager on that NSF. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist and those paths are not returned. The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists, has catalog category KyberEnabled, and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
+    "version": "0.24.17"
   },
   "servers": [
     {
@@ -17,7 +17,7 @@
     },
     {
       "name": "design-handler",
-      "description": "The design export and the design import. POST /database creates a missing NSF after Create databases & templates and sets the catalog category KyberEnabled. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist."
+      "description": "The design export and the design import. POST /database creates a missing NSF after Create databases & templates and sets the catalog category KyberEnabled. DELETE /database deletes an NSF that has catalog category KyberEnabled and needs Manager on that NSF. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist."
     }
   ],
   "paths": {
@@ -561,12 +561,12 @@
       }
     },
     "/database": {
-      "summary": "Create a database",
-      "description": "POST creates an NSF that does not exist yet, after the server privilege Create databases & templates, and sets the catalog category KyberEnabled. KeepConfig.nsf cannot be created.",
+      "summary": "Create or delete a database",
+      "description": "POST creates an NSF that does not exist yet, after the server privilege Create databases & templates, and sets the catalog category KyberEnabled. DELETE deletes an NSF whose catalog category is KyberEnabled and needs Manager on that NSF. KeepConfig.nsf cannot be created or deleted.",
       "parameters": [
         {
           "name": "nsfPath",
-          "description": "NSF to create.",
+          "description": "NSF to create or delete.",
           "schema": {
             "type": "string"
           },
@@ -621,6 +621,34 @@
           "400": { "$ref": "#/components/responses/400BadRequest" },
           "403": { "$ref": "#/components/responses/403Forbidden" },
           "409": { "description": "Already exists" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["design-handler"],
+        "operationId": "deleteDatabase",
+        "summary": "Delete database",
+        "description": "Deletes an NSF whose catalog category is KyberEnabled. Needs Manager on that NSF. A database without the category responds 403 Not Kyber enabled. KeepConfig.nsf cannot be deleted.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "nsfPath": { "type": "string" },
+                    "replicaId": { "type": "string", "description": "Replica id of the deleted NSF, 16 hex digits. An export folder is named nsfPath-8525812300456789.", "example": "8525812300456789" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
           "500": { "$ref": "#/components/responses/500InternalServerError" }
         }
       }

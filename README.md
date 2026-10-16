@@ -6,7 +6,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.24.16 |
+| **Version** | 0.24.17 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
@@ -22,7 +22,9 @@ Every call acts only on a database whose catalog category is **KyberEnabled**. I
 
 A database without that category responds **403** with the message **Not Kyber enabled**. `GET /databases` leaves it out.
 
-`POST /database`, and a design import that creates a missing NSF, set the category on the new file. Those calls need the server privilege **Create databases & templates**. Kyber gives the caller Manager on the new file and writes the category in the same step.
+`POST /database`, and a design import that creates a missing NSF, set the category on the new file. Those calls need the server privilege **Create databases & templates**. A blank field allows everyone. A name in the field may be a user, a server, or a group. Kyber gives the caller Manager on the new file and writes the category in the same step.
+
+`DELETE /database` removes an NSF whose category is **KyberEnabled**. That call needs **Manager** on the file. A database without the category responds **403** **Not Kyber enabled**. `KeepConfig.nsf` cannot be deleted.
 
 ## Contents
 
@@ -138,9 +140,9 @@ The call runs as the signed-in user. On a database that already exists, the limi
 | ACL on the target NSF | Allowed |
 |--|--|
 | Designer | List, get, create, update, and delete design |
-| Manager | Replace the ACL. A Manager includes the Designer rights above. |
+| Manager | Replace the ACL, and delete the NSF when its category is KyberEnabled. A Manager includes the Designer rights above. |
 
-The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file, sets the category **KyberEnabled**, and imports the design. `POST /database` checks that same privilege and creates an empty NSF. The same import into a database that already exists uses the ACL table above. `GET /databases` needs Reader on the database that runs the call. `fileType` defaults to `database` (1247: NSF, NSG, or NSH). `template` (1248) is an NTF. `replica_candidate` (1245) is a database or template that is not disabled for replication. `template_candidate` (1246) is any database or template. A file is returned only when this user can open it. `more` is true when other databases of that type exist, and those paths are not returned.
+The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**. A blank field allows everyone, and a name in the field may be a user, a server, or a group. The import then creates the file, sets the category **KyberEnabled**, and imports the design. `POST /database` checks that same privilege and creates an empty NSF. `DELETE /database` needs Manager on an NSF whose category is KyberEnabled. `KeepConfig.nsf` cannot be deleted. The same import into a database that already exists uses the ACL table above. `GET /databases` needs Reader on the database that runs the call. `fileType` defaults to `database` (1247: NSF, NSG, or NSH). `template` (1248) is an NTF. `replica_candidate` (1245) is a database or template that is not disabled for replication. `template_candidate` (1246) is any database or template. A file is returned only when this user can open it. `more` is true when other databases of that type exist, and those paths are not returned.
 
 A Manager may create shared and personal folders, views, and agents. Domino keeps those rights on the Manager level and does not store them as separate checkboxes. Delete documents stays a stored flag at every level. Designer and below need the design checkboxes stored on the ACL entry.
 

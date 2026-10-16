@@ -19,6 +19,48 @@ import org.junit.jupiter.api.Test;
 class NsfCreatePolicyTest {
 
   @Test
+  void blankCreateDatabasesFieldAllowsEveryone() {
+    assertTrue(DesignAccess.createAccessAllowsEveryone(null));
+    assertTrue(DesignAccess.createAccessAllowsEveryone(List.of()));
+    assertTrue(DesignAccess.createAccessAllowsEveryone(List.of("")));
+    assertTrue(DesignAccess.createAccessAllowsEveryone(List.of("  ")));
+    assertFalse(DesignAccess.createAccessAllowsEveryone(List.of("LocalDomainAdmins")));
+  }
+
+  @Test
+  void createDatabasesFieldHonorsGroupsAndCertifiers() {
+    List<String> admin =
+        List.of("CN=Domino Administrator/O=Renovations", "LocalDomainAdmins");
+    assertTrue(DesignAccess.createAccessAllows(List.of("LocalDomainAdmins"), admin));
+    assertTrue(DesignAccess.createAccessAllows(List.of("CN=LocalDomainAdmins"), admin));
+    assertFalse(
+        DesignAccess.createAccessAllows(List.of("LocalDomainAdmins"), List.of("OtherGroup")));
+    assertTrue(
+        DesignAccess.createAccessAllows(
+            List.of("*/Sales/East/Renovations"),
+            List.of("CN=Alice/OU=Sales/OU=East/O=Renovations")));
+    assertTrue(
+        DesignAccess.createAccessAllows(
+            List.of("*/Sales/East/Renovations"),
+            List.of("Bob/Team/Sales/East/Renovations")));
+    assertFalse(
+        DesignAccess.createAccessAllows(
+            List.of("*/Sales/East/Renovations"), List.of("Carol/East/Renovations")));
+    assertTrue(
+        DesignAccess.createAccessAllows(
+            List.of("OtherGroup, */Renovations"),
+            List.of("CN=Alice/OU=Sales/O=Renovations")));
+    assertTrue(
+        DesignAccess.createAccessAllows(
+            List.of("*($Users)"),
+            List.of("CN=Alice/O=Renovations"),
+            view -> "($Users)".equals(view)));
+    assertFalse(
+        DesignAccess.createAccessAllows(
+            List.of("*($Users)"), List.of("CN=Alice/O=Renovations"), view -> false));
+  }
+
+  @Test
   void missingFileMayBeCreated() {
     assertTrue(
         ImportDesign.isMissingDatabase(new DominoException(259, "File does not exist")));

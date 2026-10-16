@@ -11,8 +11,10 @@
  * for a Manager. A shared view or folder, and a LotusScript or Java agent, need their own
  * checkbox for a Designer. Domino does not store those checkboxes on a Manager entry, because a
  * Manager cannot turn them off, so a Manager is treated as having them. Creating a new NSF needs
- * the server privilege Create databases &amp; templates. A call acts only on a database whose catalog
- * category is KyberEnabled. Creating a database sets that category.
+ * the server privilege Create databases &amp; templates. A blank field allows everyone. A listed
+ * name may be a user, a server, or a group. A call acts only on a database whose catalog
+ * category is KyberEnabled. Creating a database sets that category. Deleting an NSF needs Manager
+ * on that file and the same category. {@code KeepConfig.nsf} cannot be deleted.
  *
  * <p>{@link ImportDesign} and {@link CreateDatabase} are the requests whose {@code @MinimumAcl}
  * applies to {@code KeepConfig.nsf}. KEEP opens that file so a missing target can be created. The

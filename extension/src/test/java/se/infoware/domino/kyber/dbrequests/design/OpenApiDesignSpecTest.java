@@ -33,7 +33,7 @@ class OpenApiDesignSpecTest {
     assertFalse(root.getJsonObject("paths").containsKey("/xpagesproject"));
     JsonObject database = root.getJsonObject("paths").getJsonObject("/database");
     assertEquals("createDatabase", database.getJsonObject("post").getString("operationId"));
-    assertFalse(database.containsKey("delete"));
+    assertEquals("deleteDatabase", database.getJsonObject("delete").getString("operationId"));
     JsonObject databases = root.getJsonObject("paths").getJsonObject("/databases");
     assertEquals("listDatabases", databases.getJsonObject("get").getString("operationId"));
     assertNotNull(
@@ -81,6 +81,11 @@ class OpenApiDesignSpecTest {
     assertEquals(
         "8525812300456789",
         schemaProps(root.getJsonObject("paths"), "/database", "post")
+            .getJsonObject("replicaId")
+            .getString("example"));
+    assertEquals(
+        "8525812300456789",
+        schemaProps(root.getJsonObject("paths"), "/database", "delete")
             .getJsonObject("replicaId")
             .getString("example"));
     JsonObject imp = root.getJsonObject("paths").getJsonObject("/import");
