@@ -6,11 +6,11 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.24.14 |
+| **Version** | 0.24.15 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
-| **Swagger tags** | `design-element` for typed CRUD, `design-handler` for `/defaults`, `/export`, and `/import` |
+| **Swagger tags** | `design-element` for typed CRUD, `design-handler` for `/defaults`, `/export`, `/import`, and `/databases` |
 | **Template NSF** | `kyber.nsf` (`kyber.defaultNsf`) |
 | **Reference** | [extension/README.md](extension/README.md) |
 | **Source** | https://github.com/infoware-se/kyber |
@@ -53,7 +53,7 @@ Create, update, and the round trip use Domino DXL, sent as `text/xml`. It is the
 
 `kyber.nsf` is the template library, an ordinary NSF on the server. Design the forms, agents, script libraries, and other elements you want to reuse, and store them there. The file name is `kyber.defaultNsf` in `kyber.properties`, and the default is `kyber.nsf`.
 
-`GET /defaults` lists the template types. `GET /defaults/{type}` returns the first element of that type, in case-insensitive name order. Agents, script libraries, and Java sources take `?kind=` so the match is the right kind. An empty create copies that element into the target NSF and names it with `?name=`. For those three types the empty create is `?kind=&name=`. When `kyber.nsf` has no element of that type, Kyber uses the starter embedded in the JAR under `resources/defaults/`.
+`GET /defaults` lists the template types. `GET /defaults/{type}` returns the first element of that type, in case-insensitive name order. Agents, script libraries, and Java sources take `?kind=` so the match is the right kind. An empty create copies that element into the target NSF and names it with `?name=`. For those three types the empty create is `?kind=&name=`. When `kyber.nsf` has no element of that type, Kyber uses the starter in the API. `source` is `nsf` or `api`.
 
 Kyber creates `kyber.nsf` on the first design write when the file is missing. The new file has a title, an ACL, and About and Using text that describes the database. It holds no templates until you add them. While that About and Using text is still the text Kyber wrote, those two documents are usage text and are not templates. The database icon is the tile for `kyber.nsf` and is not a template either. Replace an element in `kyber.nsf` and the next empty create uses the replacement.
 
@@ -117,7 +117,7 @@ Invoke-RestMethod -Method POST `
 
 Send your own design as DXL (`Content-Type: text/xml`). A full form is in the [manual example](extension/README.md#manual-test). A path such as `mail/user.nsf` is one `nsfPath` value. Percent-encode a slash inside an element name: `WEB-INF%2Ffaces-config.xml`.
 
-Per-type create needs an existing NSF. The design import, `PUT /api/kyber-v1/import?nsfPath=&dbTitle=`, creates a missing NSF and imports the design. The target keeps its own replica id. Kyber never deletes a database.
+Per-type create needs an existing NSF. The design import, `PUT /api/kyber-v1/import?nsfPath=&dbTitle=`, creates a missing NSF and imports the design. `POST /database` creates a missing NSF without importing design. `GET /databases` lists the NotesDbDirectory file type this user can open. `fileType` defaults to `database` (1247). `more` is set when other databases of that type exist, and those paths are not returned. The target keeps its own replica id.
 
 A second create of the same name returns **409**. A missing element comes back as **404** or **400**, and the message says it was not found.
 
@@ -130,7 +130,7 @@ The call runs as the signed-in user. On a database that already exists, the limi
 | Designer | List, get, create, update, and delete design |
 | Manager | Replace the ACL. A Manager includes the Designer rights above. |
 
-The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file and imports the design. The same import into a database that already exists uses the ACL table above.
+The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file and imports the design. `POST /database` checks that same privilege and creates an empty NSF. The same import into a database that already exists uses the ACL table above. `GET /databases` needs Reader on the database that runs the call. `fileType` defaults to `database` (1247: NSF, NSG, or NSH). `template` (1248) is an NTF. `replica_candidate` (1245) is a database or template that is not disabled for replication. `template_candidate` (1246) is any database or template. A file is returned only when this user can open it. `more` is true when other databases of that type exist, and those paths are not returned.
 
 A Manager may create shared and personal folders, views, and agents. Domino keeps those rights on the Manager level and does not store them as separate checkboxes. Delete documents stays a stored flag at every level. Designer and below need the design checkboxes stored on the ACL entry.
 
@@ -170,7 +170,7 @@ Endpoint tables for each collection are in [extension/README.md](extension/READM
 
 ## Round trip
 
-The design export, `GET /api/kyber-v1/export?nsfPath=`, returns `{ nsfPath, elements: [{ type, name?, dxl }], skipped }`. The design import is `PUT /import` of that document. It is the only call that creates a missing NSF. Per-type create needs a database that already exists. On create, `dbTitle` sets the database title. The source `replicaid` is removed, so the target keeps its own. A new NSF receives the embedded Kyber database icon unless the payload already includes one, and a later design refresh is allowed to replace that icon. The ACL is also `GET`/`PUT /acl`, and replacing it requires Manager. Kyber never deletes a database.
+The design export, `GET /api/kyber-v1/export?nsfPath=`, returns `{ nsfPath, elements: [{ type, name?, dxl }], skipped }`. The design import is `PUT /import` of that document. `POST /database` creates a missing NSF without importing design. Per-type create needs a database that already exists. On create, `dbTitle` sets the database title. The source `replicaid` is removed, so the target keeps its own. A new NSF receives the embedded Kyber database icon unless the payload already includes one, and a later design refresh is allowed to replace that icon. The ACL is also `GET`/`PUT /acl`, and replacing it requires Manager.
 
 [`tools/export-to-repo.ps1`](tools/export-to-repo.ps1) writes that export to disk:
 

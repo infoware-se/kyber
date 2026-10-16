@@ -205,6 +205,14 @@ class NsfCreatePolicyTest {
   }
 
   @Test
+  void keepConfigCannotBeCreatedOrDeleted() {
+    assertTrue(ImportDesign.isKeepConfig("KeepConfig.nsf"));
+    assertTrue(ImportDesign.isKeepConfig("Server!!KeepConfig.nsf"));
+    assertFalse(ImportDesign.isKeepConfig("kybertest.nsf"));
+    assertFalse(ImportDesign.isKeepConfig("mail/KeepConfig.nsf.bak"));
+  }
+
+  @Test
   void unknownEncryptionIsRejected() {
     assertThrows(KeepExceptionWrongDataRequest.class, () -> ImportDesign.encryptionOf("rot13"));
   }

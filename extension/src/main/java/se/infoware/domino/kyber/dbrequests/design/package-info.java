@@ -13,9 +13,11 @@
  * Manager cannot turn them off, so a Manager is treated as having them. Creating a new NSF needs
  * the server privilege Create databases &amp; templates.
  *
- * <p>{@link ImportDesign} is the one request whose {@code @MinimumAcl} applies to {@code
- * KeepConfig.nsf}. KEEP opens that file so a missing target can be created. The write itself is
- * authorized on the caller's {@code nsfPath}.
+ * <p>{@link ImportDesign} and {@link CreateDatabase} are the requests whose {@code @MinimumAcl}
+ * applies to {@code KeepConfig.nsf}. KEEP opens that file so a missing target can be created. The
+ * write itself is authorized on the caller's {@code nsfPath}. {@code KeepConfig.nsf} cannot be
+ * created. {@link ListDatabases} lists the NotesDbDirectory file type this user can open. A file that cannot be opened is
+ * omitted and {@code more} is set. The path is not returned.
  *
  * <p>{@link DesignElementExport} lists design notes. Data documents and agent run data stay in
  * the NSF. {@link DesignElementImport} removes the DXL {@code replicaid} attribute so the target

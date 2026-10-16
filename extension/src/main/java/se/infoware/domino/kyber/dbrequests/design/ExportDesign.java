@@ -23,8 +23,7 @@ public class ExportDesign extends AsyncDominoJNXJson {
     String nsfPath = request.incoming.getString("nsfPath", "");
     JsonArray skipped = new JsonArray();
     request.emit(
-        new JsonObject()
-            .put("nsfPath", nsfPath)
+        ReplicaIds.put(new JsonObject().put("nsfPath", nsfPath), db)
             .put("elements", DesignElementExport.exportAll(db, skipped))
             .put("skipped", skipped));
   }

@@ -34,24 +34,17 @@ final class DesignElementImport {
   private DesignElementImport() {}
 
   /**
-   * Delete one bulk/residual design note by UNID and/or name. Used by {@code PUT /import} when
-   * an element has {@code "delete": true}.
+   * Delete one bulk/residual design note by name. Used by {@code PUT /import} when an element has
+   * {@code "delete": true}. A nameless note is named {@code unid:} plus the note id, the same name
+   * the export uses.
    */
-  static JsonObject deleteOne(Database db, String type, String name, String unid)
-      throws Exception {
+  static JsonObject deleteOne(Database db, String type, String name) throws Exception {
     String t = DesignBulkTypes.normalize(type);
     if (!DesignBulkTypes.isKnown(t)) {
       throw new KeepExceptionWrongDataRequest("Unknown design element type: " + type);
     }
     int deleted = 0;
-    if (unid != null && !unid.isBlank()) {
-      Optional<Document> doc = db.getDocumentByUNID(unid.trim());
-      if (doc.isEmpty()) {
-        throw new KeepExceptionWrongDataRequest("Design note not found for unid: " + unid);
-      }
-      doc.get().delete();
-      deleted = 1;
-    } else if (name != null && !name.isBlank()) {
+    if (name != null && !name.isBlank()) {
       // Delete all notes with this title (clears DXL replace duplicates)
       while (true) {
         Optional<BulkOnlyNotes.Entry> entry = BulkOnlyNotes.find(db, t, name);
@@ -71,17 +64,13 @@ final class DesignElementImport {
         throw new KeepExceptionWrongDataRequest(t + " not found: " + name);
       }
     } else {
-      throw new KeepExceptionWrongDataRequest("name or unid is required to delete");
+      throw new KeepExceptionWrongDataRequest("name is required to delete");
     }
-    JsonObject result =
-        new JsonObject().put("success", true).put("type", t).put("deleted", deleted);
-    if (name != null && !name.isBlank()) {
-      result.put("name", name);
-    }
-    if (unid != null && !unid.isBlank()) {
-      result.put("unid", unid.trim());
-    }
-    return result;
+    return new JsonObject()
+        .put("success", true)
+        .put("type", t)
+        .put("deleted", deleted)
+        .put("name", name);
   }
 
   /**

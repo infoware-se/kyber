@@ -2,6 +2,8 @@ package se.infoware.domino.kyber.dbrequests.design;
 
 import com.hcl.domino.data.Database;
 import com.hcl.domino.keep.dbrequests.KeepJnxSession;
+import com.hcl.domino.keep.exceptions.ErrorClassification;
+import com.hcl.domino.keep.exceptions.KeepException;
 import com.hcl.domino.keep.exceptions.KeepExceptionInsufficientAccess;
 import com.hcl.domino.security.AclAccess;
 import com.hcl.domino.security.AclFlag;
@@ -35,9 +37,20 @@ final class DesignAccess {
 
   private DesignAccess() {}
 
-  /** Server document privilege "Create databases &amp; templates". */
+  /**
+   * Server document privilege "Create databases &amp; templates", the same check HCL uses for
+   * {@code POST /design/nsf}: {@link KeepJnxSession#validateServerAcl} with
+   * {@link ServerAclType#CREATE_DATABASE}. That compares the field to the user's names list with
+   * an exact string match. Off the server the check allows the create.
+   */
   static void requireCreateDatabase(KeepJnxSession session) throws Exception {
-    session.validateServerAcl(ServerAclType.CREATE_DATABASE);
+    try {
+      session.validateServerAcl(ServerAclType.CREATE_DATABASE);
+    } catch (KeepExceptionInsufficientAccess denied) {
+      throw KeepException.status(
+          "Server privilege Create databases & templates is required",
+          ErrorClassification.FORBIDDEN);
+    }
   }
 
   /** Database ACL checkbox Delete documents. Unchecked is {@link AclFlag#NODELETE}. */

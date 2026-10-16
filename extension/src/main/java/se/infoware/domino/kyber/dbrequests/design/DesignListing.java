@@ -14,8 +14,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
- * Collection JSON. The existing name array stays. {@code elements} adds fileName, kind and comment
- * so a caller can tell notes apart without fetching each DXL.
+ * Collection JSON. The existing name array stays. {@code elements} adds noteId, and fileName,
+ * kind and comment when the note has them.
  */
 final class DesignListing {
 
@@ -78,6 +78,7 @@ final class DesignListing {
 
   static JsonObject row(String name, DesignElement el, String kind) {
     JsonObject row = new JsonObject().put("name", name);
+    put(row, "noteId", NoteIds.of(documentOf(el)));
     put(row, "comment", commentOf(el));
     if (el instanceof DesignElement.NamedDesignElement named) {
       put(row, "fileName", fileNameOf(named));
@@ -89,6 +90,7 @@ final class DesignListing {
 
   static JsonObject row(String name, Document doc) {
     JsonObject row = new JsonObject().put("name", name);
+    put(row, "noteId", NoteIds.of(doc));
     if (doc != null) {
       put(row, "fileName", itemText(doc, "$FileNames"));
       put(row, "comment", itemText(doc, "$Comment"));
@@ -160,6 +162,14 @@ final class DesignListing {
       out.add(alias);
     }
     return out.isEmpty() ? null : out;
+  }
+
+  private static Document documentOf(DesignElement el) {
+    try {
+      return el.getDocument();
+    } catch (RuntimeException ex) {
+      return null;
+    }
   }
 
   private static void putAliases(JsonObject row, JsonArray aliases) {

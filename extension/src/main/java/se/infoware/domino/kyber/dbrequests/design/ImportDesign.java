@@ -24,8 +24,8 @@ import java.util.Set;
  * {@link MinimumAcl} on this class is that bootstrap database only. Writes are authorized against
  * the target NSF: design changes need Designer, and replacing the ACL needs Manager.
  *
- * <p>This is the only endpoint that may create the target NSF. Per-type CRUD requires an existing
- * database. The API never deletes databases. The first write to any NSF also creates {@code
+ * <p>Per-type CRUD requires an existing database. {@code POST /database} also creates a missing NSF.
+ * {@code KeepConfig.nsf} cannot be created. The first write to any NSF also creates {@code
  * kyber.nsf} when that file is missing. That database is left empty of design templates. It gets a
  * title, the Kyber ACL, and the same usage text in About and Using, so templates can be added
  * later in Domino Designer.
@@ -43,8 +43,8 @@ import java.util.Set;
  * database icon unless the payload already contains one. On {@code kyber.nsf} that icon is the
  * database tile only; it is not a design template.
  *
- * <p>Elements may set {@code "delete": true} with {@code name} and/or {@code unid} to remove a
- * design note (bulk-only cleanup) instead of importing DXL.
+ * <p>Elements may set {@code "delete": true} with {@code name} to remove a design note instead
+ * of importing DXL. A nameless note uses the exported name {@code unid:} followed by the note id.
  */
 @MinimumAcl(AclLevel.READER)
 public class ImportDesign extends AsyncDominoJNXJson {
@@ -115,8 +115,7 @@ public class ImportDesign extends AsyncDominoJNXJson {
           }
           DesignAccess.requireDeleteDocuments(session, db);
           one =
-              DesignElementImport.deleteOne(
-                  db, type, el.getString("name"), el.getString("unid"));
+              DesignElementImport.deleteOne(db, type, el.getString("name"));
         } else {
           one = DesignElementImport.importOne(importer, db, type, dxl, session);
         }
@@ -177,10 +176,12 @@ public class ImportDesign extends AsyncDominoJNXJson {
     JsonObject compile = DesignLotusScriptCompile.compileAll(db);
 
     JsonObject out =
-        new JsonObject()
-            .put("success", failed == 0)
-            .put("created", created)
-            .put("nsfPath", target)
+        ReplicaIds.put(
+                new JsonObject()
+                    .put("success", failed == 0)
+                    .put("created", created)
+                    .put("nsfPath", target),
+                db)
             .put("imported", ok)
             .put("failed", failed)
             .put("aclApplied", hasAcl)
@@ -352,7 +353,7 @@ public class ImportDesign extends AsyncDominoJNXJson {
     applyProductDbIcon(importer, db, session);
   }
 
-  private static void applyProductDbIcon(DxlImporter importer, Database db, KeepJnxSession session)
+  static void applyProductDbIcon(DxlImporter importer, Database db, KeepJnxSession session)
       throws Exception {
     String iconDxl =
         DesignDefaults.productDbIconDxl()
@@ -360,12 +361,8 @@ public class ImportDesign extends AsyncDominoJNXJson {
     DesignElementImport.importOne(importer, db, "image", iconDxl, session);
   }
 
-  /**
-   * @return true if the NSF was created
-   */
-  private static boolean openOrCreate(
-      KeepJnxSession session, String nsfPath, DominoClient.Encryption encryption) throws Exception {
-    DominoClient client = session.getClient();
+  /** Server and file path. {@code server!!path} splits; a bare path uses the session server. */
+  static String[] serverAndPath(String nsfPath) {
     String server = "";
     String path = nsfPath;
     int bang = nsfPath.indexOf("!!");
@@ -373,6 +370,36 @@ public class ImportDesign extends AsyncDominoJNXJson {
       server = nsfPath.substring(0, bang);
       path = nsfPath.substring(bang + 2);
     }
+    return new String[] {server, path};
+  }
+
+  /** True when the file is the KEEP bootstrap database. */
+  static boolean isKeepConfig(String nsfPath) {
+    return fileName(nsfPath).equalsIgnoreCase("KeepConfig.nsf");
+  }
+
+  static boolean databaseExists(KeepJnxSession session, String nsfPath) throws Exception {
+    String[] where = serverAndPath(nsfPath);
+    try {
+      session.getClient().openDatabase(where[0], where[1]);
+      return true;
+    } catch (Exception openFailed) {
+      if (isMissingDatabase(openFailed)) {
+        return false;
+      }
+      String message =
+          openFailed.getMessage() == null ? openFailed.toString() : openFailed.getMessage();
+      throw new KeepExceptionWrongDataRequest("Cannot open " + nsfPath + " (" + message + ")");
+    }
+  }
+
+  /** @return true if the NSF was created */
+  static boolean openOrCreate(
+      KeepJnxSession session, String nsfPath, DominoClient.Encryption encryption) throws Exception {
+    DominoClient client = session.getClient();
+    String[] where = serverAndPath(nsfPath);
+    String server = where[0];
+    String path = where[1];
 
     try {
       client.openDatabase(server, path);

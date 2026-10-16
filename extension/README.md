@@ -4,7 +4,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
-| **Version** | 0.24.14 |
+| **Version** | 0.24.15 |
 | **API** | `/api/kyber-v1` |
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
@@ -13,7 +13,7 @@ Kyber is complete CRUD for the design elements in an NSF. The target database is
 
 The body of a create, an update, and a round trip is Domino DXL (`text/xml`). That XML is the format Designer already documents. Its grammar is the DTD shipped with Designer, `xmlschemas/domino_*.dtd`. A get also returns `code` when the note has one script or one text file, and that text can be written back. The stored design remains the DXL. A form has many events, so its scripts stay in the DXL.
 
-`kyber.nsf` is the template library. The property `kyber.defaultNsf` names it and defaults to `kyber.nsf`. Put the design elements you want to reuse in that database. `GET /defaults/{type}` returns the first match by name, with `?kind=` for an agent, a script library, or a Java source. An empty create copies that element into the target NSF. When the template database has no such element, Kyber uses the starter embedded in the JAR under `resources/defaults/`. Kyber creates `kyber.nsf` on the first design write if the file is missing. The new file explains itself in About and Using and holds no templates until you add them. Those two documents, and the database icon, are not templates.
+`kyber.nsf` is the template library. The property `kyber.defaultNsf` names it and defaults to `kyber.nsf`. Put the design elements you want to reuse in that database. `GET /defaults/{type}` returns the first match by name, with `?kind=` for an agent, a script library, or a Java source. An empty create copies that element into the target NSF. When the template database has no such element, Kyber uses the starter in the API. `source` is `nsf` or `api`. Kyber creates `kyber.nsf` on the first design write if the file is missing. The new file explains itself in About and Using and holds no templates until you add them. Those two documents, and the database icon, are not templates.
 
 Standard collection CRUD:
 
@@ -55,9 +55,11 @@ All paths are under `/api/kyber-v1` and require `?nsfPath=`.
 | GET | `/defaults/{type}` | Get one design template. `kind` for an agent, a script library, or a Java source |
 | GET | `/export?nsfPath=` | Design export of a database that already exists |
 | PUT | `/import?nsfPath=&dbTitle=` | Design import. When the file is missing, checks Create databases & templates and creates the NSF |
+| POST | `/database?nsfPath=&dbTitle=` | Create database. Checks Create databases & templates. 409 if the file exists |
+| GET | `/databases?fileType=` | List databases this user can open. `fileType` is `database` (1247, default), `template` (1248), `replica_candidate` (1245), or `template_candidate` (1246). `more` is set when other databases of that type exist |
 Per-type CRUD stays under **`design-element`**.
 
-**Templates** live in `kyber.nsf`, or whichever NSF `kyber.defaultNsf` names. `GET /defaults/{type}` returns the first element of that type, matched by case-insensitive name, and `?kind=` when the type has kinds. An empty create copies it into the target NSF. When the template database has no such element, Kyber uses the starter embedded in the JAR under `resources/defaults/`.
+**Templates** live in `kyber.nsf`, or whichever NSF `kyber.defaultNsf` names. `GET /defaults/{type}` returns the first element of that type, matched by case-insensitive name, and `?kind=` when the type has kinds. An empty create copies it into the target NSF. When the template database has no such element, Kyber uses the starter in the API. `source` is `nsf` or `api`.
 
 Element `type` is the API name (`form`, `about`, `image`, …). The folder is the Package Explorer name (`Forms`, `Resources`, `Resources/Images`, …). Bridge scripts in [`tools/`](../tools/):
 
@@ -191,9 +193,9 @@ On a database that already exists, the limit is that NSF's ACL.
 | Designer | list, get, create, update, delete of design (not the ACL) |
 | Manager | replace the ACL. A Manager includes the Designer rights above. |
 
-The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file and imports the design. The same import into a database that already exists uses the ACL table above.
+The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file and imports the design. `POST /database` checks that same privilege and creates an empty NSF. The same import into a database that already exists uses the ACL table above. `GET /databases` uses the NotesDbDirectory file types. `fileType` defaults to `database` (1247). `more` is true when other databases of that type exist, and those paths are not returned.
 
-A Manager is treated as allowed to create shared and personal folders/views and LotusScript/Java agents, including private ones. Domino does not store those checkboxes on a Manager entry. Delete documents stays a stored flag at every level, including Manager. Designer and below still need the checkbox stored on the ACL entry. The API never deletes a database.
+A Manager is treated as allowed to create shared and personal folders/views and LotusScript/Java agents, including private ones. Domino does not store those checkboxes on a Manager entry. Delete documents stays a stored flag at every level, including Manager. Designer and below still need the checkbox stored on the ACL entry. `KeepConfig.nsf` cannot be created.
 
 ## Endpoints
 

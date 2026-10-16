@@ -69,7 +69,8 @@ final class AgentKinds {
    * Detect agent kind from DXL. Returns {@code null} when markers are missing.
    *
    * <p>Priority: Imported Java → Java → LotusScript → Formula (incl. runformula) → other
-   * simpleaction.
+   * simpleaction. An agent with {@code agenttype='java'} and no {@code <javaproject>} is imported
+   * Java. The starter stores the class files that way.
    */
   static String detect(String dxl) {
     if (dxl == null || dxl.isBlank()) {
@@ -91,6 +92,9 @@ final class AgentKinds {
     }
     if (lower.contains("<simpleaction")) {
       return SIMPLEACTION;
+    }
+    if (lower.contains("agenttype='java'") || lower.contains("agenttype=\"java\"")) {
+      return IMPORTEDJAVA;
     }
     return null;
   }

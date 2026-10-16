@@ -31,6 +31,18 @@ class DesignDxlTest {
   }
 
   @Test
+  void exportElementCarriesNoteIdFromDxl() {
+    var row =
+        DesignElementExport.exportedElement(
+            "agent", "SmokeAgentFormula", "<agent><noteinfo noteid='368a'/></agent>");
+    assertEquals("368a", row.getString("noteId"));
+    assertEquals("SmokeAgentFormula", row.getString("name"));
+    var acl = DesignElementExport.exportedElement("acl", null, "<database><acl/></database>");
+    assertFalse(acl.containsKey("noteId"));
+    assertFalse(acl.containsKey("name"));
+  }
+
+  @Test
   void roundTripLeavesOutAgentDataAndUntitledViews() {
     assertEquals("agentdata", DesignDxl.rootLocalName("<agentdata><agent agentname='X'/></agentdata>"));
     assertNull(

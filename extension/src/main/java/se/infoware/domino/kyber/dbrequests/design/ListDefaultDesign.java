@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** List starter design DXL — GET /defaults */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetDefaults extends AsyncDominoJNXJson {
+public class ListDefaultDesign extends AsyncDominoJNXJson {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

@@ -196,14 +196,14 @@ final class DesignDefaults {
               + (resolvedKind != null ? "' kind '" + resolvedKind : "")
               + "' (not in "
               + defaultNsfPath()
-              + " and not embedded)");
+              + " and not in the API)");
     }
     JsonObject out =
         new JsonObject()
             .put("type", key)
             .put("name", "Default")
             .put("dxl", embedded.get())
-            .put("source", "embedded");
+            .put("source", "api");
     if (resolvedKind != null) {
       out.put("kind", resolvedKind);
       out.put("name", defaultNameFor(key, resolvedKind));

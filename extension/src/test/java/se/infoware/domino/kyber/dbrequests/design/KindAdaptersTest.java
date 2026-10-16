@@ -19,6 +19,7 @@ class KindAdaptersTest {
     assertEquals("Default-JavaAgent", AgentKinds.defaultName("java"));
 
     assertEquals(AgentKinds.IMPORTEDJAVA, AgentKinds.detect("<javaproject imported='true'>"));
+    assertEquals(AgentKinds.IMPORTEDJAVA, AgentKinds.detect("<agent agenttype='java'/>"));
     assertEquals(AgentKinds.JAVA, AgentKinds.detect("<javaproject name='x'>"));
     assertEquals(AgentKinds.FORMULA, AgentKinds.detect("<simpleaction action='runformula'/>"));
     assertEquals(AgentKinds.SIMPLEACTION, AgentKinds.detect("<simpleaction action='sendmail'/>"));

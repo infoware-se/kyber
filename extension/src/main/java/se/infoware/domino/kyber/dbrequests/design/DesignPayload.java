@@ -45,6 +45,7 @@ final class DesignPayload {
     putIfAbsent(out, "comment", commentOf(dxl));
     putIfAbsent(out, "kind", kindOf(dxl, fileName == null ? itemText(dxl, "TITLE") : fileName));
     putIfAbsent(out, "code", codeOf(dxl, fileName));
+    putIfAbsent(out, "noteId", NoteIds.fromDxl(dxl));
     JsonArray aliases = aliasesOf(dxl, out.getString("name"));
     if (aliases != null && !out.containsKey("aliases")) {
       out.put("aliases", aliases);

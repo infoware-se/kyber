@@ -6,9 +6,12 @@
   Auth via DOMINO_REST_* / REST_ADMIN_* or a gitignored .env. Notes COM uses DOMINO_SERVER.
   Uses kybertest.nsf (PUT /import?dbTitle=... creates it when missing), then asserts:
 
-  - GET /defaults for a few types
+  - GET /defaults lists starters. source is api or nsf, and kind is set for agents, script libraries, and Java sources
+  - GET /defaults/{type} for a few types, with the same source and kind checks
   - missing form → not found
-  - every named CRUD collection: list, empty-body create or keep, 409, get, put, list contains name
+  - every named CRUD collection: list, empty-body create or keep, 409, get, put, list contains name.
+    Get, put, and the list element include noteId. Kinded types return that kind.
+    An XPage fileName is newxpage.xsp. A custom control fileName is newcustomcontrol.xsp
   - Hello World written into each created element and read back
   - LotusScript, formula and simple-action agents are run; each writes Hello World
   - The LotusScript agent calls SmokeLibLs
@@ -21,6 +24,10 @@
   - a NSF created by this run has the embedded Kyber database icon
   - export-to-repo.ps1 writes kybertest.nsf to a temp folder, then import-from-repo.ps1
     restores that tree into kybersmoke-import.nsf. The repo domino/ templates are not touched.
+    GET /export replicaId matches the folder name. Each smoke agent noteId matches
+    Name-noteid.dxl and the export element. The import replicaId is a different NSF.
+  - GET /databases replicaId for kybertest.nsf matches that export.
+  - POST /database refuses KeepConfig.nsf. A missing NSF is created, and a second create of that file is 409. The file stays.
   - after that, DELETE each smoked element and the Hello World document, then create the
     design again so kybertest.nsf still holds it. -SkipDelete leaves everything in place.
 
@@ -66,6 +73,14 @@ function Fail([string]$Msg) {
 }
 
 function Ok([string]$Msg) { Write-Host "OK  $Msg" -ForegroundColor Green }
+
+function Assert-NoteId([string]$Label, $Value) {
+  if ([string]$Value -notmatch '^[0-9a-f]{1,8}$') { Fail "$Label noteId '$Value'" }
+}
+
+function Assert-ReplicaId([string]$Label, $Value) {
+  if ([string]$Value -notmatch '^[0-9A-F]{16}$') { Fail "$Label replicaId '$Value'" }
+}
 
 function Assert-NotFound([string]$Label, [string]$Code, [string]$Body) {
   if ($Code -notin @("404", "400")) {
@@ -737,28 +752,40 @@ function Invoke-NamedCrud([string]$Coll, [string]$Name, [string]$Kind = "") {
 
   $code = Invoke-Design GET (Design-Url $item) -OutFile $out
   Assert-Code "GET $label" $code @("200")
+  $got = Get-ResponseText | ConvertFrom-Json
+  Assert-NoteId "GET $label" $got.noteId
+  if ($Kind -and [string]$got.kind -ne $Kind) { Fail "$label kind '$($got.kind)'" }
   if ($Coll -eq "xpages") {
-    $got = Get-ResponseText | ConvertFrom-Json
     if ($got.fileName -ne "newxpage.xsp") { Fail "XPage fileName '$($got.fileName)'" }
     if ([string]$got.code -notmatch "xp:view") { Fail "XPage code missing markup" }
-    Ok "XPage fileName=$($got.fileName) code"
+    Ok "XPage fileName=$($got.fileName)"
+  }
+  if ($Coll -eq "customcontrols") {
+    if ($got.fileName -ne "newcustomcontrol.xsp") { Fail "custom control fileName '$($got.fileName)'" }
+    Ok "custom control fileName=$($got.fileName)"
   }
   $putFile = Save-DxlFromGet "GET $label"
   $code = Invoke-Design PUT (Design-Url $item) -BodyFile $putFile -ContentType "text/xml" -OutFile $out
   Assert-Code "PUT $label" $code @("200")
+  $putBody = Get-ResponseText | ConvertFrom-Json
+  Assert-NoteId "PUT $label" $putBody.noteId
+  $wroteId = [string]$putBody.noteId
 
   $code = Invoke-Design GET (Design-Url $Coll) -OutFile $out
   Assert-Code "LIST $label" $code @("200")
-  if ((Get-ResponseText) -notmatch [regex]::Escape($Name)) {
-    Fail "GET /$Coll does not list $Name"
+  $listed = Get-ResponseText | ConvertFrom-Json
+  $row = @($listed.elements | Where-Object { $_.name -eq $Name })
+  if ($row.Count -lt 1) { Fail "GET /$Coll does not list $Name" }
+  Assert-NoteId "LIST $label" $row[0].noteId
+  if ([string]$row[0].noteId -ne $wroteId) {
+    Fail "$label list noteId '$($row[0].noteId)' wrote '$wroteId'"
   }
-  if ($Coll -eq "xpages") {
-    $listed = Get-ResponseText | ConvertFrom-Json
-    $row = @($listed.elements | Where-Object { $_.name -eq $Name })
-    if ($row.Count -lt 1 -or $row[0].fileName -ne "newxpage.xsp") {
-      Fail "XPage list missing fileName newxpage.xsp"
-    }
-    Ok "XPage list fileName=newxpage.xsp"
+  if ($Kind -and [string]$row[0].kind -ne $Kind) { Fail "$label list kind '$($row[0].kind)'" }
+  if ($Coll -eq "xpages" -and $row[0].fileName -ne "newxpage.xsp") {
+    Fail "XPage list fileName '$($row[0].fileName)'"
+  }
+  if ($Coll -eq "customcontrols" -and $row[0].fileName -ne "newcustomcontrol.xsp") {
+    Fail "custom control list fileName '$($row[0].fileName)'"
   }
   Ok "listed $label"
   Assert-HelloWorld (Design-Url $item) $label $Kind
@@ -793,9 +820,11 @@ function Invoke-SingletonCrud([string]$Path) {
 
   $code = Invoke-Design GET $url -OutFile $out
   Assert-Code "GET /$Path" $code @("200")
+  Assert-NoteId "GET /$Path" ((Get-ResponseText | ConvertFrom-Json).noteId)
   $putFile = Save-DxlFromGet "GET /$Path"
   $code = Invoke-Design PUT $url -BodyFile $putFile -ContentType "text/xml" -OutFile $out
   Assert-Code "PUT /$Path" $code @("200")
+  Assert-NoteId "PUT /$Path" ((Get-ResponseText | ConvertFrom-Json).noteId)
   Assert-HelloWorld $url $Path
   Ok "left /$Path"
 }
@@ -865,6 +894,27 @@ function Design-Url([string]$ApiPath, [string]$ExtraQuery = "") {
 }
 
 # --- Defaults ---
+$code = Invoke-Design GET "$base/api/kyber-v1/defaults" -OutFile $out
+if ($code -ne "200") { Fail "GET /defaults -> HTTP $code $(Get-ResponseText)" }
+$catalog = Get-Content $out -Raw | ConvertFrom-Json
+$starters = @($catalog.elements)
+if ($starters.Count -lt 1) { Fail "GET /defaults has no elements" }
+foreach ($el in $starters) {
+  if ([string]$el.source -notin @("api", "nsf")) {
+    Fail "GET /defaults $($el.type) source '$($el.source)'"
+  }
+  $kinded = [string]$el.type -in @("agent", "scriptlibrary", "javasource")
+  if ($kinded -and [string]::IsNullOrWhiteSpace([string]$el.kind)) {
+    Fail "GET /defaults $($el.type) $($el.name) missing kind"
+  }
+  if (-not $kinded -and -not [string]::IsNullOrWhiteSpace([string]$el.kind)) {
+    Fail "GET /defaults $($el.type) has kind '$($el.kind)'"
+  }
+}
+if (@($starters | Where-Object { $_.type -eq "agent" -and $_.kind -eq "lotusscript" }).Count -lt 1) {
+  Fail "GET /defaults missing agent lotusscript"
+}
+Ok "GET /defaults elements=$($starters.Count)"
 foreach ($q in @(
   "form",
   "agent?kind=lotusscript",
@@ -876,6 +926,13 @@ foreach ($q in @(
   if ($code -ne "200") { Fail "GET /defaults/$q -> HTTP $code" }
   $j = Get-Content $out -Raw | ConvertFrom-Json
   if (-not $j.dxl) { Fail "GET /defaults/$q missing dxl" }
+  if ([string]$j.source -notin @("api", "nsf")) { Fail "GET /defaults/$q source '$($j.source)'" }
+  $expectKind = ""
+  if ($q -match "kind=([^&]+)") { $expectKind = $Matches[1] }
+  if ($expectKind -and [string]$j.kind -ne $expectKind) { Fail "GET /defaults/$q kind '$($j.kind)'" }
+  if (-not $expectKind -and -not [string]::IsNullOrWhiteSpace([string]$j.kind)) {
+    Fail "GET /defaults/$q has kind '$($j.kind)'"
+  }
   Ok "defaults/$q source=$($j.source) name=$($j.name)"
 }
 
@@ -915,6 +972,7 @@ function Design-UrlOn([string]$TargetNsf, [string]$ApiPath, [string]$ExtraQuery 
   if ($ExtraQuery) { $q = "$q&$ExtraQuery" }
   return "$base/api/kyber-v1/${ApiPath}?$q"
 }
+
 foreach ($singleton in @("applicationproperties", "acl")) {
   $code = Invoke-Design GET (Design-UrlOn $defaultNsf $singleton) -OutFile $out
   if ($code -ne "200") { Fail "GET /$singleton on $defaultNsf -> HTTP $code $(Get-Content $out -Raw)" }
@@ -1102,10 +1160,48 @@ if ($formExport.Count -lt 1 -or $formExport[0].path -notlike "Forms/*") {
 }
 Ok "exported $($manifest.elementCount) elements"
 
+$dirName = Split-Path $exportDir -Leaf
+if ($dirName -notmatch '-([0-9A-F]{16})$') { Fail "export folder '$dirName' has no replica id" }
+$folderReplica = $Matches[1]
+$code = Invoke-Design GET (Design-Url "export") -OutFile $out
+if ($code -ne "200") { Fail "GET /export -> HTTP $code" }
+$export = Get-Content $out -Raw | ConvertFrom-Json
+if ([string]$export.nsfPath -ne $NsfPath) { Fail "export nsfPath '$($export.nsfPath)'" }
+Assert-ReplicaId "export" $export.replicaId
+if ([string]$export.replicaId -ne $folderReplica) { Fail "export replicaId does not match the folder" }
+$script:exportReplicaId = [string]$export.replicaId
+foreach ($agentName in @(
+  "SmokeAgentFormula", "SmokeAgentImported", "SmokeAgentJava", "SmokeAgentLs", "SmokeAgentSimple"
+)) {
+  $agentFile = @(Get-ChildItem -LiteralPath (Join-Path $exportDir "Code\Agents") -Filter "$agentName-*.dxl")
+  if ($agentFile.Count -ne 1) { Fail "export file count for $agentName is $($agentFile.Count)" }
+  if ($agentFile[0].BaseName -notmatch '-([0-9a-f]{1,8})$') {
+    Fail "export file '$($agentFile[0].Name)' has no note id"
+  }
+  $suffix = $Matches[1]
+  $code = Invoke-Design GET (Design-Url "agents/$([uri]::EscapeDataString($agentName))") -OutFile $out
+  Assert-Code "GET $agentName noteId" $code @("200")
+  $agent = Get-Content $out -Raw | ConvertFrom-Json
+  if ([string]$agent.noteId -ne $suffix) { Fail "$agentName noteId '$($agent.noteId)' file $suffix" }
+  $expEl = @($export.elements | Where-Object { $_.type -eq "agent" -and $_.name -eq $agentName })
+  if ($expEl.Count -ne 1 -or [string]$expEl[0].noteId -ne $suffix) {
+    Fail "export element $agentName noteId '$($expEl[0].noteId)' file $suffix"
+  }
+}
+Ok "export replicaId and agent noteId match the files"
+
+$importLines = $null
 try {
-  & (Join-Path $PSScriptRoot "import-from-repo.ps1") @roundTrip -NsfPath $importNsf -InDir $exportDir
+  $importLines = & (Join-Path $PSScriptRoot "import-from-repo.ps1") @roundTrip -NsfPath $importNsf -InDir $exportDir
 } catch {
   Fail "import-from-repo: $($_.Exception.Message)"
+}
+$importText = if ($importLines -is [string]) { $importLines } else { ($importLines | Out-String) }
+$importJson = $importText | ConvertFrom-Json
+if ([string]$importJson.nsfPath -ne $importNsf) { Fail "import nsfPath '$($importJson.nsfPath)'" }
+Assert-ReplicaId "import $importNsf" $importJson.replicaId
+if ([string]$importJson.replicaId -eq $script:exportReplicaId) {
+  Fail "import replicaId matches the source NSF"
 }
 foreach ($check in @(
   @{ path = "forms/SmokeForm"; label = "form" },
@@ -1155,6 +1251,62 @@ if ($SkipDelete) {
   $code = Invoke-Design DELETE (Design-Url $script:missingFormPath) -OutFile $out
   Assert-NotFound "DELETE missing form" $code (Get-ResponseText)
   Ok "delete pass restored the design"
+}
+
+$code = Invoke-Design GET "$base/api/kyber-v1/databases?nsfPath=$([uri]::EscapeDataString($NsfPath))" -OutFile $out
+if ($code -ne "200") { Fail "GET /databases -> HTTP $code $(Get-ResponseText)" }
+$listed = Get-Content $out -Raw | ConvertFrom-Json
+if ($listed.fileType -ne "database") { Fail "GET /databases fileType=$($listed.fileType)" }
+$listedPaths = @($listed.databases | ForEach-Object { $_.nsfPath })
+if ($listedPaths -notcontains $NsfPath) { Fail "GET /databases did not include $NsfPath" }
+$listedRow = @($listed.databases | Where-Object { $_.nsfPath -eq $NsfPath })
+Assert-ReplicaId "GET /databases $NsfPath" $listedRow[0].replicaId
+if ([string]$listedRow[0].replicaId -ne $script:exportReplicaId) {
+  Fail "GET /databases replicaId does not match the export"
+}
+Ok "GET /databases fileType=database more=$($listed.more) count=$($listedPaths.Count)"
+$code = Invoke-Design GET "$base/api/kyber-v1/databases?nsfPath=$([uri]::EscapeDataString($NsfPath))&fileType=template" -OutFile $out
+if ($code -ne "200") { Fail "GET /databases?fileType=template -> HTTP $code $(Get-ResponseText)" }
+$templates = Get-Content $out -Raw | ConvertFrom-Json
+if ($templates.fileType -ne "template") { Fail "GET /databases template fileType=$($templates.fileType)" }
+Ok "GET /databases fileType=template more=$($templates.more)"
+$code = Invoke-Design GET "$base/api/kyber-v1/databases?nsfPath=$([uri]::EscapeDataString($NsfPath))&fileType=1245" -OutFile $out
+if ($code -ne "200") { Fail "GET /databases?fileType=1245 -> HTTP $code $(Get-ResponseText)" }
+$replicas = Get-Content $out -Raw | ConvertFrom-Json
+if ($replicas.fileType -ne "replica_candidate") { Fail "GET /databases 1245 fileType=$($replicas.fileType)" }
+Ok "GET /databases fileType=replica_candidate more=$($replicas.more)"
+$code = Invoke-Design GET "$base/api/kyber-v1/databases?nsfPath=$([uri]::EscapeDataString($NsfPath))&fileType=1246" -OutFile $out
+if ($code -ne "200") { Fail "GET /databases?fileType=1246 -> HTTP $code $(Get-ResponseText)" }
+$candidates = Get-Content $out -Raw | ConvertFrom-Json
+if ($candidates.fileType -ne "template_candidate") { Fail "GET /databases 1246 fileType=$($candidates.fileType)" }
+Ok "GET /databases fileType=template_candidate more=$($candidates.more)"
+$code = Invoke-Design GET "$base/api/kyber-v1/databases?nsfPath=$([uri]::EscapeDataString($NsfPath))&fileType=box" -OutFile $out
+if ($code -ne "400") { Fail "GET /databases?fileType=box -> HTTP $code $(Get-ResponseText)" }
+Ok "GET /databases rejects fileType=box"
+
+$code = Invoke-Design POST (Design-UrlOn "KeepConfig.nsf" "database") -OutFile $out
+if ($code -ne "400" -or (Get-ResponseText) -notmatch "KeepConfig") {
+  Fail "POST /database KeepConfig -> HTTP $code $(Get-ResponseText)"
+}
+Ok "POST /database refuses KeepConfig.nsf"
+
+$tempNsf = "kyber-create.nsf"
+$code = Invoke-Design POST (Design-UrlOn $tempNsf "database" "dbTitle=Kyber%20Create") -OutFile $out
+if ($code -in @("200", "201")) {
+  $createdDb = Get-Content $out -Raw | ConvertFrom-Json
+  if (-not $createdDb.created) { Fail "POST /database did not create $tempNsf" }
+  if ([string]$createdDb.nsfPath -ne $tempNsf) { Fail "POST /database nsfPath '$($createdDb.nsfPath)'" }
+  Assert-ReplicaId "POST /database" $createdDb.replicaId
+  Ok "POST /database created $tempNsf"
+  $code = Invoke-Design POST (Design-UrlOn $tempNsf "database" "dbTitle=Kyber%20Create") -OutFile $out
+  if ($code -ne "409") { Fail "POST /database (exists) -> HTTP $code $(Get-ResponseText)" }
+  Ok "POST /database 409 when the file exists"
+} elseif ($code -eq "409") {
+  Ok "POST /database left $tempNsf in place"
+} elseif ($code -eq "403") {
+  Ok "POST /database needs Create databases & templates"
+} else {
+  Fail "POST /database -> HTTP $code $(Get-ResponseText)"
 }
 
 Write-Host "SMOKE PASSED ($NsfPath kept, $($named.Count) named elements plus singletons)" -ForegroundColor Green

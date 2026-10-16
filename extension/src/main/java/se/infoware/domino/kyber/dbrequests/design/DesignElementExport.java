@@ -169,7 +169,20 @@ final class DesignElementExport {
     if (dxl.isEmpty() || dxl.get().isBlank()) {
       return;
     }
-    elements.add(new JsonObject().put("type", type).put("dxl", dxl.get()));
+    elements.add(exportedElement(type, null, dxl.get()));
+  }
+
+  /** One exported note. {@code noteId} is the hex Domino writes in the DXL, omitted when absent. */
+  static JsonObject exportedElement(String type, String name, String dxl) {
+    JsonObject row = new JsonObject().put("type", type);
+    if (name != null && !name.isBlank()) {
+      row.put("name", name);
+    }
+    String noteId = NoteIds.fromDxl(dxl);
+    if (noteId != null) {
+      row.put("noteId", noteId);
+    }
+    return row.put("dxl", dxl);
   }
 
   private static void exportSharedActions(
@@ -184,17 +197,15 @@ final class DesignElementExport {
     for (SharedActions el : list) {
       trackUnid(exportedUnids, el.getDocument());
       elements.add(
-          new JsonObject()
-              .put("type", "sharedactions")
-              .put("name", SharedActionsNotes.nameOf(el))
-              .put("dxl", exporter.exportDocument(el.getDocument())));
+          exportedElement(
+              "sharedactions",
+              SharedActionsNotes.nameOf(el),
+              exporter.exportDocument(el.getDocument())));
     }
     for (SharedActions el : unnamed) {
       trackUnid(exportedUnids, el.getDocument());
       elements.add(
-          new JsonObject()
-              .put("type", "sharedactions")
-              .put("dxl", exporter.exportDocument(el.getDocument())));
+          exportedElement("sharedactions", null, exporter.exportDocument(el.getDocument())));
     }
   }
 
@@ -218,7 +229,7 @@ final class DesignElementExport {
         continue;
       }
       trackUnid(exportedUnids, el.getDocument());
-      elements.add(new JsonObject().put("type", type).put("name", el.getTitle()).put("dxl", dxl));
+      elements.add(exportedElement(type, el.getTitle(), dxl));
     }
   }
 
@@ -271,8 +282,7 @@ final class DesignElementExport {
           continue;
         }
         trackUnid(exportedUnids, doc);
-        elements.add(
-            new JsonObject().put("type", type).put("name", el.getTitle()).put("dxl", dxl));
+        elements.add(exportedElement(type, el.getTitle(), dxl));
       } catch (Exception failed) {
         // leave UNID untracked so exportBulkOnly can try raw DXL
         recordSkip(skipped, type, titleOrNull(el), failed);
@@ -330,10 +340,8 @@ final class DesignElementExport {
     for (CustomControls.Entry entry : CustomControls.list(db)) {
       trackUnid(exportedUnids, entry.document());
       elements.add(
-          new JsonObject()
-              .put("type", "customcontrol")
-              .put("name", entry.name())
-              .put("dxl", exporter.exportDocument(entry.document())));
+          exportedElement(
+              "customcontrol", entry.name(), exporter.exportDocument(entry.document())));
     }
   }
 
@@ -343,18 +351,13 @@ final class DesignElementExport {
     for (WebServices.Entry entry : WebServices.list(db, WebServices.Kind.PROVIDER)) {
       trackUnid(exportedUnids, entry.document());
       elements.add(
-          new JsonObject()
-              .put("type", "webservice")
-              .put("name", entry.name())
-              .put("dxl", exporter.exportDocument(entry.document())));
+          exportedElement("webservice", entry.name(), exporter.exportDocument(entry.document())));
     }
     for (WebServices.Entry entry : WebServices.list(db, WebServices.Kind.CONSUMER)) {
       trackUnid(exportedUnids, entry.document());
       elements.add(
-          new JsonObject()
-              .put("type", "webserviceconsumer")
-              .put("name", entry.name())
-              .put("dxl", exporter.exportDocument(entry.document())));
+          exportedElement(
+              "webserviceconsumer", entry.name(), exporter.exportDocument(entry.document())));
     }
   }
 
@@ -374,10 +377,8 @@ final class DesignElementExport {
     for (DesignElement.NamedDesignElement el : list) {
       trackUnid(exportedUnids, el.getDocument());
       elements.add(
-          new JsonObject()
-              .put("type", "scriptlibrary")
-              .put("name", el.getTitle())
-              .put("dxl", exporter.exportDocument(el.getDocument())));
+          exportedElement(
+              "scriptlibrary", el.getTitle(), exporter.exportDocument(el.getDocument())));
     }
   }
 
@@ -401,6 +402,10 @@ final class DesignElementExport {
           continue;
         }
         trackUnid(exportedUnids, entry.document());
+        String noteId = NoteIds.fromDxl(dxl);
+        if (noteId != null) {
+          roundTrip.put("noteId", noteId);
+        }
         roundTrip.put("dxl", dxl);
         elements.add(roundTrip);
       } catch (Exception failed) {

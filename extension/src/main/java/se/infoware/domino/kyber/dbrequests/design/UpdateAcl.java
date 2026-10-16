@@ -9,9 +9,9 @@ import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
 
-/** Create/replace database ACL from raw DXL — PUT /acl?nsfPath= */
+/** Replace the database ACL from raw DXL — PUT /acl?nsfPath= */
 @MinimumAcl(AclLevel.MANAGER)
-public class CreateAcl extends AsyncDominoJNXJson {
+public class UpdateAcl extends AsyncDominoJNXJson {
 
   private static final String TYPE = "acl";
 
