@@ -18,11 +18,11 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 ## Kyber enabled
 
-Every call acts only on a database whose catalog category is **KyberEnabled**. In Designer that field is Database properties, on the Design tab, Categories.
+Every call acts only on a database whose catalog category is **KyberEnabled**. In Designer that field is Database properties, on the Design tab, Categories. Setting it on a database that already exists needs **Designer** or higher in that database ACL.
 
 A database without that category responds **403** with the message **Not Kyber enabled**. `GET /databases` leaves it out.
 
-`POST /database`, and a design import that creates a missing NSF, set the category on the new file.
+`POST /database`, and a design import that creates a missing NSF, set the category on the new file. Those calls need the server privilege **Create databases & templates**. Kyber gives the caller Manager on the new file and writes the category in the same step.
 
 ## Contents
 
