@@ -11,7 +11,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Export one Shared Actions note as DXL - GET /sharedactions/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetSharedActions extends AsyncDominoJNXJson {
+public class GetSharedActions extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

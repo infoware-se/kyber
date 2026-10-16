@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /scriptlibraries/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateScriptLibrary extends AsyncDominoJNXJson {
+public class UpdateScriptLibrary extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateKinded(request, "scriptlibrary", DesignCrud.SCRIPT_LIBRARY, "scriptlibrary");

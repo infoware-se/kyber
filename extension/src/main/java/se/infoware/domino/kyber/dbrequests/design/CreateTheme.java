@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /themes?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateTheme extends AsyncDominoJNXJson {
+public class CreateTheme extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "theme", "theme", "note");

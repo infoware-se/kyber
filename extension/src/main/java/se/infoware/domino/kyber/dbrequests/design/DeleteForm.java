@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one form - DELETE /forms/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteForm extends AsyncDominoJNXJson {
+public class DeleteForm extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

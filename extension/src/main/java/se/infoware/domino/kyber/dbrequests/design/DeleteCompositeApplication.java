@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one compositeapplication - DELETE /compositeapplications/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteCompositeApplication extends AsyncDominoJNXJson {
+public class DeleteCompositeApplication extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

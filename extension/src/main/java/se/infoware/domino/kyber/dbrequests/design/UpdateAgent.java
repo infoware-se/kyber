@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /agents/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateAgent extends AsyncDominoJNXJson {
+public class UpdateAgent extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateKinded(request, "agent", DesignCrud.AGENT, "agent");

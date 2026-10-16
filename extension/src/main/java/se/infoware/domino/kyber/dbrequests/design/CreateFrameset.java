@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /framesets?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateFrameset extends AsyncDominoJNXJson {
+public class CreateFrameset extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "frameset", "frameset");

@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /forms?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateForm extends AsyncDominoJNXJson {
+public class CreateForm extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "form", "form");

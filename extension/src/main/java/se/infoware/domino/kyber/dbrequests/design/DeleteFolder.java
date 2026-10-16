@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one folder - DELETE /folders/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteFolder extends AsyncDominoJNXJson {
+public class DeleteFolder extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

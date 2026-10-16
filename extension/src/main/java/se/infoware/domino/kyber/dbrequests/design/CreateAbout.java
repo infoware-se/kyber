@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only singleton — POST /about */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateAbout extends AsyncDominoJNXJson {
+public class CreateAbout extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createSingleton(request, "about", "helpaboutdocument");

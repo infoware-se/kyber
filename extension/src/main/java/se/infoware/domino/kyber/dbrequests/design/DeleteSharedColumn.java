@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one shared column - DELETE /sharedcolumns/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteSharedColumn extends AsyncDominoJNXJson {
+public class DeleteSharedColumn extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

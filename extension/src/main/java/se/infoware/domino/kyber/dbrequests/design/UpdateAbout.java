@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only singleton — PUT /about */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateAbout extends AsyncDominoJNXJson {
+public class UpdateAbout extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateSingleton(request, "about", "helpaboutdocument");

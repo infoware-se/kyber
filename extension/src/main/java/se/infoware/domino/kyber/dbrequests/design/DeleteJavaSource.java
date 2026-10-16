@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Delete one javasource - DELETE /javasources/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteJavaSource extends AsyncDominoJNXJson {
+public class DeleteJavaSource extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

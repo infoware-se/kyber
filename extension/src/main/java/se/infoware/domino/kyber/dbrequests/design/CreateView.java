@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /views?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateView extends AsyncDominoJNXJson {
+public class CreateView extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "view", "view");

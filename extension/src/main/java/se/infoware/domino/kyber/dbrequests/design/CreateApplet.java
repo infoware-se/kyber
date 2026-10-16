@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /applets?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateApplet extends AsyncDominoJNXJson {
+public class CreateApplet extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "applet", "note", "fileresource", "appletresource");

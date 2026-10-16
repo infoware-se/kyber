@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one shared field as DXL - GET /sharedfields/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetSharedField extends AsyncDominoJNXJson {
+public class GetSharedField extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

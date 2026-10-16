@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one view as DXL - GET /views/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetView extends AsyncDominoJNXJson {
+public class GetView extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

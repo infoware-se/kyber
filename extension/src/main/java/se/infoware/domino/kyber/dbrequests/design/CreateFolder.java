@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /folders?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateFolder extends AsyncDominoJNXJson {
+public class CreateFolder extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "folder", "folder");

@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one theme - DELETE /themes/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteTheme extends AsyncDominoJNXJson {
+public class DeleteTheme extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

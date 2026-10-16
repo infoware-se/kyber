@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one outline - DELETE /outlines/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteOutline extends AsyncDominoJNXJson {
+public class DeleteOutline extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

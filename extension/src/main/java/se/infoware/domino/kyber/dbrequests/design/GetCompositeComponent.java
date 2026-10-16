@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one compositecomponent as DXL - GET /compositecomponents/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetCompositeComponent extends AsyncDominoJNXJson {
+public class GetCompositeComponent extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

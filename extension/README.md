@@ -4,10 +4,11 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
-| **Version** | 0.24.15 |
+| **Version** | 0.24.16 |
 | **API** | `/api/kyber-v1` |
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
+| **Category** | `KyberEnabled`. A database without it responds 403 **Not Kyber enabled** |
 
 Kyber is complete CRUD for the design elements in an NSF. The target database is the query param **`nsfPath`**.
 
@@ -47,6 +48,14 @@ OpenAPI operationIds: `listX` / `getX` / `createX` / `updateX` / `deleteX`.
 
 All paths are under `/api/kyber-v1` and require `?nsfPath=`.
 
+## Kyber enabled
+
+Every call acts only on a database whose catalog category is **KyberEnabled**. In Designer that field is Database properties, on the Design tab, Categories.
+
+A database without that category responds **403** with the message **Not Kyber enabled**. `GET /databases` leaves it out.
+
+`POST /database`, and a design import that creates a missing NSF, set the category on the new file.
+
 ## Design export and design import (`design-handler`)
 
 | Method | Path | Purpose |
@@ -55,8 +64,8 @@ All paths are under `/api/kyber-v1` and require `?nsfPath=`.
 | GET | `/defaults/{type}` | Get one design template. `kind` for an agent, a script library, or a Java source |
 | GET | `/export?nsfPath=` | Design export of a database that already exists |
 | PUT | `/import?nsfPath=&dbTitle=` | Design import. When the file is missing, checks Create databases & templates and creates the NSF |
-| POST | `/database?nsfPath=&dbTitle=` | Create database. Checks Create databases & templates. 409 if the file exists |
-| GET | `/databases?fileType=` | List databases this user can open. `fileType` is `database` (1247, default), `template` (1248), `replica_candidate` (1245), or `template_candidate` (1246). `more` is set when other databases of that type exist |
+| POST | `/database?nsfPath=&dbTitle=` | Create database. Checks Create databases & templates and sets the category KyberEnabled. 409 if the file exists |
+| GET | `/databases?fileType=` | List databases this user can open whose category is KyberEnabled. `fileType` is `database` (1247, default), `template` (1248), `replica_candidate` (1245), or `template_candidate` (1246). `more` is set when other databases of that type exist |
 Per-type CRUD stays under **`design-element`**.
 
 **Templates** live in `kyber.nsf`, or whichever NSF `kyber.defaultNsf` names. `GET /defaults/{type}` returns the first element of that type, matched by case-insensitive name, and `?kind=` when the type has kinds. An empty create copies it into the target NSF. When the template database has no such element, Kyber uses the starter in the API. `source` is `nsf` or `api`.
@@ -193,7 +202,7 @@ On a database that already exists, the limit is that NSF's ACL.
 | Designer | list, get, create, update, delete of design (not the ACL) |
 | Manager | replace the ACL. A Manager includes the Designer rights above. |
 
-The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file and imports the design. `POST /database` checks that same privilege and creates an empty NSF. The same import into a database that already exists uses the ACL table above. `GET /databases` uses the NotesDbDirectory file types. `fileType` defaults to `database` (1247). `more` is true when other databases of that type exist, and those paths are not returned.
+The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file, sets the category **KyberEnabled**, and imports the design. `POST /database` checks that same privilege and creates an empty NSF. The same import into a database that already exists uses the ACL table above. `GET /databases` uses the NotesDbDirectory file types. `fileType` defaults to `database` (1247). `more` is true when other databases of that type exist, and those paths are not returned.
 
 A Manager is treated as allowed to create shared and personal folders/views and LotusScript/Java agents, including private ones. Domino does not store those checkboxes on a Manager entry. Delete documents stays a stored flag at every level, including Manager. Designer and below still need the checkbox stored on the ACL entry. `KeepConfig.nsf` cannot be created.
 

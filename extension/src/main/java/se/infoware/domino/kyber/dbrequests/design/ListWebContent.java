@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** List — GET /webcontent?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class ListWebContent extends AsyncDominoJNXJson {
+public class ListWebContent extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

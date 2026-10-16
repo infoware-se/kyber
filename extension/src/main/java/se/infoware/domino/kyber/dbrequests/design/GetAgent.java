@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one agent as DXL - GET /agents/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetAgent extends AsyncDominoJNXJson {
+public class GetAgent extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

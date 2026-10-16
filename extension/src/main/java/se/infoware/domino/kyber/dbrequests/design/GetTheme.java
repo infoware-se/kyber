@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one theme as DXL - GET /themes/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetTheme extends AsyncDominoJNXJson {
+public class GetTheme extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

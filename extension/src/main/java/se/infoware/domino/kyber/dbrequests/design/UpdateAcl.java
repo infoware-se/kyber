@@ -11,7 +11,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Replace the database ACL from raw DXL — PUT /acl?nsfPath= */
 @MinimumAcl(AclLevel.MANAGER)
-public class UpdateAcl extends AsyncDominoJNXJson {
+public class UpdateAcl extends KyberRequest {
 
   private static final String TYPE = "acl";
 

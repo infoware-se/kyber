@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Delete one WebContent file - DELETE /webcontent/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteWebContent extends AsyncDominoJNXJson {
+public class DeleteWebContent extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

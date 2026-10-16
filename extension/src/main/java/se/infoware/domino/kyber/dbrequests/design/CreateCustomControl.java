@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /customcontrols?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateCustomControl extends AsyncDominoJNXJson {
+public class CreateCustomControl extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "customcontrol", "note", "fileresource");

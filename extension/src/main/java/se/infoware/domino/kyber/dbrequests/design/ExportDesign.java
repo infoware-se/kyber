@@ -15,7 +15,7 @@ import io.vertx.core.json.JsonObject;
  * export.
  */
 @MinimumAcl(AclLevel.DESIGNER)
-public class ExportDesign extends AsyncDominoJNXJson {
+public class ExportDesign extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

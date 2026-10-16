@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export the About Document as DXL - GET /about?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetAbout extends AsyncDominoJNXJson {
+public class GetAbout extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

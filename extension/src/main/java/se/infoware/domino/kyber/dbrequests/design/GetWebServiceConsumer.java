@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Export one Web Service Consumer as DXL - GET /webserviceconsumers/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetWebServiceConsumer extends AsyncDominoJNXJson {
+public class GetWebServiceConsumer extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

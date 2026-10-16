@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /subforms/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateSubform extends AsyncDominoJNXJson {
+public class UpdateSubform extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateNamed(request, "subform", "subform");

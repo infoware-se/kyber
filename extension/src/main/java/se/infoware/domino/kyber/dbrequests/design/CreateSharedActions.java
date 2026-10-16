@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /sharedactions?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateSharedActions extends AsyncDominoJNXJson {
+public class CreateSharedActions extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "sharedactions", "sharedactions");

@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one page - DELETE /pages/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeletePage extends AsyncDominoJNXJson {
+public class DeletePage extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /sharedcolumns/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateSharedColumn extends AsyncDominoJNXJson {
+public class UpdateSharedColumn extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateNamed(request, "sharedcolumn", "sharedcolumn");

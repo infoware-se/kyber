@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /images?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateImage extends AsyncDominoJNXJson {
+public class CreateImage extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "image", "imageresource");

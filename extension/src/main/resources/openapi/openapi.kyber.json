@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Kyber — Infoware REST API for design elements",
-    "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) with a typed root element. GET /export is the design export and PUT /import is the design import of all supported elements as DXL. The design import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database. POST /database creates a missing NSF after the server privilege Create databases & templates. GET /databases lists databases this user can open. fileType defaults to database (1247). more is set when other databases of that type exist and those paths are not returned. The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
-    "version": "0.24.15"
+    "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) with a typed root element. GET /export is the design export and PUT /import is the design import of all supported elements as DXL. The design import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database whose catalog category is KyberEnabled. POST /database creates a missing NSF after the server privilege Create databases & templates and sets the catalog category KyberEnabled. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist and those paths are not returned. The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists, has catalog category KyberEnabled, and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
+    "version": "0.24.16"
   },
   "servers": [
     {
@@ -13,11 +13,11 @@
   "tags": [
     {
       "name": "design-element",
-      "description": "Per-type and singleton design-element CRUD against an NSF (?nsfPath=). Create/update bodies are raw DXL (text/xml) with a typed root. Named collections support list/create on the collection path and get/update/delete on /{name}. Application Properties and the database icon are always present (GET/PUT only)."
+      "description": "Per-type and singleton design-element CRUD against an NSF (?nsfPath=) whose catalog category is KyberEnabled. Create/update bodies are raw DXL (text/xml) with a typed root. Named collections support list/create on the collection path and get/update/delete on /{name}. Application Properties and the database icon are always present (GET/PUT only)."
     },
     {
       "name": "design-handler",
-      "description": "The design export and the design import. POST /database creates a missing NSF after Create databases & templates. GET /databases lists databases this user can open. fileType defaults to database (1247). more is set when other databases of that type exist."
+      "description": "The design export and the design import. POST /database creates a missing NSF after Create databases & templates and sets the catalog category KyberEnabled. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist."
     }
   ],
   "paths": {
@@ -498,7 +498,7 @@
     },
     "/databases": {
       "summary": "List databases this user can open",
-      "description": "Lists files in the data directory using the NotesDbDirectory.GetFirstDatabase file types. fileType defaults to database (1247): NSF, NSG, and NSH. template (1248) is an NTF. replica_candidate (1245) is a database or template that is not disabled for replication. template_candidate (1246) is any database or template. A file is included only when this user can open it. more is true when other databases of that type exist; those paths are not returned.",
+      "description": "Lists files in the data directory using the NotesDbDirectory.GetFirstDatabase file types. fileType defaults to database (1247): NSF, NSG, and NSH. template (1248) is an NTF. replica_candidate (1245) is a database or template that is not disabled for replication. template_candidate (1246) is any database or template. A file is included only when this user can open it and its catalog category is KyberEnabled. A database without that category is omitted. more is true when other databases of that type exist and could not be opened; those paths are not returned.",
       "parameters": [
         {
           "name": "fileType",
@@ -513,7 +513,7 @@
         },
         {
           "name": "nsfPath",
-          "description": "Optional database used to run the call. When omitted, KeepConfig.nsf is used and this user needs Reader there. When set, this user needs Reader on that NSF. It does not filter the list.",
+          "description": "Optional database used to run the call. When omitted, KeepConfig.nsf is used and this user needs Reader there. When set, this user needs Reader on that NSF and its catalog category must be KyberEnabled. It does not filter the list.",
           "schema": {
             "type": "string"
           },
@@ -525,7 +525,7 @@
         "tags": ["design-handler"],
         "operationId": "listDatabases",
         "summary": "List databases",
-        "description": "Returns databases of fileType that this user can open, with nsfPath, replicaId, and dbTitle. more is true when other databases of that type exist and are not listed.",
+        "description": "Returns databases of fileType that this user can open and whose catalog category is KyberEnabled, with nsfPath, replicaId, and dbTitle. more is true when other databases of that type exist and could not be opened.",
         "x-keep-version": 1,
         "security": [{ "jwt": [] }],
         "responses": {
@@ -562,7 +562,7 @@
     },
     "/database": {
       "summary": "Create a database",
-      "description": "POST creates an NSF that does not exist yet, after the server privilege Create databases & templates. KeepConfig.nsf cannot be created.",
+      "description": "POST creates an NSF that does not exist yet, after the server privilege Create databases & templates, and sets the catalog category KyberEnabled. KeepConfig.nsf cannot be created.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -597,7 +597,7 @@
         "tags": ["design-handler"],
         "operationId": "createDatabase",
         "summary": "Create database",
-        "description": "Creates an NSF that does not exist. Checks the server privilege Create databases & templates. dbTitle sets the title. An existing file responds 409.",
+        "description": "Creates an NSF that does not exist. Checks the server privilege Create databases & templates and sets the catalog category KyberEnabled. dbTitle sets the title. An existing file responds 409.",
         "x-keep-version": 1,
         "security": [{ "jwt": [] }],
         "responses": {

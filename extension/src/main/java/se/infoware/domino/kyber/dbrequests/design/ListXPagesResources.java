@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** List — GET /xpagesresources?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class ListXPagesResources extends AsyncDominoJNXJson {
+public class ListXPagesResources extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /compositecomponents/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateCompositeComponent extends AsyncDominoJNXJson {
+public class UpdateCompositeComponent extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateNamed(request, "compositecomponent", "note", "fileresource");

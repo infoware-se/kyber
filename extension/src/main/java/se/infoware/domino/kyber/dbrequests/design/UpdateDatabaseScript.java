@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only singleton — PUT /databasescript */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateDatabaseScript extends AsyncDominoJNXJson {
+public class UpdateDatabaseScript extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateSingleton(request, "databasescript", "databasescript");

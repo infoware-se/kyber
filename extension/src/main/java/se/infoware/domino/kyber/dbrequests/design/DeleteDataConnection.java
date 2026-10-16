@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Delete one dataconnection - DELETE /dataconnections/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteDataConnection extends AsyncDominoJNXJson {
+public class DeleteDataConnection extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

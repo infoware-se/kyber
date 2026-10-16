@@ -11,7 +11,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Delete one Web Service Provider - DELETE /webservices/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteWebService extends AsyncDominoJNXJson {
+public class DeleteWebService extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

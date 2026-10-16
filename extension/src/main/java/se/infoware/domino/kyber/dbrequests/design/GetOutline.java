@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one outline as DXL - GET /outlines/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetOutline extends AsyncDominoJNXJson {
+public class GetOutline extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

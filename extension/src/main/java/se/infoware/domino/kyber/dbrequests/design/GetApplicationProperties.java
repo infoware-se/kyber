@@ -12,7 +12,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Export Application Properties as DXL - GET /applicationproperties?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetApplicationProperties extends AsyncDominoJNXJson {
+public class GetApplicationProperties extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

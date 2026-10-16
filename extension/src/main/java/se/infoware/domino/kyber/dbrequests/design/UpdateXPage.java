@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /xpages/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateXPage extends AsyncDominoJNXJson {
+public class UpdateXPage extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateNamed(request, "xpage", "note", "fileresource", "xpage");

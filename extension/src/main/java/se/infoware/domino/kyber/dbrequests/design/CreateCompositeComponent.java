@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /compositecomponents?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateCompositeComponent extends AsyncDominoJNXJson {
+public class CreateCompositeComponent extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "compositecomponent", "note", "fileresource");

@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one shared column as DXL - GET /sharedcolumns/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetSharedColumn extends AsyncDominoJNXJson {
+public class GetSharedColumn extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

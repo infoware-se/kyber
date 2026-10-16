@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /applets/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateApplet extends AsyncDominoJNXJson {
+public class UpdateApplet extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateNamed(request, "applet", "note", "fileresource", "appletresource");

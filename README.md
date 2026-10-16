@@ -6,17 +6,27 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.24.15 |
+| **Version** | 0.24.16 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
 | **Swagger tags** | `design-element` for typed CRUD, `design-handler` for `/defaults`, `/export`, `/import`, and `/databases` |
 | **Template NSF** | `kyber.nsf` (`kyber.defaultNsf`) |
+| **Category** | `KyberEnabled`. A database without it responds 403 **Not Kyber enabled** |
 | **Reference** | [extension/README.md](extension/README.md) |
 | **Source** | https://github.com/infoware-se/kyber |
 
+## Kyber enabled
+
+Every call acts only on a database whose catalog category is **KyberEnabled**. In Designer that field is Database properties, on the Design tab, Categories.
+
+A database without that category responds **403** with the message **Not Kyber enabled**. `GET /databases` leaves it out.
+
+`POST /database`, and a design import that creates a missing NSF, set the category on the new file.
+
 ## Contents
 
+- [Kyber enabled](#kyber-enabled)
 - [What you can do](#what-you-can-do)
 - [Install](#install)
 - [Quick start](#quick-start)
@@ -130,7 +140,7 @@ The call runs as the signed-in user. On a database that already exists, the limi
 | Designer | List, get, create, update, and delete design |
 | Manager | Replace the ACL. A Manager includes the Designer rights above. |
 
-The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file and imports the design. `POST /database` checks that same privilege and creates an empty NSF. The same import into a database that already exists uses the ACL table above. `GET /databases` needs Reader on the database that runs the call. `fileType` defaults to `database` (1247: NSF, NSG, or NSH). `template` (1248) is an NTF. `replica_candidate` (1245) is a database or template that is not disabled for replication. `template_candidate` (1246) is any database or template. A file is returned only when this user can open it. `more` is true when other databases of that type exist, and those paths are not returned.
+The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**, then creates the file, sets the category **KyberEnabled**, and imports the design. `POST /database` checks that same privilege and creates an empty NSF. The same import into a database that already exists uses the ACL table above. `GET /databases` needs Reader on the database that runs the call. `fileType` defaults to `database` (1247: NSF, NSG, or NSH). `template` (1248) is an NTF. `replica_candidate` (1245) is a database or template that is not disabled for replication. `template_candidate` (1246) is any database or template. A file is returned only when this user can open it. `more` is true when other databases of that type exist, and those paths are not returned.
 
 A Manager may create shared and personal folders, views, and agents. Domino keeps those rights on the Manager level and does not store them as separate checkboxes. Delete documents stays a stored flag at every level. Designer and below need the design checkboxes stored on the ACL entry.
 

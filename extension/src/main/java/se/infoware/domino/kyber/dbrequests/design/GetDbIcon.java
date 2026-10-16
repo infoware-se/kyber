@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Export database icon ($DBIcon) — GET /dbicon?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetDbIcon extends AsyncDominoJNXJson {
+public class GetDbIcon extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

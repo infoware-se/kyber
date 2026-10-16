@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete Database Script - DELETE /databasescript?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteDatabaseScript extends AsyncDominoJNXJson {
+public class DeleteDatabaseScript extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

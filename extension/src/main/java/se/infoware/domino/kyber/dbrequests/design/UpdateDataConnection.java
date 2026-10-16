@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /dataconnections/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateDataConnection extends AsyncDominoJNXJson {
+public class UpdateDataConnection extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateNamed(request, "dataconnection", "dataconnection", "note", "fileresource");

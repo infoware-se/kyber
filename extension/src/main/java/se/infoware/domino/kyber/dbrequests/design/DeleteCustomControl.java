@@ -11,7 +11,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Delete one Custom Control - DELETE /customcontrols/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteCustomControl extends AsyncDominoJNXJson {
+public class DeleteCustomControl extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Export Xsp Properties (WEB-INF/xsp.properties) as DXL - GET /xspproperties?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetXspProperties extends AsyncDominoJNXJson {
+public class GetXspProperties extends KyberRequest {
 
   static final String NAME = "WEB-INF/xsp.properties";
 

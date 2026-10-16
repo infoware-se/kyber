@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /jars?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateJar extends AsyncDominoJNXJson {
+public class CreateJar extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "jar", "note", "fileresource", "appletresource");

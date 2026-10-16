@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Export one applet as DXL - GET /applets/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetApplet extends AsyncDominoJNXJson {
+public class GetApplet extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

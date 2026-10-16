@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /themes/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateTheme extends AsyncDominoJNXJson {
+public class UpdateTheme extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateNamed(request, "theme", "theme", "note");

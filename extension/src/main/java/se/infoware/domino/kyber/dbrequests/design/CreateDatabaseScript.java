@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only singleton — POST /databasescript */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateDatabaseScript extends AsyncDominoJNXJson {
+public class CreateDatabaseScript extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createSingleton(request, "databasescript", "databasescript");

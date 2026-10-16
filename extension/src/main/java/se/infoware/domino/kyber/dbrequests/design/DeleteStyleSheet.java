@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one style sheet - DELETE /stylesheets/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteStyleSheet extends AsyncDominoJNXJson {
+public class DeleteStyleSheet extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

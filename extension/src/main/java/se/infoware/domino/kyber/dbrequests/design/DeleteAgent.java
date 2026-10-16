@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one agent - DELETE /agents/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteAgent extends AsyncDominoJNXJson {
+public class DeleteAgent extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

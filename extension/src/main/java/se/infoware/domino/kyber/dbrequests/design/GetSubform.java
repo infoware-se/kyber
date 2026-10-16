@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one subform as DXL - GET /subforms/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetSubform extends AsyncDominoJNXJson {
+public class GetSubform extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

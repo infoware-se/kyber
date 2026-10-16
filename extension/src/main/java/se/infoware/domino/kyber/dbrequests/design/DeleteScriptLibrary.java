@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one script library - DELETE /scriptlibraries/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteScriptLibrary extends AsyncDominoJNXJson {
+public class DeleteScriptLibrary extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

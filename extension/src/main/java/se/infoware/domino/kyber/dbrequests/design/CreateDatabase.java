@@ -22,7 +22,7 @@ import io.vertx.core.json.JsonObject;
  * call responds 409.
  */
 @MinimumAcl(AclLevel.READER)
-public class CreateDatabase extends AsyncDominoJNXJson {
+public class CreateDatabase extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
@@ -66,10 +66,12 @@ public class CreateDatabase extends AsyncDominoJNXJson {
       ImportDesign.applyProductDbIcon(importer, db, session);
     }
 
+    Database createdDb = session.getDatabaseDomino(target);
+    DesignCatalog.mark(createdDb);
     JsonObject out =
         ReplicaIds.put(
             new JsonObject().put("success", true).put("created", true).put("nsfPath", target),
-            session.getDatabaseDomino(target));
+            createdDb);
     if (title != null) {
       out.put("dbTitle", title);
     }

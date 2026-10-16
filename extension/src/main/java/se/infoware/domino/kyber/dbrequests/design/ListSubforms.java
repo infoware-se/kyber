@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** List names — GET collection path (e.g. /agents)?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class ListSubforms extends AsyncDominoJNXJson {
+public class ListSubforms extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

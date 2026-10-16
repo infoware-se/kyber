@@ -47,7 +47,7 @@ import java.util.Set;
  * of importing DXL. A nameless note uses the exported name {@code unid:} followed by the note id.
  */
 @MinimumAcl(AclLevel.READER)
-public class ImportDesign extends AsyncDominoJNXJson {
+public class ImportDesign extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
@@ -89,6 +89,11 @@ public class ImportDesign extends AsyncDominoJNXJson {
     boolean created = openOrCreate(session, target, encryption);
 
     Database db = openTargetForWrite(session, target, requiredWriteLevel(elements));
+    if (created) {
+      DesignCatalog.mark(db);
+    } else {
+      DesignCatalog.require(db);
+    }
     if (created && title == null) {
       title = defaultTitleForNewNsf(target);
     }
@@ -174,6 +179,9 @@ public class ImportDesign extends AsyncDominoJNXJson {
     }
 
     JsonObject compile = DesignLotusScriptCompile.compileAll(db);
+    if (created) {
+      DesignCatalog.mark(db);
+    }
 
     JsonObject out =
         ReplicaIds.put(
@@ -351,6 +359,7 @@ public class ImportDesign extends AsyncDominoJNXJson {
     DesignElementImport.importOne(importer, db, "using", DefaultsDatabaseHelp.usingDxl(), session);
     DxlDesignPatch.importLaunchSettings(importer, DefaultsDatabaseHelp.notesLaunchAboutDxl(), db);
     applyProductDbIcon(importer, db, session);
+    DesignCatalog.mark(db);
   }
 
   static void applyProductDbIcon(DxlImporter importer, Database db, KeepJnxSession session)
@@ -428,6 +437,7 @@ public class ImportDesign extends AsyncDominoJNXJson {
       }
       DesignAcl.ensureApplicationAcl(created, client.getEffectiveUserName(), host);
     }
+    DesignCatalog.mark(created);
     return true;
   }
 

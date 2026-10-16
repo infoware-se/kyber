@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one image resource as DXL - GET /images/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetImage extends AsyncDominoJNXJson {
+public class GetImage extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /stylesheets?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateStyleSheet extends AsyncDominoJNXJson {
+public class CreateStyleSheet extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "stylesheet", "stylesheetresource");

@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one file resource as DXL - GET /fileresources/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetFileResource extends AsyncDominoJNXJson {
+public class GetFileResource extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

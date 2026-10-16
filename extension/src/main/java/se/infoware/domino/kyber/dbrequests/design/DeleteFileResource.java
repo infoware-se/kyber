@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one file resource - DELETE /fileresources/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteFileResource extends AsyncDominoJNXJson {
+public class DeleteFileResource extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

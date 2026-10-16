@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /jars/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateJar extends AsyncDominoJNXJson {
+public class UpdateJar extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateNamed(request, "jar", "note", "fileresource", "appletresource");

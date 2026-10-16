@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 
 /** One starter design DXL — GET /defaults/{type}?kind= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetDefaultDesign extends AsyncDominoJNXJson {
+public class GetDefaultDesign extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

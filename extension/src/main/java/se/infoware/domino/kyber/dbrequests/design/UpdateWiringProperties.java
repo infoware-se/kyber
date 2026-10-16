@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /wiringproperties/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateWiringProperties extends AsyncDominoJNXJson {
+public class UpdateWiringProperties extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateNamed(request, "wiringproperties", "note", "fileresource");

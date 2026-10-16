@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only singleton — PUT /xspproperties */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateXspProperties extends AsyncDominoJNXJson {
+public class UpdateXspProperties extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateSingleton(request, "xspproperties", "note", "fileresource");

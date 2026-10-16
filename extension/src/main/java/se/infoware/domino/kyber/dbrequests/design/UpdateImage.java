@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /images/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateImage extends AsyncDominoJNXJson {
+public class UpdateImage extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateNamed(request, "image", "imageresource");

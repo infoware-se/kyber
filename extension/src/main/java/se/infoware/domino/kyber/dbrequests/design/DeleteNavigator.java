@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one navigator - DELETE /navigators/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteNavigator extends AsyncDominoJNXJson {
+public class DeleteNavigator extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

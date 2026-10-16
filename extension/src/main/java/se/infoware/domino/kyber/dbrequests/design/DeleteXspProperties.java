@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Delete XPages xsp.properties — DELETE /xspproperties?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteXspProperties extends AsyncDominoJNXJson {
+public class DeleteXspProperties extends KyberRequest {
 
   private static final String NAME = "WEB-INF/xsp.properties";
 

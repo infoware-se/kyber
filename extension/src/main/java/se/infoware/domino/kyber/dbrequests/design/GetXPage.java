@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one XPage as DXL - GET /xpages/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetXPage extends AsyncDominoJNXJson {
+public class GetXPage extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

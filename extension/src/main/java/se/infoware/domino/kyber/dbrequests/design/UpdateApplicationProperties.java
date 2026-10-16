@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only singleton — PUT /applicationproperties (always present with the NSF). */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateApplicationProperties extends AsyncDominoJNXJson {
+public class UpdateApplicationProperties extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateSingleton(request, "applicationproperties", "note", "database");

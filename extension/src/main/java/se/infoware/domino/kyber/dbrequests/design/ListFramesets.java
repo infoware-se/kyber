@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 /** List names — GET collection path (e.g. /agents)?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class ListFramesets extends AsyncDominoJNXJson {
+public class ListFramesets extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

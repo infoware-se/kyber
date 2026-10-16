@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /navigators?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateNavigator extends AsyncDominoJNXJson {
+public class CreateNavigator extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "navigator", "navigator", "note");

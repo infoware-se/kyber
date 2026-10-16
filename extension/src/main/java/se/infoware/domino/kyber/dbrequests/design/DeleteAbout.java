@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete the About Document - DELETE /about?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteAbout extends AsyncDominoJNXJson {
+public class DeleteAbout extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

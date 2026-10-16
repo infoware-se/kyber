@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one shared field - DELETE /sharedfields/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteSharedField extends AsyncDominoJNXJson {
+public class DeleteSharedField extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

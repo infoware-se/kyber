@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Delete one XPages project file - DELETE /xpagesresources/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteXPagesResource extends AsyncDominoJNXJson {
+public class DeleteXPagesResource extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

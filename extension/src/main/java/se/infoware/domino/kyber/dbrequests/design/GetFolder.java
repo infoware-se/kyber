@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one folder as DXL - GET /folders/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetFolder extends AsyncDominoJNXJson {
+public class GetFolder extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

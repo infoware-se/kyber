@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Export one Custom Control as DXL - GET /customcontrols/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetCustomControl extends AsyncDominoJNXJson {
+public class GetCustomControl extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

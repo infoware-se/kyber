@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one frameset as DXL - GET /framesets/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetFrameset extends AsyncDominoJNXJson {
+public class GetFrameset extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

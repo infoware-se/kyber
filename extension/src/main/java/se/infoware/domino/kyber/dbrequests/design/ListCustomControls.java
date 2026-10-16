@@ -11,7 +11,7 @@ import java.util.List;
 
 /** List names — GET collection path (e.g. /agents)?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class ListCustomControls extends AsyncDominoJNXJson {
+public class ListCustomControls extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

@@ -11,7 +11,7 @@ import java.util.List;
 
 /** List names — GET collection path (e.g. /agents)?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class ListWebServices extends AsyncDominoJNXJson {
+public class ListWebServices extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

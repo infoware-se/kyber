@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /customcontrols/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateCustomControl extends AsyncDominoJNXJson {
+public class UpdateCustomControl extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateNamed(request, "customcontrol", "note", "fileresource");

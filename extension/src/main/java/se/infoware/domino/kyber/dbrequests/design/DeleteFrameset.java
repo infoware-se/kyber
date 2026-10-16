@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one frameset - DELETE /framesets/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteFrameset extends AsyncDominoJNXJson {
+public class DeleteFrameset extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export Database Script as DXL - GET /databasescript?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetDatabaseScript extends AsyncDominoJNXJson {
+public class GetDatabaseScript extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

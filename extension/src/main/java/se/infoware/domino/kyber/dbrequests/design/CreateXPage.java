@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /xpages?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateXPage extends AsyncDominoJNXJson {
+public class CreateXPage extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "xpage", "note", "fileresource", "xpage");

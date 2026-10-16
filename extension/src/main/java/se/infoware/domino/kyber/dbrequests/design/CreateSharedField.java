@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /sharedfields?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateSharedField extends AsyncDominoJNXJson {
+public class CreateSharedField extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "sharedfield", "sharedfield");

@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only singleton — PUT /dbicon */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateDbIcon extends AsyncDominoJNXJson {
+public class UpdateDbIcon extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateSingleton(request, "dbicon", "imageresource");

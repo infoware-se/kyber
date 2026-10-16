@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one style sheet as DXL - GET /stylesheets/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetStyleSheet extends AsyncDominoJNXJson {
+public class GetStyleSheet extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

@@ -35,7 +35,7 @@ import java.util.TreeSet;
  * left out, {@code more} is true, and the path is not returned.
  */
 @MinimumAcl(AclLevel.READER)
-public class ListDatabases extends AsyncDominoJNXJson {
+public class ListDatabases extends KyberRequest {
 
  /** One {@code NotesDbDirectory.GetFirstDatabase} file type. */
   enum DirectoryFileType {
@@ -98,7 +98,7 @@ public class ListDatabases extends AsyncDominoJNXJson {
       try {
         String[] where = ImportDesign.serverAndPath(path);
         db = client.openDatabase(where[0], where[1]);
-        if (!includeOpened(fileType, replicationDisabled(db))) {
+        if (!includeOpened(fileType, replicationDisabled(db)) || !DesignCatalog.has(db)) {
           continue;
         }
         JsonObject row = ReplicaIds.put(new JsonObject().put("nsfPath", path), db);

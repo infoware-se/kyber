@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Delete one Shared Actions note - DELETE /sharedactions/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteSharedActions extends AsyncDominoJNXJson {
+public class DeleteSharedActions extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

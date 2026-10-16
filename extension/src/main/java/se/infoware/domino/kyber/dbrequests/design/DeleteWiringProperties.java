@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one wiringproperties - DELETE /wiringproperties/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteWiringProperties extends AsyncDominoJNXJson {
+public class DeleteWiringProperties extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one navigator as DXL - GET /navigators/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetNavigator extends AsyncDominoJNXJson {
+public class GetNavigator extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

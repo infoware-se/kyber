@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Export one jar as DXL - GET /jars/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetJar extends AsyncDominoJNXJson {
+public class GetJar extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

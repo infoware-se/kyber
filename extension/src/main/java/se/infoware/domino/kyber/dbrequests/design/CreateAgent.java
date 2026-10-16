@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /agents?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateAgent extends AsyncDominoJNXJson {
+public class CreateAgent extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createKinded(request, "agent", DesignCrud.AGENT, "agent");

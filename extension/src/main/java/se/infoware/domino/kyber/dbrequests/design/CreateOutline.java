@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /outlines?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateOutline extends AsyncDominoJNXJson {
+public class CreateOutline extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "outline", "outline");

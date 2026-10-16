@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /stylesheets/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateStyleSheet extends AsyncDominoJNXJson {
+public class UpdateStyleSheet extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateNamed(request, "stylesheet", "stylesheetresource");

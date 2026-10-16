@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /** Delete one view - DELETE /views/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteView extends AsyncDominoJNXJson {
+public class DeleteView extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

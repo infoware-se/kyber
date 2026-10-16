@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Export one dataconnection as DXL - GET /dataconnections/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetDataConnection extends AsyncDominoJNXJson {
+public class GetDataConnection extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

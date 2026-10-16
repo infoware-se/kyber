@@ -434,7 +434,11 @@ final class DesignDefaults {
         path = nsfPath.substring(bang + 2);
       }
       client.openDatabase(server, path);
-      return Optional.of(session.getDatabaseDomino(nsfPath));
+      Database db = session.getDatabaseDomino(nsfPath);
+      if (!DesignCatalog.has(db)) {
+        return Optional.empty();
+      }
+      return Optional.of(db);
     } catch (Exception e) {
       return Optional.empty();
     }

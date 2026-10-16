@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /** Export one wiringproperties as DXL - GET /wiringproperties/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetWiringProperties extends AsyncDominoJNXJson {
+public class GetWiringProperties extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

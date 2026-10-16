@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Delete one applet - DELETE /applets/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class DeleteApplet extends AsyncDominoJNXJson {
+public class DeleteApplet extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

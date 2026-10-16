@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /scriptlibraries?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateScriptLibrary extends AsyncDominoJNXJson {
+public class CreateScriptLibrary extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createKinded(request, "scriptlibrary", DesignCrud.SCRIPT_LIBRARY, "scriptlibrary");

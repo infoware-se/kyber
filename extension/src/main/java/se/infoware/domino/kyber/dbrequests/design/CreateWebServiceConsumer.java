@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /webserviceconsumers?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateWebServiceConsumer extends AsyncDominoJNXJson {
+public class CreateWebServiceConsumer extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "webserviceconsumer", "note", "fileresource", "scriptlibrary", "webservice");

@@ -11,7 +11,7 @@ import java.io.StringWriter;
 
 /** Export database ACL as DXL — GET /acl?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetAcl extends AsyncDominoJNXJson {
+public class GetAcl extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {

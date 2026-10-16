@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /fileresources?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateFileResource extends AsyncDominoJNXJson {
+public class CreateFileResource extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "fileresource", "fileresource");

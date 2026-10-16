@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Create-only — POST /wiringproperties?nsfPath=&name= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class CreateWiringProperties extends AsyncDominoJNXJson {
+public class CreateWiringProperties extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.createNamed(request, "wiringproperties", "note", "fileresource");

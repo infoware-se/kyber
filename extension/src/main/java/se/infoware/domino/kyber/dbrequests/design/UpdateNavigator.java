@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /navigators/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateNavigator extends AsyncDominoJNXJson {
+public class UpdateNavigator extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateNamed(request, "navigator", "navigator", "note");

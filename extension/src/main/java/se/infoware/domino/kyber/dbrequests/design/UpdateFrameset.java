@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Update-only — PUT /framesets/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class UpdateFrameset extends AsyncDominoJNXJson {
+public class UpdateFrameset extends KyberRequest {
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     DesignCrud.updateNamed(request, "frameset", "frameset");

@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 
 /** Export one XPages project file as DXL - GET /xpagesresources/{name}?nsfPath= */
 @MinimumAcl(AclLevel.DESIGNER)
-public class GetXPagesResource extends AsyncDominoJNXJson {
+public class GetXPagesResource extends KyberRequest {
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
