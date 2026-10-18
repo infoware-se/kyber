@@ -69,25 +69,8 @@ final class DesignCrud {
     String nameParam = request.incoming.getString("name");
     String source = "dxl";
     String name;
-    boolean codeWrite = codeWrite(request.incoming, dxl);
-    if (codeWrite) {
-      requireCodeType(t);
-    }
 
-    if (codeWrite && mode == DxlDesignPatch.Mode.REPLACE) {
-      if (nameParam == null || nameParam.isBlank()) {
-        throw new KeepExceptionWrongDataRequest("name is required");
-      }
-      String wanted = nameParam.trim();
-      name = wanted;
-      Database db = request.db();
-      notFoundIfMissing(db, t, wanted);
-      String current =
-          DesignElementLookup.exportDxl(db, t, wanted)
-              .orElseThrow(() -> new KeepExceptionNotFound(t + " not found: " + wanted));
-      dxl = DesignCode.apply(current, request.incoming.getString("code", ""), t);
-      source = "code";
-    } else if (dxl == null || dxl.isBlank()) {
+    if (dxl == null || dxl.isBlank()) {
       if (!allowEmptyDefault || mode != DxlDesignPatch.Mode.CREATE) {
         throw new KeepExceptionWrongDataRequest("dxl body is required");
       }
@@ -100,12 +83,7 @@ final class DesignCrud {
       }
       JsonObject starter = DesignDefaults.resolveOne(request.session(), t);
       dxl = DesignDxl.forNewNote(rewriteName(t, starter.getString("dxl", ""), name, dxlRoots));
-      if (codeWrite) {
-        dxl = DesignCode.apply(dxl, request.incoming.getString("code", ""), t);
-        source = "code";
-      } else {
-        source = "default";
-      }
+      source = "default";
     } else {
       String fromDxl =
           "sharedactions".equals(t)
@@ -127,7 +105,13 @@ final class DesignCrud {
 
     Database db = request.db();
     JsonObject xpagesProject = null;
-    if ("xpage".equals(t) && mode == DxlDesignPatch.Mode.CREATE) {
+    if (mode == DxlDesignPatch.Mode.CREATE
+        && ("xpage".equals(t)
+            || "agent".equals(t)
+            || "scriptlibrary".equals(t)
+            || "javasource".equals(t))) {
+      // Java elements build against the XPages project. The manifest must already be in the NSF,
+      // or Designer writes it a moment too late and the new project stays unbuilt until a clean.
       xpagesProject = XPagesProject.ensure(request.session(), db);
     }
     if (mode == DxlDesignPatch.Mode.CREATE) {
@@ -156,19 +140,12 @@ final class DesignCrud {
             .put("type", t)
             .put("name", name)
             .put("source", source)
-            .put("dxl", exported)
-            .put("log", imported.getString("log", ""));
+            .put("dxl", exported);
     if (xpagesProject != null) {
       out.put("xpagesProject", xpagesProject);
     }
     if (imported.containsKey("signWarning")) {
       out.put("signWarning", imported.getString("signWarning"));
-    }
-    if (imported.containsKey("signedBy")) {
-      out.put("signedBy", imported.getString("signedBy"));
-    }
-    if (imported.containsKey("compiled")) {
-      out.put("compiled", imported.getBoolean("compiled"));
     }
     DesignPayload.enrich(out, exported);
     request.emit(out);
@@ -209,29 +186,8 @@ final class DesignCrud {
     String kind;
     String name;
     String source;
-    boolean codeWrite = codeWrite(request.incoming, dxl);
-    if (codeWrite) {
-      requireCodeType(t);
-    }
 
-    if (codeWrite && mode == DxlDesignPatch.Mode.REPLACE) {
-      if (nameParam == null || nameParam.isBlank()) {
-        throw new KeepExceptionWrongDataRequest("name is required");
-      }
-      String wanted = nameParam.trim();
-      name = wanted;
-      Database db = request.db();
-      notFoundIfMissing(db, t, wanted);
-      String current =
-          DesignElementLookup.exportDxl(db, t, wanted)
-              .orElseThrow(() -> new KeepExceptionNotFound(t + " not found: " + wanted));
-      kind =
-          kindParam != null && !kindParam.isBlank()
-              ? kinds.normalize(kindParam)
-              : kinds.detectOrDefault(current);
-      dxl = DesignCode.apply(current, request.incoming.getString("code", ""), t);
-      source = "code";
-    } else if (dxl == null || dxl.isBlank()) {
+    if (dxl == null || dxl.isBlank()) {
       if (!allowEmptyDefault) {
         throw new KeepExceptionWrongDataRequest("dxl body is required");
       }
@@ -246,12 +202,7 @@ final class DesignCrud {
       name = nameParam.trim();
       JsonObject starter = DesignDefaults.resolveOne(request.session(), t, kind);
       dxl = DesignDxl.forNewNote(kinds.withName(starter.getString("dxl", ""), name));
-      if (codeWrite) {
-        dxl = DesignCode.apply(dxl, request.incoming.getString("code", ""), t);
-        source = "code";
-      } else {
-        source = "default";
-      }
+      source = "default";
     } else {
       String fromDxl = DesignDxl.requireDesignName(dxl, dxlRoots);
       kind =
@@ -286,16 +237,9 @@ final class DesignCrud {
             .put("name", name)
             .put("kind", kind)
             .put("source", source)
-            .put("dxl", exported)
-            .put("log", imported.getString("log", ""));
+            .put("dxl", exported);
     if (imported.containsKey("signWarning")) {
       out.put("signWarning", imported.getString("signWarning"));
-    }
-    if (imported.containsKey("signedBy")) {
-      out.put("signedBy", imported.getString("signedBy"));
-    }
-    if (imported.containsKey("compiled")) {
-      out.put("compiled", imported.getBoolean("compiled"));
     }
     DesignPayload.enrich(out, exported);
     request.emit(out);
@@ -376,33 +320,15 @@ final class DesignCrud {
             .put("success", true)
             .put("type", t)
             .put("source", source)
-            .put("dxl", exported)
-            .put("log", imported.getString("log", ""));
+            .put("dxl", exported);
     if ("dbicon".equals(t)) {
       out.put("name", DesignElementLookup.DBICON_NAME);
     }
     if (imported.containsKey("signWarning")) {
       out.put("signWarning", imported.getString("signWarning"));
     }
-    if (imported.containsKey("signedBy")) {
-      out.put("signedBy", imported.getString("signedBy"));
-    }
-    if (imported.containsKey("compiled")) {
-      out.put("compiled", imported.getBoolean("compiled"));
-    }
     DesignPayload.enrich(out, exported);
     request.emit(out);
-  }
-
-  private static boolean codeWrite(JsonObject incoming, String dxl) {
-    return incoming.containsKey("code") && (dxl == null || dxl.isBlank());
-  }
-
-  private static void requireCodeType(String type) throws KeepExceptionWrongDataRequest {
-    if (!DesignCode.accepts(type)) {
-      throw new KeepExceptionWrongDataRequest(
-          "code is accepted for agent, scriptlibrary, javasource, webcontent, fileresource, stylesheet, and xpagesresource");
-    }
   }
 
   private static String rewriteName(String type, String dxl, String name, String... dxlRoots)

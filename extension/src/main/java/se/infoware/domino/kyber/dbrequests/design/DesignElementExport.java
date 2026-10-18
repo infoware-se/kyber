@@ -229,7 +229,11 @@ final class DesignElementExport {
         continue;
       }
       trackUnid(exportedUnids, el.getDocument());
-      elements.add(exportedElement(type, el.getTitle(), dxl));
+      String title = el.getTitle();
+      if ("agent".equals(type)) {
+        title = DesignDxl.unwrapAgentTitle(title);
+      }
+      elements.add(exportedElement(type, title, dxl));
     }
   }
 
@@ -282,7 +286,11 @@ final class DesignElementExport {
           continue;
         }
         trackUnid(exportedUnids, doc);
-        elements.add(exportedElement(type, el.getTitle(), dxl));
+        String title = el.getTitle();
+        if ("agent".equals(type)) {
+          title = DesignDxl.unwrapAgentTitle(title);
+        }
+        elements.add(exportedElement(type, title, dxl));
       } catch (Exception failed) {
         // leave UNID untracked so exportBulkOnly can try raw DXL
         recordSkip(skipped, type, titleOrNull(el), failed);

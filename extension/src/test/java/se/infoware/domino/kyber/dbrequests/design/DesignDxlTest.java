@@ -43,6 +43,14 @@ class DesignDxlTest {
   }
 
   @Test
+  void agentExportParenthesesAreNotPartOfTheName() throws Exception {
+    String dxl = "<agent name='(SmokeAgentJava)' xmlns='http://www.lotus.com/dxl'></agent>";
+    assertEquals("SmokeAgentJava", DesignDxl.requireDesignName(dxl, "agent"));
+    assertEquals("SmokeAgentJava", DesignDxl.unwrapAgentTitle("(SmokeAgentJava)"));
+    assertEquals("Order Value", DesignDxl.unwrapAgentTitle("Order Value"));
+  }
+
+  @Test
   void roundTripLeavesOutAgentDataAndUntitledViews() {
     assertEquals("agentdata", DesignDxl.rootLocalName("<agentdata><agent agentname='X'/></agentdata>"));
     assertNull(

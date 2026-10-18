@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'>
+
+<updatedby><name>CN=Designer/O=Infoware</name></updatedby>
+<wassignedby><name>CN=Designer/O=Infoware</name></wassignedby>
+<item name='$Flags'><text>~C4g</text></item>
+<item name='$FlagsExt'><text>w</text></item>
+<item name='$TITLE'><text>META-INF/MANIFEST.MF</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='$FileSize' sign='true'><number>544</number></item>
+<item name='$FileData' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAAAgAgAAAQAAAAAAAAAAAAAAYAAyAgAAIAIgAgAAAAAAAAAATWFuaWZlc3QtVmVy
+c2lvbjogMS4wDQpCdW5kbGUtTWFuaWZlc3RWZXJzaW9uOiAyDQpCdW5kbGUtTmFtZTogRG9t
+aW5vIERlc2lnbmVyDQpCdW5kbGUtU3ltYm9saWNOYW1lOiBreWJlcl9uc2Y7c2luZ2xldG9u
+Oj10cnVlDQpCdW5kbGUtVmVyc2lvbjogMS4wLjANCkJ1bmRsZS1WZW5kb3I6IEluZm93YXJl
+DQpSZXF1aXJlLUJ1bmRsZTogb3JnLmVjbGlwc2UudWksDQogb3JnLmVjbGlwc2UuY29yZS5y
+dW50aW1lLA0KIGNvbS5pYm0uY29tbW9ucywNCiBjb20uaWJtLmNvbW1vbnMueG1sLA0KIGNv
+bS5pYm0uY29tbW9ucy52ZnMsDQogY29tLmlibS5qc2NyaXB0LA0KIGNvbS5pYm0uZGVzaWdu
+ZXIucnVudGltZS5kaXJlY3RvcnksDQogY29tLmlibS5kZXNpZ25lci5ydW50aW1lLA0KIGNv
+bS5pYm0ueHNwLmNvcmUsDQogY29tLmlibS54c3AuZXh0c24sDQogY29tLmlibS54c3AuZGVz
+aWduZXIsDQogY29tLmlibS54c3AuZG9taW5vLA0KIGNvbS5pYm0ubm90ZXMuamF2YS5hcGks
+DQogY29tLmlibS54c3AucmNwDQpFY2xpcHNlLUxhenlTdGFydDogZmFsc2UNCg==</rawitemdata></item>
+<item name='$FileNames' sign='true'><text>META-INF/MANIFEST.MF</text></item></note>

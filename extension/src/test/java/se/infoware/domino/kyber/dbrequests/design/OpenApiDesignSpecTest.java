@@ -98,6 +98,16 @@ class OpenApiDesignSpecTest {
             .getJsonObject("schema")
             .getJsonObject("properties");
     assertNotNull(putProps.getJsonObject("failed"));
+    assertNotNull(putProps.getJsonObject("results"));
+    assertFalse(putProps.containsKey("lotusscript"));
+    assertFalse(putProps.containsKey("log"));
+    JsonObject resultRow =
+        putProps
+            .getJsonObject("results")
+            .getJsonObject("items")
+            .getJsonObject("properties");
+    assertFalse(resultRow.containsKey("log"));
+    assertFalse(resultRow.containsKey("compiled"));
     boolean hasEncryption = false;
     for (Object p : imp.getJsonArray("parameters")) {
       if (p instanceof JsonObject param && "encryption".equals(param.getString("name"))) {
@@ -164,8 +174,11 @@ class OpenApiDesignSpecTest {
     assertFalse(schemaProps(paths, "/javasources/{name}", "get").containsKey("fileName"));
 
     JsonObject source = schemaProps(paths, "/forms", "post").getJsonObject("source");
-    assertEquals("dxl,code,default", enumOf(source));
-    assertNotNull(schemaProps(paths, "/forms", "post").getJsonObject("dxl"));
+    assertEquals("dxl,default", enumOf(source));
+    assertEquals("DXL stored on the note.", schemaProps(paths, "/forms", "post").getJsonObject("dxl").getString("description"));
+    assertFalse(schemaProps(paths, "/forms", "post").containsKey("log"));
+    assertFalse(schemaProps(paths, "/forms", "post").containsKey("compiled"));
+    assertFalse(schemaProps(paths, "/agents", "post").containsKey("compiled"));
     JsonObject libraryPut = paths.getJsonObject("/scriptlibraries/{name}").getJsonObject("put");
     assertNotNull(
         libraryPut
@@ -173,8 +186,9 @@ class OpenApiDesignSpecTest {
             .getJsonObject("content")
             .getJsonObject("application/json"));
     JsonObject libraryWritten = schemaProps(paths, "/scriptlibraries/{name}", "put");
-    assertNotNull(libraryWritten.getJsonObject("compiled"));
-    assertNotNull(libraryWritten.getJsonObject("signedBy"));
+    assertFalse(libraryWritten.containsKey("compiled"));
+    assertFalse(libraryWritten.containsKey("log"));
+    assertFalse(libraryWritten.containsKey("signedBy"));
 
     JsonObject template = schemaProps(paths, "/defaults/{type}", "get");
     assertEquals("api,nsf", enumOf(template.getJsonObject("source")));

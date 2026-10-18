@@ -404,15 +404,42 @@ final class DesignDxl {
   private static String designNameFromRoot(Element root) {
     String name = root.getAttribute("name");
     if (name != null && !name.isBlank()) {
-      return name.trim();
+      return normalizeDesignName(root, name.trim());
     }
     String fromTitle = findItemText(root, "$TITLE");
     if (fromTitle != null && !fromTitle.isBlank()) {
       // Domino titles can be "Name|Alias" - use the first segment as design name.
       int pipe = fromTitle.indexOf('|');
-      return (pipe >= 0 ? fromTitle.substring(0, pipe) : fromTitle).trim();
+      String title = (pipe >= 0 ? fromTitle.substring(0, pipe) : fromTitle).trim();
+      return normalizeDesignName(root, title);
     }
     return null;
+  }
+
+  /**
+   * Domino exports a shared agent as {@code name='(AgentName)'}. The list name has no parentheses,
+   * and a round-trip PUT must accept that export.
+   */
+  private static String normalizeDesignName(Element root, String name) {
+    String local = root.getLocalName() != null ? root.getLocalName() : root.getTagName();
+    if ("agent".equalsIgnoreCase(local)) {
+      return unwrapAgentTitle(name);
+    }
+    return name;
+  }
+
+  /** Domino stores a run agent title as {@code (AgentName)}. The API name has no parentheses. */
+  static String unwrapAgentTitle(String name) {
+    if (name == null) {
+      return null;
+    }
+    String trimmed = name.trim();
+    if (trimmed.length() > 2
+        && trimmed.charAt(0) == '('
+        && trimmed.charAt(trimmed.length() - 1) == ')') {
+      return trimmed.substring(1, trimmed.length() - 1).trim();
+    }
+    return trimmed;
   }
 
   private static Element parseAndRequireRoot(String dxl, String... expectedRoots)

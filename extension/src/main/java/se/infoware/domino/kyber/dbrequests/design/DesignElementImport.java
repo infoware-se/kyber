@@ -107,7 +107,6 @@ final class DesignElementImport {
     }
 
     String name = null;
-    String log;
     CommentUpdate comments =
         CommentUpdate.preserve(
             DesignElementLookup.existingComment(db, t, DesignDxl.designName(dxl)));
@@ -116,14 +115,14 @@ final class DesignElementImport {
     switch (t) {
       case "acl" -> {
         DesignDxl.requireRootOnly(dxl, "acl");
-        log = DxlDesignPatch.importAcl(importer, dxl, db);
+        DxlDesignPatch.importAcl(importer, dxl, db);
       }
       case "applicationproperties" -> {
         String root = DesignDxl.requireRootOnlyReturningLocalName(dxl, "note", "database");
         if ("database".equalsIgnoreCase(root)) {
-          log = DxlDesignPatch.importWithDbProperties(importer, dxl, db, mode);
+        DxlDesignPatch.importWithDbProperties(importer, dxl, db, mode);
         } else {
-          log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         }
         DbProperties props = db.getDesign().getDatabaseProperties();
         if (props == null || props.getDocument() == null) {
@@ -134,7 +133,7 @@ final class DesignElementImport {
       }
       case "about" -> {
         DesignDxl.requireRootOnly(dxl, "helpaboutdocument");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         AboutDocument el =
             db.getDesign()
                 .getAboutDocument()
@@ -146,7 +145,7 @@ final class DesignElementImport {
       }
       case "using" -> {
         DesignDxl.requireRootOnly(dxl, "helpusingdocument");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         UsingDocument el =
             db.getDesign()
                 .getUsingDocument()
@@ -158,7 +157,7 @@ final class DesignElementImport {
       }
       case "sharedactions" -> {
         name = DesignDxl.requireSharedActionsName(dxl);
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         final String sharedActionsName = name;
         SharedActions el =
             SharedActionsNotes.find(db, sharedActionsName)
@@ -171,7 +170,7 @@ final class DesignElementImport {
       }
       case "databasescript" -> {
         DesignDxl.requireRootOnly(dxl, "databasescript");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         DatabaseScriptLibrary el =
             db.getDesign()
                 .getDatabaseScriptLibrary()
@@ -183,7 +182,7 @@ final class DesignElementImport {
       }
       case "image" -> {
         name = DesignDxl.requireRootName(dxl, "imageresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         if (DesignElementLookup.isDbIconName(name)) {
           DbIcon.allowDesignRefresh(db);
         }
@@ -191,27 +190,31 @@ final class DesignElementImport {
       }
       case "fileresource" -> {
         name = DesignDxl.requireRootName(dxl, "fileresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getFileResource(name), "FileResource", name, dxl, comments));
       }
       case "stylesheet" -> {
         name = DesignDxl.requireRootName(dxl, "stylesheetresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getStyleSheet(name), "StyleSheet", name, dxl, comments));
       }
       case "theme" -> {
         name = DesignDxl.requireDesignName(dxl, "theme", "note");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getTheme(name), "Theme", name, dxl, comments));
       }
       case "scriptlibrary" -> {
         name = DesignDxl.requireRootName(dxl, "scriptlibrary");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         Optional<ScriptLibrary> lib = db.getDesign().getScriptLibrary(name);
         if (dxl.toLowerCase(Locale.ROOT).contains("<lotusscript")) {
           compileLotusScript(lib.orElse(null), "ScriptLibrary", name);
-          trace.compiled();
           trace.accept(signNamed(lib, "ScriptLibrary", name, dxl, comments));
+        } else if (dxl.toLowerCase(Locale.ROOT).contains("<javaproject")
+            && !dxl.contains("%%object%%.jar")) {
+          // sign() stores an empty %%object%%.jar. Designer then reports compilation errors
+          // until the project is cleaned. A later import that includes the compiled jar is signed.
+          trace.accept(saveRawNote(lib, "ScriptLibrary", name, dxl, comments));
         } else {
           // Design-element sign/save rewrites the library and drops JavaScript, SSJS and Java.
           trace.accept(signRawNote(lib, "ScriptLibrary", name, dxl, comments));
@@ -219,37 +222,37 @@ final class DesignElementImport {
       }
       case "sharedfield" -> {
         name = DesignDxl.requireRootName(dxl, "sharedfield");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getSharedField(name), "SharedField", name, dxl, comments));
       }
       case "sharedcolumn" -> {
         name = DesignDxl.requireRootName(dxl, "sharedcolumn");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getSharedColumn(name), "SharedColumn", name, dxl, comments));
       }
       case "subform" -> {
         name = DesignDxl.requireRootName(dxl, "subform");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getSubform(name), "Subform", name, dxl, comments));
       }
       case "form" -> {
         name = DesignDxl.requireRootName(dxl, "form");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getForm(name), "Form", name, dxl, comments));
       }
       case "page" -> {
         name = DesignDxl.requireRootName(dxl, "page");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getPage(name), "Page", name, dxl, comments));
       }
       case "outline" -> {
         name = DesignDxl.requireRootName(dxl, "outline");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getOutline(name), "Outline", name, dxl, comments));
       }
       case "frameset" -> {
         name = DesignDxl.requireRootName(dxl, "frameset");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         try {
           trace.accept(signNamed(db.getDesign().getFrameset(name), "Frameset", name, dxl, comments));
         } catch (RuntimeException e) {
@@ -259,27 +262,26 @@ final class DesignElementImport {
       }
       case "view" -> {
         name = DesignDxl.requireRootName(dxl, "view");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getView(name), "View", name, dxl, comments));
       }
       case "folder" -> {
         name = DesignDxl.requireRootName(dxl, "folder");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getFolder(name), "Folder", name, dxl, comments));
       }
       case "agent" -> {
         name = DesignDxl.requireRootName(dxl, "agent");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         Optional<DesignAgent> agent = db.getDesign().getAgent(name);
         if (dxl.toLowerCase(Locale.ROOT).contains("<lotusscript")) {
           compileLotusScript(agent.orElse(null), "Agent", name);
-          trace.compiled();
         }
         trace.accept(signNamed(agent, "Agent", name, dxl, comments));
       }
       case "customcontrol" -> {
         String requested = DesignDxl.requireDesignName(dxl, "note", "fileresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         CustomControls.Entry entry =
             CustomControls.find(db, requested)
                 .orElseThrow(
@@ -296,13 +298,17 @@ final class DesignElementImport {
                             "CustomControl %s not loadable as DesignElement after import",
                             resolvedName));
         // Design-element sign/save rewrites the note and drops $ClassData0.
-        trace.accept(signRawNote(Optional.of(el), "CustomControl", name, dxl, comments));
+        SignOutcome signed = signRawNote(Optional.of(el), "CustomControl", name, dxl, comments);
+        dropOrphanXspClasses(
+            CustomControls.find(db, name)
+                .flatMap(found -> CustomControls.asDesignElement(db, found.document())));
+        trace.accept(signed);
       }
       case "webservice" -> {
         String requested =
             DesignDxl.requireDesignName(
                 dxl, "note", "fileresource", "webservice", "agent");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         WebServices.Entry entry =
             WebServices.find(db, WebServices.Kind.PROVIDER, requested)
                 .orElseThrow(
@@ -325,7 +331,7 @@ final class DesignElementImport {
         String requested =
             DesignDxl.requireDesignName(
                 dxl, "note", "fileresource", "scriptlibrary", "webservice");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         WebServices.Entry entry =
             WebServices.find(db, WebServices.Kind.CONSUMER, requested)
                 .orElseThrow(
@@ -346,25 +352,32 @@ final class DesignElementImport {
       }
       case "xpage" -> {
         name = DesignDxl.requireDesignName(dxl, "note", "fileresource", "xpage");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        // Design-element sign/save rewrites the note and drops $ClassData0.
-        trace.accept(signRawNote(db.getDesign().getXPage(name), "XPage", name, dxl, comments));
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        // sign() rewrites the note and drops $ClassData0. HTTP then cannot find the page.
+        if (dxl.contains("$ClassData0")) {
+          trace.accept(SignOutcome.signed());
+        } else {
+          SignOutcome signed =
+              signRawNote(db.getDesign().getXPage(name), "XPage", name, dxl, comments);
+          dropOrphanXspClasses(db.getDesign().getXPage(name));
+          trace.accept(signed);
+        }
       }
       case "wiringproperties" -> {
         name = DesignDxl.requireDesignName(dxl, "note", "fileresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(
                 db.getDesign().getWiringPropertiesElement(name), "WiringProperties", name, dxl, comments));
       }
       case "compositeapplication" -> {
         name = DesignDxl.requireDesignName(dxl, "note", "fileresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(
                 db.getDesign().getCompositeApplication(name), "CompositeApplication", name, dxl, comments));
       }
       case "compositecomponent" -> {
         name = DesignDxl.requireDesignName(dxl, "note", "fileresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(
                 db.getDesign().getCompositeComponent(name), "CompositeComponent", name, dxl, comments));
       }
@@ -372,7 +385,7 @@ final class DesignElementImport {
         String requestedDc =
             DesignDxl.requireDesignName(
                 dxl, "dataconnection", "note", "fileresource");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         BulkOnlyNotes.Entry entry =
             BulkOnlyNotes.find(db, "dataconnection", requestedDc)
                 .orElseThrow(
@@ -391,7 +404,7 @@ final class DesignElementImport {
       }
       case "navigator" -> {
         name = DesignDxl.requireDesignName(dxl, "navigator", "note");
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getNavigator(name), "Navigator", name, dxl, comments));
       }
       case "jar", "applet", "javasource", "webcontent", "xspproperties", "xpagesresource", "designnote" -> {
@@ -401,7 +414,7 @@ final class DesignElementImport {
         if ("webcontent".equals(t)) {
           WebContent.requireOutsideWebInf(requested);
         }
-        log = DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
         final String bulkType = t;
         BulkOnlyNotes.Entry entry =
             BulkOnlyNotes.find(db, bulkType, requested)
@@ -423,19 +436,12 @@ final class DesignElementImport {
       default -> throw new KeepExceptionWrongDataRequest("Unsupported type: " + t);
     }
 
-    JsonObject result =
-        new JsonObject().put("success", true).put("type", t).put("log", log == null ? "" : log);
+    JsonObject result = new JsonObject().put("success", true).put("type", t);
     if (name != null) {
       result.put("name", name);
     }
     if (trace.signWarning != null && !trace.signWarning.isBlank()) {
       result.put("signWarning", trace.signWarning);
-    }
-    if (trace.signedBy != null && !trace.signedBy.isBlank()) {
-      result.put("signedBy", trace.signedBy);
-    }
-    if (trace.compiled) {
-      result.put("compiled", true);
     }
     return result;
   }
@@ -476,6 +482,61 @@ final class DesignElementImport {
   }
 
   /**
+   * A compiled XPage whose {@code $ClassData0} did not survive import makes HTTP look up that item
+   * and answer 404. The page source is still in {@code $FileData}. Dropping the orphan class items
+   * lets the XPages runtime compile the page after the design is signed.
+   */
+  private static void dropOrphanXspClasses(Optional<? extends DesignElement> opt)
+      throws KeepExceptionServer {
+    if (opt.isEmpty()) {
+      return;
+    }
+    try {
+      Document doc = opt.get().getDocument();
+      if (doc.hasItem("$ClassData0")) {
+        return;
+      }
+      boolean dropped = false;
+      if (doc.hasItem("$ClassIndexItem")) {
+        doc.removeItem("$ClassIndexItem");
+        dropped = true;
+      }
+      for (int i = 0; i < 8; i++) {
+        for (String prefix : new String[] {"$ClassData", "$ClassSize"}) {
+          String item = prefix + i;
+          if (doc.hasItem(item)) {
+            doc.removeItem(item);
+            dropped = true;
+          }
+        }
+      }
+      if (!dropped) {
+        return;
+      }
+      doc.sign();
+      doc.save();
+    } catch (Exception e) {
+      String message = e.getMessage() == null ? e.toString() : e.getMessage();
+      String lower = message.toLowerCase(Locale.ROOT);
+      if (lower.contains("signature") || lower.contains("0x2dc") || lower.contains("2dc")) {
+        return;
+      }
+      throw new KeepExceptionServer("XPages class cleanup failed: %s", message);
+    }
+  }
+
+  /** Save without signing. Used when signing would replace a Java library with an empty jar. */
+  private static SignOutcome saveRawNote(
+      Optional<? extends DesignElement> opt,
+      String label,
+      String name,
+      String dxl,
+      CommentUpdate comments)
+      throws KeepExceptionServer {
+    return writeRawNote(opt, label, name, dxl, comments, false);
+  }
+
+  /**
    * Sign the note itself. Design-element save drops non-LotusScript library source.
    */
   private static SignOutcome signRawNote(
@@ -485,6 +546,17 @@ final class DesignElementImport {
       String dxl,
       CommentUpdate comments)
       throws KeepExceptionServer {
+    return writeRawNote(opt, label, name, dxl, comments, true);
+  }
+
+  private static SignOutcome writeRawNote(
+      Optional<? extends DesignElement> opt,
+      String label,
+      String name,
+      String dxl,
+      CommentUpdate comments,
+      boolean sign)
+      throws KeepExceptionServer {
     DesignElement el =
         opt.orElseThrow(
             () ->
@@ -493,9 +565,11 @@ final class DesignElementImport {
     try {
       Document doc = el.getDocument();
       comments.apply(doc, dxl);
-      doc.sign();
+      if (sign) {
+        doc.sign();
+      }
       doc.save();
-      return SignOutcome.signed(signerOf(doc));
+      return SignOutcome.signed();
     } catch (Exception e) {
       String message = e.getMessage() == null ? e.toString() : e.getMessage();
       String lower = message.toLowerCase(Locale.ROOT);
@@ -531,7 +605,7 @@ final class DesignElementImport {
       comments.apply(doc, dxl);
       doc.sign();
       doc.save();
-      return SignOutcome.signed(signerOf(doc));
+      return SignOutcome.signed();
     } catch (Exception e) {
       String message = e.getMessage() == null ? e.toString() : e.getMessage();
       String lower = message.toLowerCase(Locale.ROOT);
@@ -553,7 +627,7 @@ final class DesignElementImport {
       comments.apply(el, dxl);
       el.sign();
       el.save();
-      return SignOutcome.signed(signerOf(el.getDocument()));
+      return SignOutcome.signed();
     } catch (Exception e) {
       String message = e.getMessage() == null ? e.toString() : e.getMessage();
       String lower = message.toLowerCase(Locale.ROOT);
@@ -569,35 +643,18 @@ final class DesignElementImport {
     }
   }
 
-  private static String signerOf(Document doc) {
-    if (doc == null) {
-      return null;
-    }
-    try {
-      String signer = doc.getSigner();
-      if (signer == null || signer.isBlank()) {
-        return null;
-      }
-      return signer;
-    } catch (Exception e) {
-      return null;
-    }
-  }
-
-  private record SignOutcome(String warning, String signedBy) {
-    private static SignOutcome signed(String signedBy) {
-      return new SignOutcome(null, signedBy);
+  private record SignOutcome(String warning) {
+    private static SignOutcome signed() {
+      return new SignOutcome(null);
     }
 
     private static SignOutcome failed(String warning) {
-      return new SignOutcome(warning, null);
+      return new SignOutcome(warning);
     }
   }
 
   private static final class WriteTrace {
     private String signWarning;
-    private String signedBy;
-    private boolean compiled;
 
     private void accept(SignOutcome outcome) {
       if (outcome == null) {
@@ -606,17 +663,10 @@ final class DesignElementImport {
       if (outcome.warning() != null && !outcome.warning().isBlank()) {
         signWarning = outcome.warning();
       }
-      if (outcome.signedBy() != null && !outcome.signedBy().isBlank()) {
-        signedBy = outcome.signedBy();
-      }
     }
 
     private void warningOnly(String warning) {
       signWarning = warning;
-    }
-
-    private void compiled() {
-      compiled = true;
     }
   }
 }

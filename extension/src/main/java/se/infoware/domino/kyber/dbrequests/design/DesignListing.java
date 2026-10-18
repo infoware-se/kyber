@@ -50,6 +50,9 @@ final class DesignListing {
             continue;
           }
           String name = el.getTitle();
+          if ("Agents".equals(key)) {
+            name = DesignDxl.unwrapAgentTitle(name);
+          }
           if (name == null || name.isBlank()) {
             continue;
           }

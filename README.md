@@ -6,7 +6,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.24.18 |
+| **Version** | 0.24.19 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
@@ -51,15 +51,13 @@ Each design element has its own collection. A form is `/forms`, an agent is `/ag
 | **Update** | `PUT /{collection}/{name}?nsfPath=` |
 | **Delete** | `DELETE /{collection}/{name}?nsfPath=` |
 
-A list returns the names, and an `elements` array with `fileName`, `aliases` and `kind` when the note has them. `aliases` is the part of the name after `|`, the name a URL or `OpenForm` uses. A get returns the DXL. When the note is one script or one text file, the get also returns that text as `code`.
+A list returns the names, and an `elements` array with `fileName`, `aliases` and `kind` when the note has them. `aliases` is the part of the name after `|`, the name a URL or `OpenForm` uses. A get returns the DXL.
 
 The ACL, the application properties, and the database icon are get and put. Domino creates those three with the NSF. A named note with no collection of its own travels in the [round trip](#round-trip) as `designnote`. Documents are application data. A note with no name, such as `$FormulaClass`, is left out of an export.
 
 ### DXL
 
-Create, update, and the round trip use Domino DXL. Send it as `text/xml`, or as `application/json` with `dxl` set to that DXL. The design comment is the `comment` attribute in the DXL. A payload without that attribute leaves the comment already on the note. A write of LotusScript adds `compiled: true` after the compile. `signedBy` is the Notes name that signed the note.
-
-`code` is the readable text inside a note that has one body: an agent, a script library, a Java source, a file resource, a style sheet, a WebContent file, or an XPages project file. Send it back as `text/plain` or `{"code":"..."}`. Kyber replaces that body and keeps the rest of the DXL. A form has many events, so its scripts stay in the DXL.
+Create, update, and the round trip use Domino DXL. Send it as `text/xml`, or as `application/json` with `dxl` set to that DXL. The design comment is the `comment` attribute in the DXL. A payload without that attribute leaves the comment already on the note.
 
 ### Templates in kyber.nsf
 
@@ -174,7 +172,7 @@ Three types take `?kind=` on an empty create:
 
 About, Using, the database script, and Xsp Properties are one note per database: the calls sit on the collection path, with no `/{name}`. Application properties, the database icon, and the ACL are get and put on that same shape. `$DBIcon` is `/dbicon`. `GET /images` does not list it. A WebContent name under `WEB-INF` is rejected. Those notes are `/xpagesresources`, except `xsp.properties`, which is `/xspproperties`.
 
-`POST /xpages` creates the XPages project files when they are missing: `plugin.xml`, `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, and `xsp.properties`. Designer writes `META-INF/MANIFEST.MF` and `Local/plugin/Activator.java` when the project is opened. JRE System Library, Plug-in Dependencies, Referenced Libraries, and Data are views Designer builds. They are not design notes. `.classpath` and `plugin.xml` carry the JRE and plug-in references. Jars stored in the NSF are under `/jars`.
+`POST /xpages`, and creating an agent, script library, or Java source, creates the XPages project files when they are missing: `plugin.xml`, `META-INF/MANIFEST.MF` (`Bundle-SymbolicName: kyber_nsf`), `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, and `xsp.properties`. Designer writes `Local/plugin/Activator.java` when the project is opened. JRE System Library, Plug-in Dependencies, Referenced Libraries, and Data are views Designer builds. They are not design notes. `.classpath` and `plugin.xml` carry the JRE and plug-in references. Jars stored in the NSF are under `/jars`.
 
 The blank-NSF baseline is the snapshot of what Domino puts in a new empty database: [`extension/src/main/resources/defaults/blank/`](extension/src/main/resources/defaults/blank/) holds `acl`, application properties, `$DBIcon`, the untitled default view, and `manifest.json`. A sync uses it so those notes are not treated as application design to remove. The files there are a reference. They are not the templates in `kyber.nsf`.
 

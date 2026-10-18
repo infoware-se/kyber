@@ -23,9 +23,8 @@ public class UpdateAcl extends KyberRequest {
 
     Database db = request.db();
     DxlImporter importer = request.session().getDxlImporter();
-    String log = DxlDesignPatch.importAcl(importer, dxl, db);
+    DxlDesignPatch.importAcl(importer, dxl, db);
 
-    request.emit(
-        new JsonObject().put("success", true).put("type", TYPE).put("log", log));
+    request.emit(new JsonObject().put("success", true).put("type", TYPE));
   }
 }

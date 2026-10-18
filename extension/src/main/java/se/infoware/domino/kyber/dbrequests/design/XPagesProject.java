@@ -28,6 +28,7 @@ final class XPagesProject {
     {"classpath.dxl", "xpagesresource", ".classpath"},
     {"resources-prefs.dxl", "xpagesresource", ".settings/org.eclipse.core.resources.prefs"},
     {"plugin-xml.dxl", "xpagesresource", PLUGIN_XML},
+    {"manifest-mf.dxl", "xpagesresource", "META-INF/MANIFEST.MF"},
     {"build-properties.dxl", "xpagesresource", "build.properties"},
     {"faces-config.dxl", "xpagesresource", "WEB-INF/faces-config.xml"},
     {"activator-class.dxl", "xpagesresource", "WEB-INF/classes/plugin/Activator.class"},

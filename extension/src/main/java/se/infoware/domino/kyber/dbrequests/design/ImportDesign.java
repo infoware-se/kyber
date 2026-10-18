@@ -178,7 +178,7 @@ public class ImportDesign extends KyberRequest {
       }
     }
 
-    JsonObject compile = DesignLotusScriptCompile.compileAll(db);
+    DesignLotusScriptCompile.compileAll(db);
     if (created) {
       DesignCatalog.mark(db);
     }
@@ -193,8 +193,7 @@ public class ImportDesign extends KyberRequest {
             .put("imported", ok)
             .put("failed", failed)
             .put("aclApplied", hasAcl)
-            .put("results", results)
-            .put("lotusscript", compile);
+            .put("results", results);
     if (created && title != null) {
       out.put("dbTitle", title);
     }

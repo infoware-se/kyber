@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Kyber — Infoware REST API for design elements",
-    "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) or application/json whose dxl property is that DXL. The design comment is the comment attribute in the DXL. A LotusScript write returns compiled, and signedBy is the Notes name that signed the note. GET /export is the design export and PUT /import is the design import of all supported elements as DXL. The design import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database whose catalog category is KyberEnabled. POST /database creates a missing NSF after the server privilege Create databases & templates and sets the catalog category KyberEnabled. DELETE /database deletes an NSF that has catalog category KyberEnabled and needs Manager on that NSF. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist and those paths are not returned. The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists, has catalog category KyberEnabled, and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
-    "version": "0.24.18"
+    "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) or application/json whose dxl property is that DXL. The design comment is the comment attribute in the DXL. GET /export is the design export and PUT /import is the design import of all supported elements as DXL. The design import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database whose catalog category is KyberEnabled. POST /database creates a missing NSF after the server privilege Create databases & templates and sets the catalog category KyberEnabled. DELETE /database deletes an NSF that has catalog category KyberEnabled and needs Manager on that NSF. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist and those paths are not returned. The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists, has catalog category KyberEnabled, and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
+    "version": "0.24.19"
   },
   "servers": [
     {
@@ -76,7 +76,8 @@
                             ]
                           },
                           "dxl": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "DXL stored on the note."
                           },
                           "source": {
                             "type": "string",
@@ -203,10 +204,12 @@
                       ]
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     },
                     "source": {
                       "type": "string",
+                      "description": "Where the template came from: the API starter (api) or kyber.nsf (nsf).",
                       "enum": [
                         "api",
                         "nsf"
@@ -295,7 +298,8 @@
                             "example": "368a"
                           },
                           "dxl": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "DXL stored on the note."
                           }
                         },
                         "required": [
@@ -427,14 +431,6 @@
                         "dxl": {
                           "type": "string",
                           "description": "Required unless delete=true"
-                        },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
                         }
                       }
                     }
@@ -477,10 +473,21 @@
                       "type": "integer",
                       "description": "Elements that were not applied. success is false when this is greater than zero. Earlier elements in the same request stay written."
                     },
+                    "aclApplied": {
+                      "type": "boolean",
+                      "description": "True when the import payload contained an ACL. A failed ACL stops the import."
+                    },
                     "results": {
                       "type": "array",
+                      "description": "One row per element. A written note has success, type, and name. A failure has success false and message.",
                       "items": {
-                        "type": "object"
+                        "type": "object",
+                        "properties": {
+                          "success": { "type": "boolean" },
+                          "type": { "type": "string" },
+                          "name": { "type": "string" },
+                          "message": { "type": "string" }
+                        }
                       }
                     }
                   }
@@ -548,7 +555,7 @@
                         "properties": {
                           "nsfPath": { "type": "string" },
                           "replicaId": { "type": "string", "description": "Replica id of this NSF, 16 hex digits. An export folder is named nsfPath-8525812300456789.", "example": "8525812300456789" },
-                          "dbTitle": { "type": "string" }
+                          "dbTitle": { "type": "string", "description": "Database title." }
                         }
                       }
                     },
@@ -730,10 +737,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -744,20 +750,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -933,7 +928,7 @@
                     },
                     "dxl": {
                       "type": "string",
-                      "description": "Page DXL"
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -1053,10 +1048,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -1067,20 +1061,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -1175,10 +1158,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -1189,20 +1171,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -1378,7 +1349,7 @@
                     },
                     "dxl": {
                       "type": "string",
-                      "description": "Outline DXL"
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -1498,10 +1469,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -1512,20 +1482,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -1620,10 +1579,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -1634,20 +1592,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -1823,7 +1770,7 @@
                     },
                     "dxl": {
                       "type": "string",
-                      "description": "Frameset DXL"
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -1943,10 +1890,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -1957,20 +1903,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -2065,10 +2000,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -2079,20 +2013,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -2268,7 +2191,7 @@
                     },
                     "dxl": {
                       "type": "string",
-                      "description": "Form DXL"
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -2388,10 +2311,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -2402,20 +2324,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -2510,10 +2421,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -2524,20 +2434,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -2713,7 +2612,7 @@
                     },
                     "dxl": {
                       "type": "string",
-                      "description": "View DXL"
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -2833,10 +2732,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -2847,20 +2745,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -2955,10 +2842,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -2969,20 +2855,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -3158,7 +3033,7 @@
                     },
                     "dxl": {
                       "type": "string",
-                      "description": "Folder DXL"
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -3278,10 +3153,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -3292,20 +3166,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -3400,10 +3263,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -3414,20 +3276,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -3602,7 +3453,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -3722,10 +3574,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -3736,20 +3587,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -3844,10 +3684,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -3858,20 +3697,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -4046,7 +3874,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -4166,10 +3995,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -4180,20 +4008,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -4288,10 +4105,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -4302,20 +4118,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -4490,7 +4295,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -4610,10 +4416,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -4624,20 +4429,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -4732,10 +4526,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -4746,20 +4539,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -4934,7 +4716,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -5054,10 +4837,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -5068,20 +4850,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -5176,10 +4947,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -5190,20 +4960,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -5378,7 +5137,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -5498,10 +5258,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -5512,20 +5271,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -5620,10 +5368,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -5634,20 +5381,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -5822,7 +5558,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -5942,10 +5679,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -5956,20 +5692,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -6064,10 +5789,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -6078,20 +5802,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -6266,7 +5979,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -6386,10 +6100,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -6400,20 +6113,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -6487,7 +6189,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -6548,9 +6251,6 @@
                     "type": {
                       "type": "string",
                       "example": "acl"
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -6621,7 +6321,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -6695,10 +6396,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -6709,20 +6409,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -6843,10 +6532,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -6857,20 +6545,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -6958,7 +6635,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -7032,10 +6710,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -7046,20 +6723,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -7180,10 +6846,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -7194,20 +6859,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -7341,10 +6995,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -7355,14 +7008,6 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "kind": {
                       "type": "string",
                       "description": "Agent kind.",
@@ -7377,9 +7022,6 @@
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -7592,7 +7234,8 @@
                       ]
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -7712,10 +7355,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -7726,14 +7368,6 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "kind": {
                       "type": "string",
                       "description": "Agent kind.",
@@ -7748,9 +7382,6 @@
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -7869,10 +7500,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -7883,14 +7513,6 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "kind": {
                       "type": "string",
                       "description": "Script library kind.",
@@ -7904,9 +7526,6 @@
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -8116,7 +7735,8 @@
                       ]
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -8236,10 +7856,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -8250,14 +7869,6 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "kind": {
                       "type": "string",
                       "description": "Script library kind.",
@@ -8271,9 +7882,6 @@
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -8368,10 +7976,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -8382,20 +7989,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -8574,7 +8170,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -8698,10 +8295,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -8712,20 +8308,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -8799,7 +8384,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -8867,10 +8453,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -8881,20 +8466,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -8972,7 +8546,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -9040,10 +8615,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -9054,20 +8628,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -9138,10 +8701,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -9152,20 +8714,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -9215,13 +8766,39 @@
         ],
         "responses": {
           "200": {
-            "description": "Deleted"
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "type": {
+                      "type": "string",
+                      "example": "xspproperties"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "WEB-INF/xsp.properties"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
           },
           "403": {
             "$ref": "#/components/responses/403Forbidden"
           },
           "404": {
             "description": "Not found"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
           }
         }
       }
@@ -9278,7 +8855,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -9352,10 +8930,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -9366,20 +8943,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -9500,10 +9066,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -9514,20 +9079,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -9636,10 +9190,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -9647,14 +9200,6 @@
                       "type": "string",
                       "description": "File name Domino uses for the page. Renaming the design leaves it unchanged. The XPage URL and a custom control reference use this name."
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "aliases": {
                       "type": "array",
                       "description": "Names after |, used by a URL or OpenForm.",
@@ -9665,9 +9210,6 @@
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -9850,7 +9392,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -9970,10 +9513,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -9981,14 +9523,6 @@
                       "type": "string",
                       "description": "File name Domino uses for the page. Renaming the design leaves it unchanged. The XPage URL and a custom control reference use this name."
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "aliases": {
                       "type": "array",
                       "description": "Names after |, used by a URL or OpenForm.",
@@ -9999,9 +9533,6 @@
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -10091,10 +9622,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -10102,14 +9632,6 @@
                       "type": "string",
                       "description": "File name Domino uses for the page. Renaming the design leaves it unchanged. The XPage URL and a custom control reference use this name."
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "aliases": {
                       "type": "array",
                       "description": "Names after |, used by a URL or OpenForm.",
@@ -10120,9 +9642,6 @@
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -10305,7 +9824,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -10420,10 +9940,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -10431,14 +9950,6 @@
                       "type": "string",
                       "description": "File name Domino uses for the page. Renaming the design leaves it unchanged. The XPage URL and a custom control reference use this name."
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "aliases": {
                       "type": "array",
                       "description": "Names after |, used by a URL or OpenForm.",
@@ -10449,9 +9960,6 @@
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -10541,10 +10049,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -10555,20 +10062,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -10743,7 +10239,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -10858,10 +10355,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -10872,20 +10368,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -10975,10 +10460,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -10989,20 +10473,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -11177,7 +10650,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -11292,10 +10766,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -11306,20 +10779,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -11409,10 +10871,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -11423,20 +10884,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -11611,7 +11061,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -11726,10 +11177,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -11740,20 +11190,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -11843,10 +11282,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -11857,20 +11295,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -12045,7 +11472,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -12160,10 +11588,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -12174,20 +11601,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -12277,10 +11693,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -12291,20 +11706,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -12479,7 +11883,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -12594,10 +11999,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -12608,20 +12012,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -12645,7 +12038,7 @@
     },
     "/xpagesresources": {
       "summary": "List or create XPages project files",
-      "description": "List XPages project file names (GET) or create one (POST) in the target NSF (?nsfPath=). Covers .classpath, .project, plugin.xml, build.properties, .settings/ and WEB-INF/ except xsp.properties. Get/update/delete use /xpagesresources/{name}.",
+      "description": "List XPages project file names (GET) or create one (POST) in the target NSF (?nsfPath=). Covers .classpath, .project, plugin.xml, META-INF/MANIFEST.MF, build.properties, .settings/ and WEB-INF/ except xsp.properties. Get/update/delete use /xpagesresources/{name}.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -12711,10 +12104,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -12725,20 +12117,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -12913,7 +12294,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -12987,10 +12369,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -13001,20 +12382,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -13050,7 +12420,22 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
             "$ref": "#/components/responses/400BadRequest"
@@ -13135,10 +12520,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -13149,20 +12533,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -13337,7 +12710,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -13452,10 +12826,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -13466,20 +12839,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -13569,10 +12931,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -13583,20 +12944,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -13771,7 +13121,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -13886,10 +13237,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -13900,20 +13250,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -14026,10 +13365,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -14040,14 +13378,6 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "kind": {
                       "type": "string",
                       "description": "Java source kind.",
@@ -14060,9 +13390,6 @@
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -14269,7 +13596,8 @@
                       ]
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -14384,10 +13712,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -14398,14 +13725,6 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "kind": {
                       "type": "string",
                       "description": "Java source kind.",
@@ -14418,9 +13737,6 @@
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -14510,10 +13826,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -14524,20 +13839,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -14712,7 +14016,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -14827,10 +14132,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -14841,20 +14145,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -14944,10 +14237,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -14958,20 +14250,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -15146,7 +14427,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -15261,10 +14543,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -15275,20 +14556,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -15378,10 +14648,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -15392,20 +14661,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -15580,7 +14838,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -15695,10 +14954,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -15709,20 +14967,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -15796,7 +15043,8 @@
                       }
                     },
                     "dxl": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "DXL stored on the note."
                     }
                   }
                 }
@@ -15870,10 +15118,9 @@
                     },
                     "source": {
                       "type": "string",
-                      "description": "Where the written DXL came from: the request body (dxl), readable text (code), or the template (default).",
+                      "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
                       "enum": [
                         "dxl",
-                        "code",
                         "default"
                       ]
                     },
@@ -15884,20 +15131,9 @@
                         "type": "string"
                       }
                     },
-                        "compiled": {
-                          "type": "boolean",
-                          "description": "True when LotusScript in this note was compiled during the write."
-                        },
-                        "signedBy": {
-                          "type": "string",
-                          "description": "Notes name that signed the note."
-                        },
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
-                    },
-                    "log": {
-                      "type": "string"
                     }
                   }
                 }
@@ -15934,7 +15170,8 @@
       "description": "dxl is the design to store. The design comment is the comment attribute in that DXL. name and kind are used when the path or query did not already set them.",
       "properties": {
         "dxl": {
-          "type": "string"
+          "type": "string",
+          "description": "DXL stored on the note."
         },
         "name": {
           "type": "string"
@@ -15950,10 +15187,6 @@
         },
         "kind": {
           "type": "string"
-        },
-        "code": {
-          "type": "string",
-          "description": "Readable text for a note with one body. Ignored when dxl is present."
         }
       }
     },

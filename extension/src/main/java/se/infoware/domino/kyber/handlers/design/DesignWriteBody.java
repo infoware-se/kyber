@@ -5,22 +5,16 @@ import io.vertx.core.json.JsonObject;
 /**
  * Request body for a design create or update.
  *
- * <p>Raw {@code text/xml} is DXL. {@code text/plain} and JSON {@code {"code":"..."}} are the
- * readable text of a note with one body. JSON {@code {"dxl":"..."}} stores that DXL. The design
- * comment is the {@code comment} attribute in the DXL, not a field on the JSON object.
+ * <p>Raw {@code text/xml} is DXL. JSON {@code {"dxl":"..."}} stores that DXL. The design comment is
+ * the {@code comment} attribute in the DXL, not a field on the JSON object.
  */
 final class DesignWriteBody {
 
   private DesignWriteBody() {}
 
-  static void apply(JsonObject params, String raw, boolean plainText) {
+  static void apply(JsonObject params, String raw) {
     if (raw == null) {
       raw = "";
-    }
-    if (plainText) {
-      params.put("code", raw);
-      params.put("dxl", "");
-      return;
     }
     String trimmed = raw.stripLeading();
     if (trimmed.startsWith("{")) {
@@ -31,12 +25,6 @@ final class DesignWriteBody {
           params.put("dxl", dxl == null ? "" : dxl);
           putIfBlank(params, "kind", body.getString("kind"));
           putIfBlank(params, "name", body.getString("name"));
-          return;
-        }
-        if (body.containsKey("code") && !body.containsKey("dxl")) {
-          String code = body.getString("code");
-          params.put("code", code == null ? "" : code);
-          params.put("dxl", "");
           return;
         }
       } catch (Exception ignored) {

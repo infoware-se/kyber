@@ -11,24 +11,8 @@ class DesignWriteBodyTest {
   @Test
   void xmlBodyIsDxl() {
     JsonObject params = new JsonObject();
-    DesignWriteBody.apply(params, "<form name='Product'></form>", false);
+    DesignWriteBody.apply(params, "<form name='Product'></form>");
     assertEquals("<form name='Product'></form>", params.getString("dxl"));
-  }
-
-  @Test
-  void plainTextIsCode() {
-    JsonObject params = new JsonObject();
-    DesignWriteBody.apply(params, "Option Public", true);
-    assertEquals("Option Public", params.getString("code"));
-    assertEquals("", params.getString("dxl"));
-  }
-
-  @Test
-  void codeJsonStaysTheSingleBodyText() {
-    JsonObject params = new JsonObject();
-    DesignWriteBody.apply(params, "{\"code\":\"Print \\\"Hi\\\"\"}", false);
-    assertEquals("Print \"Hi\"", params.getString("code"));
-    assertEquals("", params.getString("dxl"));
   }
 
   @Test
@@ -36,7 +20,7 @@ class DesignWriteBodyTest {
     JsonObject params = new JsonObject().put("name", "Inventory Value");
     String raw =
         "{\"dxl\":\"<agent name='Inventory Value'></agent>\",\"comment\":\"Reports\",\"name\":\"Other\",\"kind\":\"lotusscript\"}";
-    DesignWriteBody.apply(params, raw, false);
+    DesignWriteBody.apply(params, raw);
     assertEquals("<agent name='Inventory Value'></agent>", params.getString("dxl"));
     assertFalse(params.containsKey("comment"));
     assertEquals("Inventory Value", params.getString("name"));

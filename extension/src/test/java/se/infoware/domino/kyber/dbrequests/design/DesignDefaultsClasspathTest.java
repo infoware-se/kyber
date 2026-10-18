@@ -106,6 +106,7 @@ class DesignDefaultsClasspathTest {
       "classpath.dxl",
       "resources-prefs.dxl",
       "plugin-xml.dxl",
+      "manifest-mf.dxl",
       "build-properties.dxl",
       "faces-config.dxl",
       "activator-class.dxl",
@@ -131,6 +132,8 @@ class DesignDefaultsClasspathTest {
     assertTrue(project.contains("<name>kyber.nsf</name>"));
     assertTrue(plugin.contains("id=\"kyber_nsf\""));
     assertTrue(activator.contains("kyber_nsf"));
+    String manifest = filePayload(readResource("/defaults/xpages-project/manifest-mf.dxl"));
+    assertTrue(manifest.contains("Bundle-SymbolicName: kyber_nsf;singleton:=true"));
   }
 
   private static String readResource(String path) throws Exception {

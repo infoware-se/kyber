@@ -74,9 +74,9 @@ class DesignCommentTest {
 
   @Test
   void packagedVersionIsTheCurrentRelease() {
-    assertEquals("0.24.18", DesignComment.version());
+    assertEquals("0.24.19", DesignComment.version());
     String stamped = DesignComment.apply("The Comment", DesignComment.version());
-    assertEquals("Kyber 0.24.18 Infoware - The Comment", stamped);
+    assertEquals("Kyber 0.24.19 Infoware - The Comment", stamped);
     assertEquals(stamped, DesignComment.apply(stamped, DesignComment.version()));
     assertFalse(DesignComment.version().contains("$"));
   }

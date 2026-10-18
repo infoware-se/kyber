@@ -35,6 +35,7 @@ final class BulkOnlyNotes {
   private static final Set<String> XPAGES_PROJECT_FILES =
       Set.of(
           "plugin.xml",
+          "meta-inf/manifest.mf",
           ".classpath",
           ".project",
           "build.properties",

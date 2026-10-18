@@ -13,8 +13,11 @@
     Get, put, and the list element include noteId. Kinded types return that kind.
     An XPage fileName is newxpage.xsp. A custom control fileName is newcustomcontrol.xsp
   - Hello World written into each created element and read back
-  - LotusScript, formula and simple-action agents are run; each writes Hello World
-  - The LotusScript agent calls SmokeLibLs
+  - LotusScript, formula, simple-action and Java agents are run
+  - The LotusScript agent calls SmokeLibLs. The Java agent calls SmokeLibJava.text().
+    Class and file names match the design element names Designer compiles.
+    Each run must save Hello World
+  - Formula and simple-action agents save Hello World on the same document
   - Domino URL commands open the database, form, page, about, using, view, folder,
     navigator, frameset, icon, image, file, stylesheet, agents, web service and XPage
   - ?CreateDocument, ?OpenDocument, ?EditDocument and ?DeleteDocument on Hello World
@@ -48,12 +51,16 @@
   Do not call DELETE. Existing design is updated and left in place, including the
   Hello World document created by the web checks. Without this switch the deletes
   run once, after export and import, and the design is created again afterwards.
+
+.PARAMETER JavaHelloOnly
+  Rewrite and run only SmokeLibJava and SmokeAgentJava, then stop.
 #>
 param(
   [string]$NsfPath = "",
   [string]$EnvFile = "",
   [switch]$SkipCertificateCheck,
-  [switch]$SkipDelete
+  [switch]$SkipDelete,
+  [switch]$JavaHelloOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -135,14 +142,18 @@ function Set-HelloWorldDxl([string]$Dxl) {
   if ($Dxl -match '<sharedactions\b') {
     $Dxl = [regex]::Replace($Dxl, "title='[^']*'", "title='SmokeAction'", 1)
   }
-  $attr = [regex]"comment='[^']*'"
-  if ($attr.IsMatch($Dxl)) { return $attr.Replace($Dxl, "comment='Hello World'", 1) }
-  $attr2 = [regex]'comment="[^"]*"'
-  if ($attr2.IsMatch($Dxl)) { return $attr2.Replace($Dxl, 'comment="Hello World"', 1) }
+  # A raw note keeps a previous $Comment unless the DXL comment attribute is set.
   $item = '<item name=''$Comment''><text>Hello World</text></item>'
   $existing = [regex]'(?s)<item name=''\$Comment''[^>]*>\s*<text>.*?</text>\s*</item>'
-  if ($existing.IsMatch($Dxl)) { return $existing.Replace($Dxl, $item, 1) }
   $existing2 = [regex]'(?s)<item name="\$Comment"[^>]*>\s*<text>.*?</text>\s*</item>'
+  if ($Dxl -match "comment='[^']*'") {
+    $Dxl = [regex]::Replace($Dxl, "comment='[^']*'", "comment='Hello World'", 1)
+  } elseif ($Dxl -match 'comment="[^"]*"') {
+    $Dxl = [regex]::Replace($Dxl, 'comment="[^"]*"', 'comment="Hello World"', 1)
+  } elseif ($Dxl -match '<note\b') {
+    $Dxl = [regex]::Replace($Dxl, '<note\b', "<note comment='Hello World'", 1)
+  }
+  if ($existing.IsMatch($Dxl)) { return $existing.Replace($Dxl, $item, 1) }
   if ($existing2.IsMatch($Dxl)) { return $existing2.Replace($Dxl, $item, 1) }
   $close = [regex]'(?s)</(\w+)>\s*$'
   if (-not $close.IsMatch($Dxl)) { return $null }
@@ -156,7 +167,7 @@ function Set-AgentHelloDxl([string]$Dxl, [string]$Kind) {
   }
   $dxl = [regex]::Replace($dxl, "(?s)<code\b.*?</code>\s*", "")
   $dxl = [regex]::Replace($dxl, "<trigger\b[^>]*/>", "<trigger type='agentlist'/>", 1)
-  $docType = if ($Kind -eq "lotusscript") { "runonce" } else { "all" }
+  $docType = if ($Kind -in @("lotusscript", "java")) { "runonce" } else { "all" }
   $dxl = [regex]::Replace($dxl, "<documentset\b[^>]*/>", "<documentset type='$docType'/>", 1)
   $code = switch ($Kind) {
     "lotusscript" {
@@ -189,23 +200,20 @@ End Sub
     }
     "java" {
 @"
-<code event='action'><javaproject class='JavaAgent.class' codepath='c:\Program Files\HCL\Notes\Data'><java name='JavaAgent.java'>import lotus.domino.*;
+<code event='action'><javaproject class='SmokeAgentJava.class' codepath='c:\Program Files\HCL\Notes\Data'><sharedlibraryref name='SmokeLibJava'/><java name='SmokeAgentJava.java'>import lotus.domino.*;
 
-public class JavaAgent extends AgentBase {
+public class SmokeAgentJava extends AgentBase {
 
     public void NotesMain() {
 
       try {
+          String hello = SmokeLibJava.text();
           Session session = getSession();
           AgentContext agentContext = session.getAgentContext();
-          Document doc = agentContext.getDocumentContext();
-          if (doc == null) {
-              doc = agentContext.getCurrentDatabase().createDocument();
-              doc.replaceItemValue("Form", "SmokeHello");
-          }
-          doc.replaceItemValue("SmokeHelloJava", "Hello World");
+          Document doc = agentContext.getCurrentDatabase().createDocument();
+          doc.replaceItemValue("Form", "SmokeHello");
+          doc.replaceItemValue("SmokeHelloJava", hello);
           doc.save(true, false);
-          System.out.println("Hello World");
 
       } catch(Exception e) {
           e.printStackTrace();
@@ -292,6 +300,169 @@ Loop
   return Invoke-NotesVbs $vbs
 }
 
+function Get-SmokeJavac {
+  $candidates = @()
+  if ($env:JAVA_HOME) { $candidates += (Join-Path $env:JAVA_HOME "bin\javac.exe") }
+  $candidates += @(Get-ChildItem "C:\Program Files\Microsoft\jdk*\bin\javac.exe" -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
+  $found = $candidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+  if (-not $found) { Fail "javac is required to compile the Java agent and script library" }
+  return $found
+}
+
+function Get-SmokeNotesJar {
+  foreach ($path in @(
+    "C:\Domino\ndext\Notes.jar",
+    "C:\Program Files\HCL\Notes\ndext\Notes.jar"
+  )) {
+    if (Test-Path $path) { return $path }
+  }
+  Fail "Notes.jar is required to compile the Java agent"
+}
+
+function Remove-JavaObjectJar([string]$Dxl) {
+  return [regex]::Replace(
+    $Dxl,
+    "(?s)<item name='\$FILE'[^>]*>.*?<file\b[^>]*name='%%object%%\.jar'.*?</item>\s*",
+    "")
+}
+
+function Add-ObjectJar([string]$Dxl, [string]$JarPath) {
+  $Dxl = Remove-JavaObjectJar $Dxl
+  $bytes = [IO.File]::ReadAllBytes($JarPath)
+  $b64 = [Convert]::ToBase64String($bytes)
+  $lines = for ($i = 0; $i -lt $b64.Length; $i += 72) {
+    $b64.Substring($i, [Math]::Min(72, $b64.Length - $i))
+  }
+  $item = @"
+<item name='`$FILE' summary='true' sign='true' seal='true'><object><file hosttype='msdos' compression='none' flags='sign' encoding='none' name='%%object%%.jar' size='$($bytes.Length)'>
+<created><datetime dst='true'>20261018T120000,00+02</datetime></created>
+<modified><datetime dst='true'>20261018T120000,00+02</datetime></modified>
+<filedata>
+$($lines -join "`n")
+</filedata></file></object></item>
+"@
+  $close = [regex]::Match($Dxl, '(?s)</(agent|scriptlibrary)>\s*$')
+  if (-not $close.Success) { return $null }
+  return $Dxl.Substring(0, $close.Index) + $item + "</$($close.Groups[1].Value)>" + [Environment]::NewLine
+}
+
+function Compile-JavaHello {
+  $dir = Join-Path $env:TEMP "kyber-smoke-java"
+  if (Test-Path $dir) { Remove-Item $dir -Recurse -Force }
+  New-Item -ItemType Directory -Path $dir | Out-Null
+  @'
+public class SmokeLibJava {
+  public static String text() {
+    return "Hello World";
+  }
+}
+'@ | Set-Content -Encoding ascii (Join-Path $dir "SmokeLibJava.java")
+  @'
+import lotus.domino.*;
+
+public class SmokeAgentJava extends AgentBase {
+    public void NotesMain() {
+      try {
+          String hello = SmokeLibJava.text();
+          Session session = getSession();
+          AgentContext agentContext = session.getAgentContext();
+          Document doc = agentContext.getCurrentDatabase().createDocument();
+          doc.replaceItemValue("Form", "SmokeHello");
+          doc.replaceItemValue("SmokeHelloJava", hello);
+          doc.save(true, false);
+      } catch(Exception e) {
+          e.printStackTrace();
+       }
+   }
+}
+'@ | Set-Content -Encoding ascii (Join-Path $dir "SmokeAgentJava.java")
+  $javac = Get-SmokeJavac
+  $jar = Join-Path (Split-Path $javac) "jar.exe"
+  $notes = Get-SmokeNotesJar
+  & $javac -Xlint:-options --release 8 -cp "$notes;$dir" -d $dir (Join-Path $dir "SmokeLibJava.java") (Join-Path $dir "SmokeAgentJava.java")
+  if ($LASTEXITCODE -ne 0) { Fail "javac could not compile the Java hello classes" }
+  Push-Location $dir
+  & $jar cf (Join-Path $dir "library-object.jar") SmokeLibJava.class
+  & $jar cf (Join-Path $dir "agent-object.jar") SmokeAgentJava.class SmokeLibJava.class
+  Pop-Location
+  if (-not (Test-Path (Join-Path $dir "agent-object.jar"))) { Fail "the Java agent jar was not built" }
+}
+
+function Publish-JavaObjectJar([string]$Url, [string]$Dxl, [string]$JarPath) {
+  $stamped = Add-ObjectJar $Dxl $JarPath
+  if (-not $stamped) { Fail "could not attach the compiled Java jar" }
+  $file = Join-Path $env:TEMP "smoke-java-jar.dxl"
+  [IO.File]::WriteAllText($file, $stamped)
+  $code = Invoke-Design PUT $Url -BodyFile $file -ContentType "text/xml" -OutFile $out
+  Assert-Code "PUT compiled Java $Url" $code @("200")
+}
+
+function Invoke-JavaHelloOnServer([string]$AgentName) {
+  $vbs = @"
+Option Explicit
+Dim session, db, nc, nid, doc, scan, title, obj, agent, dc, item, logText
+Set session = CreateObject("Notes.NotesSession")
+Set db = session.GetDatabase("$DominoServer", "kybertest.nsf")
+If Not db.IsOpen Then
+  WScript.Echo "OPEN FAIL"
+  WScript.Quit 1
+End If
+Set nc = db.CreateNoteCollection(False)
+nc.SelectAgents = True
+nc.SelectScriptLibraries = True
+nc.BuildCollection
+nid = nc.GetFirstNoteId()
+Do While nid <> ""
+  Set doc = db.GetDocumentByID(nid)
+  title = ""
+  For Each scan In doc.Items
+    If scan.Name = "`$TITLE" Then title = scan.Text
+  Next
+  If title = "$AgentName" Or title = "($AgentName)" Or title = "SmokeLibJava" Then
+    Do
+      Set obj = Nothing
+      On Error Resume Next
+      Set obj = doc.GetAttachment("%%object%%.jar")
+      On Error GoTo 0
+      If obj Is Nothing Then Exit Do
+      If obj.FileSize < 200 Then
+        Call obj.Remove
+        Call doc.Save(True, True)
+      Else
+        Exit Do
+      End If
+    Loop
+    ' Sign after the jar is final. A later edit corrupts the library signature.
+    Call doc.Sign()
+    Call doc.Save(True, False)
+  End If
+  nid = nc.GetNextNoteId(nid)
+Loop
+Set agent = db.GetAgent("$AgentName")
+If agent Is Nothing Then
+  WScript.Echo "NO AGENT"
+  WScript.Quit 2
+End If
+On Error Resume Next
+logText = agent.RunOnServer()
+If Err.Number <> 0 Then
+  WScript.Echo "RUN FAIL " & Err.Number & " " & Err.Description
+  WScript.Quit 3
+End If
+On Error GoTo 0
+WScript.Echo "RAN"
+Set dc = db.Search("Form = ""SmokeHello""", Nothing, 0)
+Set doc = dc.GetFirstDocument()
+Do While Not doc Is Nothing
+  For Each item In doc.Items
+    If Left(item.Name, 1) <> "`$" Then WScript.Echo "FIELD " & LCase(item.Name) & "=" & item.Text
+  Next
+  Set doc = dc.GetNextDocument(doc)
+Loop
+"@
+  return Invoke-NotesVbs $vbs
+}
+
 function Assert-RunnableAgent([string]$Url, [string]$Label, [string]$Kind) {
   $code = Invoke-Design GET $Url -OutFile $out
   Assert-Code "GET $Label for hello" $code @("200")
@@ -312,28 +483,26 @@ function Assert-RunnableAgent([string]$Url, [string]$Label, [string]$Kind) {
     "lotusscript" { 'Use "SmokeLibLs"' }
     "formula" { 'FIELD SmokeHelloFormula := "Hello World"' }
     "simpleaction" { "value='Hello World'" }
-    "java" { 'System.out.println("Hello World")' }
+    "java" { 'SmokeLibJava.text()' }
   }
   if ($back -notlike "*$needle*") { Fail "$Label hello source was not returned" }
   $agentName = ($Label -split "/")[-1] -replace '\s+\(.*$', ''
-  $ran = Invoke-HelloAgent $agentName -ResetDocs:((-not $SkipDelete) -and ($Kind -eq "lotusscript"))
+  if ($Kind -eq "java") {
+    Compile-JavaHello
+    Publish-JavaObjectJar $Url $back (Join-Path $env:TEMP "kyber-smoke-java\agent-object.jar")
+    $ran = Invoke-JavaHelloOnServer $agentName
+  } else {
+    $ran = Invoke-HelloAgent $agentName -ResetDocs:((-not $SkipDelete) -and ($Kind -eq "lotusscript"))
+  }
   if ($ran -notmatch '(?m)^RAN\s*$') { Fail "$Label did not run: $ran" }
   $field = switch ($Kind) {
     "lotusscript" { "smokehello" }
     "formula" { "smokehelloformula" }
     "simpleaction" { "smokehellosimple" }
-    default { "" }
+    "java" { "smokehellojava" }
   }
-  if ($field) {
-    if ($ran -notmatch "(?m)^FIELD $field=Hello World\s*$") {
-      Fail "$Label run did not write Hello World: $ran"
-    }
-  } else {
-    $code = Invoke-Design GET $Url -OutFile $out
-    Assert-Code "GET runlog $Label" $code @("200")
-    $logDxl = (Get-ResponseText | ConvertFrom-Json).dxl
-    if ($logDxl -notmatch 'Ran Java Agent Class') { Fail "$Label Java agent did not run" }
-    if ($logDxl -match 'ERROR:') { Fail "$Label Java agent run failed" }
+  if ($ran -notmatch "(?m)^FIELD $field=Hello World\s*$") {
+    Fail "$Label run did not write Hello World: $ran"
   }
   Ok "ran hello $Label"
 }
@@ -353,7 +522,7 @@ End Function
     }
     "java" {
 @"
-<code event='library'><javaproject class='' codepath='C:\Domino\Data'><java name='SmokeHello.java'>public class SmokeHello {
+<code event='library'><javaproject class='' codepath='c:\Program Files\HCL\Notes\Data'><java name='SmokeLibJava.java'>public class SmokeLibJava {
   public static String text() {
     return "Hello World";
   }
@@ -387,37 +556,28 @@ function Assert-LibraryHello([string]$Url, [string]$Label, [string]$Kind) {
   Assert-Code "GET hello $Label" $code @("200")
   $back = $null
   try { $back = (Get-ResponseText | ConvertFrom-Json).dxl } catch { }
-  $needle = if ($Kind -eq "lotusscript") { "Function SmokeHello" } else { "class SmokeHello" }
+  $needle = if ($Kind -eq "lotusscript") { "Function SmokeHello" } else { "class SmokeLibJava" }
   if ($back -notlike "*$needle*" -or $back -notmatch 'Hello World') {
     Fail "$Label library hello was not returned"
+  }
+  if ($Kind -eq "java") {
+    Compile-JavaHello
+    Publish-JavaObjectJar $Url $back (Join-Path $env:TEMP "kyber-smoke-java\library-object.jar")
   }
   Ok "hello $Label"
 }
 
-function Assert-CodeRoundTrip([string]$Item, [string]$MustKeep) {
+function Assert-DxlContains([string]$Item, [string]$MustKeep) {
   $url = Design-Url $Item
   $code = Invoke-Design GET $url -OutFile $out
-  Assert-Code "GET code $Item" $code @("200")
-  $original = [string]((Get-ResponseText | ConvertFrom-Json).code)
-  $probeFile = Join-Path $env:TEMP "kyber-code-probe.txt"
-  $probe = if ([string]::IsNullOrWhiteSpace($original)) { "kyber-code" } else { $original + "`r`n' kyber-code" }
-  [IO.File]::WriteAllText($probeFile, $probe)
-  $code = Invoke-Design PUT $url -BodyFile $probeFile -ContentType "text/plain" -OutFile $out
-  Assert-Code "PUT code $Item" $code @("200")
-  $code = Invoke-Design GET $url -OutFile $out
-  Assert-Code "GET code probe $Item" $code @("200")
-  if ((Get-ResponseText) -notmatch "kyber-code") { Fail "$Item code probe missing" }
-  [IO.File]::WriteAllText($probeFile, $original)
-  $code = Invoke-Design PUT $url -BodyFile $probeFile -ContentType "text/plain" -OutFile $out
-  Assert-Code "PUT code restore $Item" $code @("200")
-  $code = Invoke-Design GET $url -OutFile $out
-  Assert-Code "GET code restored $Item" $code @("200")
-  $restored = [string]((Get-ResponseText | ConvertFrom-Json).code)
-  if ($restored -match "kyber-code") { Fail "$Item code probe was left in place" }
-  if ($MustKeep -and $restored -notmatch [regex]::Escape($MustKeep)) {
+  Assert-Code "GET dxl $Item" $code @("200")
+  $dxl = $null
+  try { $dxl = (Get-ResponseText | ConvertFrom-Json).dxl } catch { }
+  if (-not $dxl) { Fail "$Item response missing dxl" }
+  if ($MustKeep -and $dxl -notmatch [regex]::Escape($MustKeep)) {
     Fail "$Item lost $MustKeep"
   }
-  Ok "code round trip $Item"
+  Ok "dxl $Item"
 }
 
 function Assert-HelloWorld([string]$Url, [string]$Label, [string]$Kind = "") {
@@ -612,9 +772,15 @@ signed = 0
 id = nc.GetFirstNoteId
 Do While id <> ""
   Set doc = db.GetDocumentByID(id)
-  Call doc.Sign()
-  Call doc.Save(True, False)
-  signed = signed + 1
+  title = ""
+  If doc.HasItem("`$TITLE") Then title = doc.GetFirstItem("`$TITLE").Text
+  ' Signing an XPage drops the compiled class the URL needs. Signing a shared
+  ' column over and over inflates $Collection past Domino's 32K field limit.
+  If title <> "SmokeColumn" And (Len(title) < 4 Or LCase(Right(title, 4)) <> ".xsp") Then
+    Call doc.Sign()
+    Call doc.Save(True, False)
+    signed = signed + 1
+  End If
   id = nc.GetNextNoteId(id)
 Loop
 WScript.Echo "SIGNED " & signed
@@ -648,7 +814,9 @@ function Invoke-DominoWebSmoke {
   $xpage = Get-DesignNote "xpages/SmokeXPage.xsp"
   $props = Get-DesignNote "xspproperties"
   $service = Get-DesignNote "webservices/SmokeWebService"
-  Invoke-NotesSign @($xpage.Unid, $props.Unid, $service.Unid)
+  # Project files and the web service need the Notes user's signature first.
+  # The XPage is signed last: signing other design after it leaves HTTP at 403.
+  Invoke-NotesSign @($props.Unid, $service.Unid)
   if (-not $xpage.FileName) { Fail "XPage has no file name" }
   Assert-DominoHello "/$NsfPath/SmokeAgentLs?OpenAgent"
   Assert-DominoShows "/$NsfPath/SmokeAgentFormula?OpenAgent" "Agent done"
@@ -656,6 +824,7 @@ function Invoke-DominoWebSmoke {
   Assert-DominoShows "/$NsfPath/SmokeAgentJava?OpenAgent" "Agent done"
   Assert-DominoShows "/$NsfPath/SmokeWebService?WSDL" "<definitions"
   Assert-DominoShows "/$NsfPath/SmokeWebService?OpenWebService" "HELLO"
+  Invoke-NotesSign @($xpage.Unid)
   $xpageUrl = "/$NsfPath/$($xpage.FileName)"
   $xpageFile = Join-Path $env:TEMP "smoke-xpage.html"
   # Server-signed XPages project files (plugin, manifest, activator) stay forbidden
@@ -666,13 +835,14 @@ function Invoke-DominoWebSmoke {
   $xpageOk = $xpageCode -eq "200" -and $xpageText -match 'cookieEnabled'
   if (-not $xpageOk) {
     Invoke-NotesSignDesign
-    $deadline = (Get-Date).AddSeconds(20)
+    $deadline = (Get-Date).AddSeconds(90)
     do {
+      Invoke-NotesSign @($xpage.Unid)
+      Start-Sleep -Seconds 3
       $xpageCode = & curl.exe -sk -o $xpageFile -w "%{http_code}" -u "${user}:${pass}" --max-time 30 "$dominoHttp$xpageUrl"
       $xpageText = ""
       if (Test-Path $xpageFile) { $xpageText = Get-Content $xpageFile -Raw }
       if ($xpageCode -eq "200" -and $xpageText -match 'cookieEnabled') { $xpageOk = $true; break }
-      Start-Sleep -Seconds 2
     } while ((Get-Date) -lt $deadline)
   }
   if (-not $xpageOk) { Fail "Domino $xpageUrl -> HTTP $xpageCode" }
@@ -758,7 +928,7 @@ function Invoke-NamedCrud([string]$Coll, [string]$Name, [string]$Kind = "") {
   if ($Kind -and [string]$got.kind -ne $Kind) { Fail "$label kind '$($got.kind)'" }
   if ($Coll -eq "xpages") {
     if ($got.fileName -ne "newxpage.xsp") { Fail "XPage fileName '$($got.fileName)'" }
-    if ([string]$got.code -notmatch "xp:view") { Fail "XPage code missing markup" }
+    if ([string]::IsNullOrWhiteSpace([string]$got.dxl)) { Fail "XPage DXL missing" }
     Ok "XPage fileName=$($got.fileName)"
   }
   if ($Coll -eq "customcontrols") {
@@ -892,6 +1062,13 @@ function Design-Url([string]$ApiPath, [string]$ExtraQuery = "") {
   $q = "nsfPath=$([uri]::EscapeDataString($NsfPath))"
   if ($ExtraQuery) { $q = "$q&$ExtraQuery" }
   return "$base/api/kyber-v1/${ApiPath}?$q"
+}
+
+if ($JavaHelloOnly) {
+  Assert-LibraryHello (Design-Url "scriptlibraries/SmokeLibJava") "scriptlibraries/SmokeLibJava" "java"
+  Assert-RunnableAgent (Design-Url "agents/SmokeAgentJava") "agents/SmokeAgentJava" "java"
+  Ok "java hello names match Designer"
+  exit 0
 }
 
 # --- Defaults ---
@@ -1029,7 +1206,7 @@ Assert-Code "POST xpagesresource probe" $code @("200", "201")
 $code = Invoke-Design GET (Design-Url $probeItem) -OutFile $out
 Assert-Code "GET xpagesresource probe" $code @("200")
 $probe = Get-ResponseText | ConvertFrom-Json
-if ([string]::IsNullOrWhiteSpace([string]$probe.code)) { Fail "xpagesresource probe code missing" }
+if ([string]::IsNullOrWhiteSpace([string]$probe.dxl)) { Fail "xpagesresource probe dxl missing" }
 $code = Invoke-Design DELETE (Design-Url $probeItem) -OutFile $out
 Assert-Code "DELETE xpagesresource probe" $code @("200")
 Ok "xpagesresource create/get/delete"
@@ -1112,13 +1289,13 @@ $code = Invoke-Design GET (Design-Url $faces) -OutFile $out
 Assert-Code "GET faces-config" $code @("200")
 $face = Get-ResponseText | ConvertFrom-Json
 if ([string]$face.fileName -notmatch "faces-config") { Fail "faces-config fileName '$($face.fileName)'" }
-if ([string]$face.code -notmatch "faces-config") { Fail "faces-config code missing" }
+if ([string]$face.dxl -notmatch "faces-config") { Fail "faces-config dxl missing" }
 Ok "faces-config fileName=$($face.fileName)"
 
-Assert-CodeRoundTrip "agents/SmokeAgentLs" "Use `"SmokeLibLs`""
-Assert-CodeRoundTrip "webcontent/SmokeWeb.txt" ""
-Assert-CodeRoundTrip "fileresources/SmokeFile.txt" ""
-Assert-CodeRoundTrip "stylesheets/Smoke.css" ""
+Assert-DxlContains "agents/SmokeAgentLs" "Use `"SmokeLibLs`""
+Assert-DxlContains "webcontent/SmokeWeb.txt" ""
+Assert-DxlContains "fileresources/SmokeFile.txt" ""
+Assert-DxlContains "stylesheets/Smoke.css" ""
 $code = Invoke-Design GET (Design-Url "forms") -OutFile $out
 Assert-Code "GET /forms aliases" $code @("200")
 $formRow = @((Get-ResponseText | ConvertFrom-Json).elements | Where-Object { $_.name -eq "SmokeForm" })

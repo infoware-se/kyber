@@ -4,7 +4,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
-| **Version** | 0.24.18 |
+| **Version** | 0.24.19 |
 | **API** | `/api/kyber-v1` |
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
@@ -12,7 +12,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 Kyber is complete CRUD for the design elements in an NSF. The target database is the query param **`nsfPath`**.
 
-The body of a create, an update, and a round trip is Domino DXL. Send `text/xml`, or `application/json` with `dxl` set to that DXL. The design comment is the `comment` attribute in the DXL. A payload without that attribute leaves the comment already on the note. A LotusScript write returns `compiled: true`. `signedBy` is the Notes name that signed the note. The grammar is the DTD shipped with Designer, `xmlschemas/domino_*.dtd`. A get also returns `code` when the note has one script or one text file, and that text can be written back. The stored design remains the DXL. A form has many events, so its scripts stay in the DXL.
+The body of a create, an update, and a round trip is Domino DXL. Send `text/xml`, or `application/json` with `dxl` set to that DXL. The design comment is the `comment` attribute in the DXL. A payload without that attribute leaves the comment already on the note. The grammar is the DTD shipped with Designer, `xmlschemas/domino_*.dtd`. The stored design is the DXL.
 
 `kyber.nsf` is the template library. The property `kyber.defaultNsf` names it and defaults to `kyber.nsf`. Put the design elements you want to reuse in that database. `GET /defaults/{type}` returns the first match by name, with `?kind=` for an agent, a script library, or a Java source. An empty create copies that element into the target NSF. When the template database has no such element, Kyber uses the starter in the API. `source` is `nsf` or `api`. Kyber creates `kyber.nsf` on the first design write if the file is missing. The new file explains itself in About and Using and holds no templates until you add them. Those two documents, and the database icon, are not templates.
 
@@ -28,9 +28,7 @@ Standard collection CRUD:
 
 Same pattern for other named types (`/forms`, `/scriptlibraries`, `/xpagesresources`, …). Write responses include exported `dxl`.
 
-A list keeps the name array and adds `elements`: `name`, plus `fileName`, `aliases` and `kind` when the note has them. `kind` is filled for agents, script libraries and Java sources. `aliases` is the part of the name after `|`, the name used by a URL or `OpenForm`. A get or write adds `code` when the note has readable LotusScript, JavaScript, Java, an agent formula, or a text file. Binary files such as `.class` and `.jar` stay in `dxl` only.
-
-`code` can be written back on an agent, a script library, a Java source, a file resource, a style sheet, a WebContent file, or an XPages project file. Send `text/plain`, or JSON `{"code":"..."}`. The note keeps its other DXL. A form has several events, so its scripts stay in the DXL.
+A list keeps the name array and adds `elements`: `name`, plus `fileName`, `aliases` and `kind` when the note has them. `kind` is filled for agents, script libraries and Java sources. `aliases` is the part of the name after `|`, the name used by a URL or `OpenForm`.
 
 ## Supported types
 
@@ -129,11 +127,11 @@ domino/<nsf path>-<replica id>/
   _designnotes/                 # named notes with no Package Explorer folder
 ```
 
-Package Explorer also shows JRE System Library, Plug-in Dependencies, Referenced Libraries, Data, and `META-INF`. Those are not design notes. `.classpath` and `plugin.xml` carry the JRE and plug-in references. Jars stored in the NSF are under `Code/Jars`. Designer creates `META-INF/MANIFEST.MF` when the XPages project is opened. Documents stay out of this export. A note with no name, such as the system view `$FormulaClass`, is left out.
+Package Explorer also shows JRE System Library, Plug-in Dependencies, Referenced Libraries, and Data. Those are not design notes. `.classpath` and `plugin.xml` carry the JRE and plug-in references. Jars stored in the NSF are under `Code/Jars`. `META-INF/MANIFEST.MF` is stored with the XPages project (`Bundle-SymbolicName: kyber_nsf`) so Designer can build a new Java element without a clean. Documents stay out of this export. A note with no name, such as the system view `$FormulaClass`, is left out.
 
 `import-from-repo.ps1` reads `manifest.json` (`type` + path) and sends the DXL. The API removes `replicaid` before Domino reads it, so the target database keeps its own replica id.
 
-After PUT, the API compiles LotusScript (script libraries first) and returns a `lotusscript` summary. Notes "Error processing use list module" after a restore usually means code was not compiled — re-import or run Designer **Recompile All LotusScript**. Some complex libraries (e.g. DDM) can still report syntax errors after DXL round-trip — open those in Designer if needed.
+After PUT, the API compiles LotusScript, script libraries first. A note that reports "Error processing use list module" after a restore usually means that code was not compiled. Re-import, or run Designer **Recompile All LotusScript**. Some complex libraries can still report syntax errors after a DXL round trip. Open those in Designer if needed.
 
 **Bulk-only type** (no list/get/put/delete endpoints; only in `/export` and `/import`): `designnote` for a remaining named design note. The export folder is `_designnotes`. XPages project files (`.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties`, i18n `*.properties`) are `xpagesresource` on `/xpagesresources`. Percent-encode a slash in the path (`WEB-INF%2Ffaces-config.xml`). Starters: `GET /defaults/{type}` for `xpagesresource` (not `designnote`).
 
@@ -194,7 +192,7 @@ Singletons: most use `GET` / `POST` (create) / `PUT` (update) / `DELETE` on the 
 | Named note with no Package Explorer folder | Bulk type `designnote`, folder `_designnotes` |
 | Note with no name (`$FormulaClass` and similar) | Omitted |
 | Data (documents) | Omitted |
-| JRE System Library, Plug-in Dependencies, Referenced Libraries, `META-INF` | Not stored as design notes. Pointers live in `.classpath` and `plugin.xml`. Designer writes `META-INF/MANIFEST.MF` when the project opens. |
+| JRE System Library, Plug-in Dependencies, Referenced Libraries | Not stored as design notes. Pointers live in `.classpath` and `plugin.xml`. `META-INF/MANIFEST.MF` is an XPages project file, symbolic name `kyber_nsf`. |
 
 ### Access
 
@@ -472,7 +470,7 @@ Optional `WEB-INF/xsp.properties` (not always present on classic NSF).
 
 ### XPages
 
-Named type (many per NSF) — same CRUD shape as forms/pages, not a singleton. Creating an XPage also creates the project files that are missing: `plugin.xml`, `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, and `xsp.properties`.
+Named type (many per NSF) — same CRUD shape as forms/pages, not a singleton. Creating an XPage, agent, script library, or Java source also creates the project files that are missing: `plugin.xml`, `META-INF/MANIFEST.MF`, `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, and `xsp.properties`.
 
 | Method | Path |
 |--------|------|
