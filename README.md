@@ -200,4 +200,6 @@ A design call runs as the authenticated REST user and stops at that user's ACL o
 
 ## License
 
+Kyber is open-source software licensed under the Apache License, Version 2.0. Copyright 2026 Infoware Solutions Svenska AB.
+
 [Apache-2.0](LICENSE).
