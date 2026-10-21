@@ -14,6 +14,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 | **Template NSF** | `kyber.nsf` (`kyber.defaultNsf`) |
 | **Category** | `KyberEnabled`. A database without it responds 403 **Not Kyber enabled** |
 | **Reference** | [extension/README.md](extension/README.md) |
+| **HCL DXL API** | [How 1.1.8 differs](docs/hcl-dxl-api.md) |
 | **Source** | https://github.com/infoware-se/kyber |
 
 ## Kyber enabled
@@ -35,6 +36,7 @@ A database without that category responds **403** with the message **Not Kyber e
 - [Access](#access)
 - [Coverage](#coverage)
 - [Round trip](#round-trip)
+- [HCL DXL API](#hcl-dxl-api)
 - [Security](#security)
 
 ## What you can do
@@ -195,6 +197,10 @@ domino/<nsf path>-<replica id>/
 The folders follow Package Explorer. Each note is `<name>-<note id>.dxl`. `manifest.json` is the import index (`type`, path, name). [`tools/import-from-repo.ps1`](tools/import-from-repo.ps1) reads it. `-OutDir` is a repository root, and the NSF folder is created under `domino/` there. A later export replaces that one NSF folder. These trees stay on disk. This repository does not commit them.
 
 Named notes with no Designer folder land in `_designnotes` and are type `designnote`. That type is part of the bulk export. It has no list, get, or delete of its own.
+
+## HCL DXL API
+
+Domino REST API 1.1.8 adds an experimental DXL API under `/api/dxl`. It is off until `keepconfig.d` enables it, and HCL does not support it for production. It covers 16 classic design types and returns one `<database>` DXL. The differences from Kyber, including access, import, and the icon note, are in [docs/hcl-dxl-api.md](docs/hcl-dxl-api.md).
 
 ## Security
 
