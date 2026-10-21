@@ -182,6 +182,8 @@ Endpoint tables for each collection are in [extension/README.md](extension/READM
 
 The design export, `GET /api/kyber-v1/export?nsfPath=`, returns `{ nsfPath, elements: [{ type, name?, dxl }], skipped }`. The design import is `PUT /import` of that document. `POST /database` creates a missing NSF without importing design. Per-type create needs a database that already exists. On create, `dbTitle` sets the database title. The source `replicaid` is removed, so the target keeps its own. A new NSF receives the embedded Kyber database icon unless the payload already includes one, and a later design refresh is allowed to replace that icon. The ACL is also `GET`/`PUT /acl`, and replacing it requires Manager.
 
+The DXL DTD that ships with Designer, `xmlschemas/domino_14_5_1.dtd`, is the limit of a round trip. A design detail that the DTD does not define is left unhandled by the exporter and the importer.
+
 [`tools/export-to-repo.ps1`](tools/export-to-repo.ps1) writes that export to disk:
 
 ```text
