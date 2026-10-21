@@ -10,7 +10,7 @@
   - GET /defaults/{type} for a few types, with the same source and kind checks
   - missing form → not found
   - every named CRUD collection: list, empty-body create or keep, 409, get, put, list contains name.
-    Get, put, and the list element include noteId. Kinded types return that kind.
+    Get, put, and the list element include noteId and unid. Kinded types return that kind.
     An XPage fileName is newxpage.xsp. A custom control fileName is newcustomcontrol.xsp
   - Hello World written into each created element and read back
   - LotusScript, formula, simple-action and Java agents are run
@@ -84,6 +84,10 @@ function Ok([string]$Msg) { Write-Host "OK  $Msg" -ForegroundColor Green }
 
 function Assert-NoteId([string]$Label, $Value) {
   if ([string]$Value -notmatch '^[0-9a-f]{1,8}$') { Fail "$Label noteId '$Value'" }
+}
+
+function Assert-Unid([string]$Label, $Value) {
+  if ([string]$Value -notmatch '^[0-9A-Fa-f]{32}$') { Fail "$Label unid '$Value'" }
 }
 
 function Assert-ReplicaId([string]$Label, $Value) {
@@ -925,6 +929,7 @@ function Invoke-NamedCrud([string]$Coll, [string]$Name, [string]$Kind = "") {
   Assert-Code "GET $label" $code @("200")
   $got = Get-ResponseText | ConvertFrom-Json
   Assert-NoteId "GET $label" $got.noteId
+  Assert-Unid "GET $label" $got.unid
   if ($Kind -and [string]$got.kind -ne $Kind) { Fail "$label kind '$($got.kind)'" }
   if ($Coll -eq "xpages") {
     if ($got.fileName -ne "newxpage.xsp") { Fail "XPage fileName '$($got.fileName)'" }
@@ -940,6 +945,10 @@ function Invoke-NamedCrud([string]$Coll, [string]$Name, [string]$Kind = "") {
   Assert-Code "PUT $label" $code @("200")
   $putBody = Get-ResponseText | ConvertFrom-Json
   Assert-NoteId "PUT $label" $putBody.noteId
+  Assert-Unid "PUT $label" $putBody.unid
+  if ([string]$putBody.unid -ne [string]$got.unid) {
+    Fail "$label put unid '$($putBody.unid)' get '$($got.unid)'"
+  }
   $wroteId = [string]$putBody.noteId
 
   $code = Invoke-Design GET (Design-Url $Coll) -OutFile $out
@@ -948,8 +957,12 @@ function Invoke-NamedCrud([string]$Coll, [string]$Name, [string]$Kind = "") {
   $row = @($listed.elements | Where-Object { $_.name -eq $Name })
   if ($row.Count -lt 1) { Fail "GET /$Coll does not list $Name" }
   Assert-NoteId "LIST $label" $row[0].noteId
+  Assert-Unid "LIST $label" $row[0].unid
   if ([string]$row[0].noteId -ne $wroteId) {
     Fail "$label list noteId '$($row[0].noteId)' wrote '$wroteId'"
+  }
+  if ([string]$row[0].unid -ne [string]$got.unid) {
+    Fail "$label list unid '$($row[0].unid)' get '$($got.unid)'"
   }
   if ($Kind -and [string]$row[0].kind -ne $Kind) { Fail "$label list kind '$($row[0].kind)'" }
   if ($Coll -eq "xpages" -and $row[0].fileName -ne "newxpage.xsp") {
@@ -1124,6 +1137,21 @@ if ($code -notin @("200", "201")) {
   Fail "PUT /import (ensure NSF) -> HTTP $code $(Get-Content $out -Raw)"
 }
 $bulkResp = Get-Content $out -Raw | ConvertFrom-Json
+$validateFile = Join-Path $env:TEMP "smoke-validate.json"
+[IO.File]::WriteAllText($validateFile, '{"elements":[{"type":"form","name":"Broken","dxl":"<form>"}]}')
+$code = Invoke-Design POST (Design-Url "validate") -BodyFile $validateFile `
+  -ContentType "application/json" -OutFile $out
+Assert-Code "POST /validate broken" $code @("200")
+$validated = Get-ResponseText | ConvertFrom-Json
+if ($validated.valid) { Fail "POST /validate accepted broken DXL" }
+if (@($validated.errors).Count -lt 1) { Fail "POST /validate returned no errors" }
+[IO.File]::WriteAllText($validateFile, '{"elements":[{"type":"form","dxl":"<form name=''SmokeValidate'' xmlns=''http://www.lotus.com/dxl''/>"}]}')
+$code = Invoke-Design POST (Design-Url "validate") -BodyFile $validateFile `
+  -ContentType "application/json" -OutFile $out
+Assert-Code "POST /validate form" $code @("200")
+$validated = Get-ResponseText | ConvertFrom-Json
+if (-not $validated.valid) { Fail "POST /validate rejected a form: $(Get-ResponseText)" }
+Ok "POST /validate"
 if ($bulkResp.created -and $bulkResp.dbTitle -ne $smokeTitle) {
   Fail "expected dbTitle=$smokeTitle on create, got $($bulkResp.dbTitle)"
 }

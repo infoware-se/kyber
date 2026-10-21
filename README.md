@@ -6,7 +6,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.24.19 |
+| **Version** | 0.24.20 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
@@ -53,7 +53,7 @@ Each design element has its own collection. A form is `/forms`, an agent is `/ag
 | **Update** | `PUT /{collection}/{name}?nsfPath=` |
 | **Delete** | `DELETE /{collection}/{name}?nsfPath=` |
 
-A list returns the names, and an `elements` array with `fileName`, `aliases` and `kind` when the note has them. `aliases` is the part of the name after `|`, the name a URL or `OpenForm` uses. A get returns the DXL.
+A list returns the names, and an `elements` array with `noteId` and `unid`. `unid` stays when the name changes. `noteId` is local to this NSF and changes when the note is replaced. The array adds `fileName`, `aliases` and `kind` when the note has them. `aliases` is the part of the name after `|`, the name a URL or `OpenForm` uses. A get returns the DXL, with the same `noteId` and `unid`.
 
 The ACL, the application properties, and the database icon are get and put. Domino creates those three with the NSF. A named note with no collection of its own travels in the [round trip](#round-trip) as `designnote`. Documents are application data. A note with no name, such as `$FormulaClass`, is left out of an export.
 
@@ -140,7 +140,7 @@ The call runs as the signed-in user. On a database that already exists, the limi
 | ACL on the target NSF | Allowed |
 |--|--|
 | Designer | List, get, create, update, and delete design |
-| Manager | Replace the ACL, and delete the NSF when its category is KyberEnabled. A Manager includes the Designer rights above. |
+| Manager | Replace the ACL, and delete the NSF when its category is KyberEnabled. `-Default-` and `LocalDomainServers` must remain in the new ACL. A Manager includes the Designer rights above. |
 
 The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**. A blank field allows everyone, and a name in the field may be a user, a server, or a group. The import then creates the file, sets the category **KyberEnabled**, and imports the design. `POST /database` checks that same privilege and creates an empty NSF. `DELETE /database` needs Manager on an NSF whose category is KyberEnabled. `KeepConfig.nsf` cannot be deleted. The same import into a database that already exists uses the ACL table above. `GET /databases` needs Reader on the database that runs the call. `fileType` defaults to `database` (1247: NSF, NSG, or NSH). `template` (1248) is an NTF. `replica_candidate` (1245) is a database or template that is not disabled for replication. `template_candidate` (1246) is any database or template. A file is returned only when this user can open it. `more` is true when other databases of that type exist, and those paths are not returned.
 
@@ -172,7 +172,7 @@ Three types take `?kind=` on an empty create:
 | Script library | `lotusscript` `javascript` `ssjs` `java` |
 | Java source | `class` `interface` `enum` |
 
-About, Using, the database script, and Xsp Properties are one note per database: the calls sit on the collection path, with no `/{name}`. Application properties, the database icon, and the ACL are get and put on that same shape. `$DBIcon` is `/dbicon`. `GET /images` does not list it. A WebContent name under `WEB-INF` is rejected. Those notes are `/xpagesresources`, except `xsp.properties`, which is `/xspproperties`.
+About, Using, the database script, and Xsp Properties are one note per database: the calls sit on the collection path, with no `/{name}`. Application properties, the database icon, and the ACL are get and put on that same shape. `$DBIcon` is `/dbicon`. A put of that image also updates the workspace icon note, and the launch settings on that note stay. `GET /images` does not list it. A WebContent name under `WEB-INF` is rejected. Those notes are `/xpagesresources`, except `xsp.properties`, which is `/xspproperties`.
 
 `POST /xpages`, and creating an agent, script library, or Java source, creates the XPages project files when they are missing: `plugin.xml`, `META-INF/MANIFEST.MF` (`Bundle-SymbolicName: kyber_nsf`), `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, and `xsp.properties`. Designer writes `Local/plugin/Activator.java` when the project is opened. JRE System Library, Plug-in Dependencies, Referenced Libraries, and Data are views Designer builds. They are not design notes. `.classpath` and `plugin.xml` carry the JRE and plug-in references. Jars stored in the NSF are under `/jars`.
 
@@ -182,7 +182,7 @@ Endpoint tables for each collection are in [extension/README.md](extension/READM
 
 ## Round trip
 
-The design export, `GET /api/kyber-v1/export?nsfPath=`, returns `{ nsfPath, elements: [{ type, name?, dxl }], skipped }`. The design import is `PUT /import` of that document. `POST /database` creates a missing NSF without importing design. Per-type create needs a database that already exists. On create, `dbTitle` sets the database title. The source `replicaid` is removed, so the target keeps its own. A new NSF receives the embedded Kyber database icon unless the payload already includes one, and a later design refresh is allowed to replace that icon. The ACL is also `GET`/`PUT /acl`, and replacing it requires Manager.
+The design export, `GET /api/kyber-v1/export?nsfPath=`, returns `{ nsfPath, elements: [{ type, name?, noteId?, unid?, dxl }], skipped }`. The design import is `PUT /import` of that document. `POST /validate` checks the same document and does not write. `valid` is false when an element would be rejected before Domino stores it. The response has no importer log. A note Domino itself cannot store still fails on the import. `POST /database` creates a missing NSF without importing design. Per-type create needs a database that already exists. On create, `dbTitle` sets the database title. The source `replicaid` is removed, so the target keeps its own. A new NSF receives the embedded Kyber database icon unless the payload already includes one, and a later design refresh is allowed to replace that icon. The ACL is also `GET`/`PUT /acl`, and replacing it requires Manager. `-Default-` and `LocalDomainServers` must remain. A payload that omits either of them is **400**, and the ACL is left unchanged.
 
 The DXL DTD that ships with Designer, `xmlschemas/domino_14_5_1.dtd`, is the limit of a round trip. A design detail that the DTD does not define is left unhandled by the exporter and the importer.
 

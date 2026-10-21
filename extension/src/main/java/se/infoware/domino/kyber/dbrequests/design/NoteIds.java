@@ -26,6 +26,34 @@ final class NoteIds {
     }
   }
 
+  /** UNID of a saved note. It stays when the name changes. A copy into another NSF can differ. */
+  static String unidOf(Document doc) {
+    if (doc == null) {
+      return null;
+    }
+    try {
+      String unid = doc.getUNID();
+      if (unid == null || unid.isBlank()) {
+        return null;
+      }
+      return unid.trim();
+    } catch (RuntimeException ex) {
+      return null;
+    }
+  }
+
+  static String unidFromDxl(String dxl) {
+    if (dxl == null || dxl.isBlank()) {
+      return null;
+    }
+    Matcher match =
+        Pattern.compile("(?i)<noteinfo\\b[^>]*\\bunid=(['\"])([0-9A-Fa-f]{32})\\1").matcher(dxl);
+    if (!match.find()) {
+      return null;
+    }
+    return match.group(2).toUpperCase(java.util.Locale.ROOT);
+  }
+
   /** {@code 0x368A} becomes {@code 368a}. Zero means the note is not saved. */
   static String format(int noteId) {
     if (noteId == 0) {

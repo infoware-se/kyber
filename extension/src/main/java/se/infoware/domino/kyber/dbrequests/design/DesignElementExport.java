@@ -182,6 +182,10 @@ final class DesignElementExport {
     if (noteId != null) {
       row.put("noteId", noteId);
     }
+    String unid = NoteIds.unidFromDxl(dxl);
+    if (unid != null) {
+      row.put("unid", unid);
+    }
     return row.put("dxl", dxl);
   }
 

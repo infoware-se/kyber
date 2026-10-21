@@ -14,8 +14,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
- * Collection JSON. The existing name array stays. {@code elements} adds noteId, and fileName
- * and kind when the note has them.
+ * Collection JSON. The existing name array stays. {@code elements} adds noteId and unid, and
+ * fileName, aliases, and kind when the note has them.
  */
 final class DesignListing {
 
@@ -81,7 +81,9 @@ final class DesignListing {
 
   static JsonObject row(String name, DesignElement el, String kind) {
     JsonObject row = new JsonObject().put("name", name);
-    put(row, "noteId", NoteIds.of(documentOf(el)));
+    Document doc = documentOf(el);
+    put(row, "noteId", NoteIds.of(doc));
+    put(row, "unid", NoteIds.unidOf(doc));
     if (el instanceof DesignElement.NamedDesignElement named) {
       put(row, "fileName", fileNameOf(named));
       putAliases(row, aliasesOf(named, name));
@@ -93,6 +95,7 @@ final class DesignListing {
   static JsonObject row(String name, Document doc) {
     JsonObject row = new JsonObject().put("name", name);
     put(row, "noteId", NoteIds.of(doc));
+    put(row, "unid", NoteIds.unidOf(doc));
     if (doc != null) {
       put(row, "fileName", itemText(doc, "$FileNames"));
       putAliases(row, aliasesFromPiped(itemText(doc, "$TITLE"), name));

@@ -34,11 +34,15 @@ class DesignDxlTest {
   void exportElementCarriesNoteIdFromDxl() {
     var row =
         DesignElementExport.exportedElement(
-            "agent", "SmokeAgentFormula", "<agent><noteinfo noteid='368a'/></agent>");
+            "agent",
+            "SmokeAgentFormula",
+            "<agent><noteinfo noteid='368a' unid='AABBCCDDEEFF00112233445566778899'/></agent>");
     assertEquals("368a", row.getString("noteId"));
+    assertEquals("AABBCCDDEEFF00112233445566778899", row.getString("unid"));
     assertEquals("SmokeAgentFormula", row.getString("name"));
     var acl = DesignElementExport.exportedElement("acl", null, "<database><acl/></database>");
     assertFalse(acl.containsKey("noteId"));
+    assertFalse(acl.containsKey("unid"));
     assertFalse(acl.containsKey("name"));
   }
 
@@ -232,6 +236,55 @@ class DesignDxlTest {
         <helpaboutdocument xmlns='http://www.lotus.com/dxl'/>
         """;
     DesignDxl.requireRootOnly(dxl, "helpaboutdocument");
+  }
+
+  @Test
+  void aclReplaceKeepsDefaultAndLocalDomainServers() throws Exception {
+    String blank =
+        java.nio.file.Files.readString(
+            java.nio.file.Path.of("src/main/resources/defaults/blank/acl.dxl"));
+    DesignDxl.requireProtectedAclEntries(blank);
+    DesignDxl.requireProtectedAclEntries(
+        """
+        <acl xmlns='http://www.lotus.com/dxl'>
+        <aclentry name='-default-' level='editor'/>
+        <aclentry name='localdomainservers' level='manager'/>
+        </acl>
+        """);
+  }
+
+  @Test
+  void aclReplaceRejectsAPayloadThatDropsAProtectedEntry() {
+    String noDefault =
+        """
+        <acl>
+        <aclentry name='LocalDomainServers' level='manager'/>
+        <logentry>updated -Default-</logentry>
+        </acl>
+        """;
+    String noServers =
+        """
+        <acl>
+        <aclentry name='-Default-' level='noaccess'/>
+        </acl>
+        """;
+    String neither = "<acl><aclentry name='Anonymous' level='noaccess'/></acl>";
+    KeepExceptionWrongDataRequest missingDefault =
+        assertThrows(
+            KeepExceptionWrongDataRequest.class,
+            () -> DesignDxl.requireProtectedAclEntries(noDefault));
+    assertTrue(missingDefault.getMessage().contains("-Default-"));
+    assertFalse(missingDefault.getMessage().contains("LocalDomainServers"));
+    KeepExceptionWrongDataRequest missingServers =
+        assertThrows(
+            KeepExceptionWrongDataRequest.class,
+            () -> DesignDxl.requireProtectedAclEntries(noServers));
+    assertTrue(missingServers.getMessage().contains("LocalDomainServers"));
+    KeepExceptionWrongDataRequest missingBoth =
+        assertThrows(
+            KeepExceptionWrongDataRequest.class, () -> DesignDxl.requireProtectedAclEntries(neither));
+    assertTrue(missingBoth.getMessage().contains("-Default-"));
+    assertTrue(missingBoth.getMessage().contains("LocalDomainServers"));
   }
 
   @Test

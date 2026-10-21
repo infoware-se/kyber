@@ -43,6 +43,48 @@ final class DesignDxl {
   }
 
   /**
+   * A full ACL replace keeps {@code -Default-} and {@code LocalDomainServers}. Only {@code
+   * aclentry} names count, so a log line that mentions either name does not. The level on an entry
+   * may change.
+   */
+  static void requireProtectedAclEntries(String dxl) throws KeepExceptionWrongDataRequest {
+    Element root = parseAndRequireRoot(dxl, "acl");
+    NodeList entries = root.getElementsByTagNameNS("*", "aclentry");
+    if (entries.getLength() == 0) {
+      entries = root.getElementsByTagName("aclentry");
+    }
+    boolean hasDefault = false;
+    boolean hasServers = false;
+    for (int i = 0; i < entries.getLength(); i++) {
+      Node node = entries.item(i);
+      if (!(node instanceof Element entry)) {
+        continue;
+      }
+      String name = entry.getAttribute("name");
+      if (name == null) {
+        continue;
+      }
+      String trimmed = name.trim();
+      if ("-Default-".equalsIgnoreCase(trimmed)) {
+        hasDefault = true;
+      } else if ("LocalDomainServers".equalsIgnoreCase(trimmed)) {
+        hasServers = true;
+      }
+    }
+    if (hasDefault && hasServers) {
+      return;
+    }
+    if (!hasDefault && !hasServers) {
+      throw new KeepExceptionWrongDataRequest(
+          "ACL entries -Default- and LocalDomainServers cannot be removed");
+    }
+    if (!hasDefault) {
+      throw new KeepExceptionWrongDataRequest("ACL entry -Default- cannot be removed");
+    }
+    throw new KeepExceptionWrongDataRequest("ACL entry LocalDomainServers cannot be removed");
+  }
+
+  /**
    * Like {@link #requireRootOnly} but accepts several roots and returns the matched local name.
    */
   static String requireRootOnlyReturningLocalName(String dxl, String... expectedRoots)

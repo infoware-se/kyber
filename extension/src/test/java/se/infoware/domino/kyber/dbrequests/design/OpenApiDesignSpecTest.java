@@ -64,6 +64,15 @@ class OpenApiDesignSpecTest {
             .getJsonObject("items")
             .getJsonObject("properties");
     assertEquals("368a", exported.getJsonObject("noteId").getString("example"));
+    assertEquals(
+        "AABBCCDDEEFF00112233445566778899", exported.getJsonObject("unid").getString("example"));
+    assertNotNull(root.getJsonObject("paths").getJsonObject("/validate").getJsonObject("post"));
+    assertEquals(
+        "validateDesign",
+        root.getJsonObject("paths")
+            .getJsonObject("/validate")
+            .getJsonObject("post")
+            .getString("operationId"));
     assertEquals("8525812300456789", getProps.getJsonObject("replicaId").getString("example"));
     assertEquals(
         "8525812300456789",
@@ -141,6 +150,7 @@ class OpenApiDesignSpecTest {
             .getJsonObject("properties");
     assertFalse(element.containsKey("fileName"));
     assertNotNull(element.getJsonObject("noteId"));
+    assertNotNull(element.getJsonObject("unid"));
     assertNotNull(element.getJsonObject("aliases"));
     assertFalse(element.containsKey("kind"));
     assertFalse(element.containsKey("comment"));
@@ -148,6 +158,7 @@ class OpenApiDesignSpecTest {
     JsonObject got = schemaProps(paths, "/forms/{name}", "get");
     assertFalse(got.containsKey("code"));
     assertNotNull(got.getJsonObject("noteId"));
+    assertNotNull(got.getJsonObject("unid"));
     assertNotNull(got.getJsonObject("aliases"));
     assertFalse(got.containsKey("fileName"));
     assertFalse(got.containsKey("kind"));

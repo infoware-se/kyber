@@ -38,8 +38,9 @@ import java.util.Set;
  * {@code LocalKeepAdmins}, {@code LocalDomainAdmins}, and {@code LocalDomainServers} are Manager.
  * Any other new NSF gets the {@code kyber_discussion145.nsf} ACL, with the creating user and the
  * server the file is created on in place of the names in that database. Those lists are written
- * only when the NSF is created. When the payload includes {@code type=acl}, that ACL DXL fully
- * replaces the database ACL and is left as imported. A created NSF receives the embedded Kyber
+ * only when the NSF is created. When the payload includes {@code type=acl}, that ACL DXL replaces
+ * the database ACL. {@code -Default-} and {@code LocalDomainServers} must remain, or the ACL is
+ * left unchanged. A created NSF receives the embedded Kyber
  * database icon unless the payload already contains one. On {@code kyber.nsf} that icon is the
  * database tile only; it is not a design template.
  *

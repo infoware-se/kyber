@@ -5,6 +5,7 @@ import com.hcl.domino.dxl.DxlImporter;
 import com.hcl.domino.dxl.DxlImporter.DXLImportOption;
 import com.hcl.domino.dxl.DxlImporter.DXLLogOption;
 import com.hcl.domino.dxl.DxlImporter.XMLValidationOption;
+import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import java.io.IOException;
 
 /**
@@ -15,7 +16,8 @@ import java.io.IOException;
  *
  * <p>Every import removes the DXL {@code replicaid} attribute before Domino reads the payload, so
  * the target NSF keeps its own replica id. Design import does not replace database properties.
- * Data documents in a payload are ignored. ACL import replaces only the ACL.
+ * Data documents in a payload are ignored. ACL import replaces only the ACL, and keeps
+ * {@code -Default-} and {@code LocalDomainServers}.
  */
 final class DxlDesignPatch {
 
@@ -72,9 +74,33 @@ final class DxlDesignPatch {
   }
 
   /**
-   * Import root {@code <acl>} DXL. Design notes stay ignored; only ACL is replaced/created.
+   * Replace the workspace icon note. The payload is the note's own DXL, with its launch settings
+   * still in place. Design and document options both replace, because Domino may class the note
+   * either way. The ACL and database properties stay.
    */
-  static String importAcl(DxlImporter importer, String dxl, Database db) throws IOException {
+  static String importIconNote(DxlImporter importer, String dxl, Database db) throws IOException {
+    importer.setExitOnFirstFatalError(false);
+    importer.setDesignImportOption(DXLImportOption.REPLACE_ELSE_CREATE);
+    importer.setDocumentsImportOption(DXLImportOption.REPLACE_ELSE_CREATE);
+    importer.setACLImportOption(DXLImportOption.IGNORE);
+    importer.setReplaceDbProperties(false);
+    importer.setUnknownTokenLogOption(DXLLogOption.WARNING);
+    importer.setReplicaRequiredForReplaceOrUpdate(false);
+    importer.setInputValidationOption(XMLValidationOption.NEVER);
+    importer.importDxl(DesignDxl.withoutReplicaId(dxl), db);
+    if (importer.importErrorWasLogged()) {
+      throw new IOException("Workspace icon was not updated");
+    }
+    return importer.getResultLog();
+  }
+
+  /**
+   * Import root {@code <acl>} DXL. Design notes stay ignored; only the ACL is replaced. {@code
+   * -Default-} and {@code LocalDomainServers} must still be in the payload, or nothing is written.
+   */
+  static String importAcl(DxlImporter importer, String dxl, Database db)
+      throws IOException, KeepExceptionWrongDataRequest {
+    DesignDxl.requireProtectedAclEntries(dxl);
     importer.setExitOnFirstFatalError(false);
     importer.setDesignImportOption(DXLImportOption.IGNORE);
     importer.setDocumentsImportOption(DXLImportOption.IGNORE);

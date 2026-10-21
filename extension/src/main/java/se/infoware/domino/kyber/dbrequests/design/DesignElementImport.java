@@ -185,6 +185,7 @@ final class DesignElementImport {
         DxlDesignPatch.importDesign(importer, dxl, db, mode);
         if (DesignElementLookup.isDbIconName(name)) {
           DbIcon.allowDesignRefresh(db);
+          WorkspaceIcon.sync(db, importer, dxl);
         }
         trace.accept(signNamed(db.getDesign().getImageResource(name), "ImageResource", name, dxl, comments));
       }

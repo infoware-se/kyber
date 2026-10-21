@@ -3,7 +3,7 @@
   "info": {
     "title": "Kyber — Infoware REST API for design elements",
     "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) or application/json whose dxl property is that DXL. The design comment is the comment attribute in the DXL. GET /export is the design export and PUT /import is the design import of all supported elements as DXL. The design import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database whose catalog category is KyberEnabled. POST /database creates a missing NSF after the server privilege Create databases & templates and sets the catalog category KyberEnabled. DELETE /database deletes an NSF that has catalog category KyberEnabled and needs Manager on that NSF. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist and those paths are not returned. The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists, has catalog category KyberEnabled, and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
-    "version": "0.24.19"
+    "version": "0.24.20"
   },
   "servers": [
     {
@@ -151,7 +151,7 @@
         ],
         "operationId": "getDefaultDesign",
         "summary": "Get a design template",
-        "description": "Returns one design template: type, name, dxl, source (api or nsf), and kind when the type has one. Pass kind for an agent (lotusscript, formula, simpleaction, java, importedjava), a script library (lotusscript, javascript, ssjs, java), or a Java source (class, interface, enum). The response includes noteId, plus aliases and kind when the note has them.",
+        "description": "Returns one design template: type, name, dxl, source (api or nsf), and kind when the type has one. Pass kind for an agent (lotusscript, formula, simpleaction, java, importedjava), a script library (lotusscript, javascript, ssjs, java), or a Java source (class, interface, enum). The response includes noteId and unid, plus aliases and kind when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -176,6 +176,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "name": {
                       "type": "string"
@@ -296,6 +301,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "dxl": {
                             "type": "string",
@@ -500,6 +510,114 @@
           },
           "403": {
             "$ref": "#/components/responses/403Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/500InternalServerError"
+          }
+        }
+      }
+    },
+    "/validate": {
+      "summary": "Check a design import without writing",
+      "description": "Dry run of PUT /import. The body is the same document. Nothing is written and the response has no importer log. valid is false when an element would be rejected before Domino stores it. A note Domino itself cannot store still fails on the import. Requires Designer. An ACL in the document requires Manager. Requires ?nsfPath= on a database that already exists.",
+      "parameters": [
+        {
+          "name": "nsfPath",
+          "description": "Target NSF. The file must already exist. This call does not create a database.",
+          "schema": {
+            "type": "string"
+          },
+          "in": "query",
+          "required": true
+        }
+      ],
+      "post": {
+        "tags": [
+          "design-handler"
+        ],
+        "operationId": "validateDesign",
+        "summary": "Check a design import without writing",
+        "description": "Dry run of PUT /import. The body is the same document. Nothing is written and the response has no importer log. valid is false when an element would be rejected before Domino stores it. Requires Designer. An ACL in the document requires Manager. Requires ?nsfPath=.",
+        "x-keep-version": 1,
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "elements"
+                ],
+                "properties": {
+                  "elements": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "type"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "delete": {
+                          "type": "boolean"
+                        },
+                        "dxl": {
+                          "type": "string",
+                          "description": "Required unless delete=true"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The check finished. valid is false when one or more elements were rejected. The database is unchanged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "valid": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": { "type": "string" },
+                          "name": { "type": "string" },
+                          "message": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/403Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
           },
           "500": {
             "$ref": "#/components/responses/500InternalServerError"
@@ -732,6 +850,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -802,7 +925,7 @@
         ],
         "operationId": "listPages",
         "summary": "List page names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of pages in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of pages in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -825,7 +948,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -836,6 +959,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -896,7 +1024,7 @@
         ],
         "operationId": "getPage",
         "summary": "Get page as DXL",
-        "description": "Export one page as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one page as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -918,6 +1046,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -1043,6 +1176,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -1153,6 +1291,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -1223,7 +1366,7 @@
         ],
         "operationId": "listOutlines",
         "summary": "List outline names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of outlines in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of outlines in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1246,7 +1389,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -1257,6 +1400,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -1317,7 +1465,7 @@
         ],
         "operationId": "getOutline",
         "summary": "Get outline as DXL",
-        "description": "Export one outline as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one outline as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1339,6 +1487,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -1464,6 +1617,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -1574,6 +1732,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -1644,7 +1807,7 @@
         ],
         "operationId": "listFramesets",
         "summary": "List frameset names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of framesets in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of framesets in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1667,7 +1830,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -1678,6 +1841,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -1738,7 +1906,7 @@
         ],
         "operationId": "getFrameset",
         "summary": "Get frameset as DXL",
-        "description": "Export one frameset as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one frameset as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1760,6 +1928,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -1885,6 +2058,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -1995,6 +2173,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -2065,7 +2248,7 @@
         ],
         "operationId": "listForms",
         "summary": "List form names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of forms in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of forms in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2088,7 +2271,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -2099,6 +2282,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -2159,7 +2347,7 @@
         ],
         "operationId": "getForm",
         "summary": "Get form as DXL",
-        "description": "Export one form as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one form as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2181,6 +2369,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -2306,6 +2499,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -2416,6 +2614,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -2486,7 +2689,7 @@
         ],
         "operationId": "listViews",
         "summary": "List view names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of views in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of views in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2509,7 +2712,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -2520,6 +2723,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -2580,7 +2788,7 @@
         ],
         "operationId": "getView",
         "summary": "Get view as DXL",
-        "description": "Export one view as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one view as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2602,6 +2810,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -2727,6 +2940,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -2837,6 +3055,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -2907,7 +3130,7 @@
         ],
         "operationId": "listFolders",
         "summary": "List folder names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of folders in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of folders in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -2930,7 +3153,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -2941,6 +3164,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -3001,7 +3229,7 @@
         ],
         "operationId": "getFolder",
         "summary": "Get folder as DXL",
-        "description": "Export one folder as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one folder as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3023,6 +3251,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -3148,6 +3381,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -3258,6 +3496,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -3328,7 +3571,7 @@
         ],
         "operationId": "listSubforms",
         "summary": "List subform names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of subforms in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of subforms in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3351,7 +3594,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -3362,6 +3605,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -3422,7 +3670,7 @@
         ],
         "operationId": "getSubform",
         "summary": "Get subform as DXL",
-        "description": "Export one subform as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one subform as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3444,6 +3692,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -3569,6 +3822,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -3679,6 +3937,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -3749,7 +4012,7 @@
         ],
         "operationId": "listSharedFields",
         "summary": "List shared field names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of shared fields in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of shared fields in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3772,7 +4035,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -3783,6 +4046,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -3843,7 +4111,7 @@
         ],
         "operationId": "getSharedField",
         "summary": "Get shared field as DXL",
-        "description": "Export one shared field as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one shared field as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -3865,6 +4133,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -3990,6 +4263,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -4100,6 +4378,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -4170,7 +4453,7 @@
         ],
         "operationId": "listSharedColumns",
         "summary": "List shared column names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of shared columns in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of shared columns in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4193,7 +4476,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -4204,6 +4487,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -4264,7 +4552,7 @@
         ],
         "operationId": "getSharedColumn",
         "summary": "Get shared column as DXL",
-        "description": "Export one shared column as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one shared column as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4286,6 +4574,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -4411,6 +4704,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -4521,6 +4819,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -4591,7 +4894,7 @@
         ],
         "operationId": "listImages",
         "summary": "List image resource names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of image resources in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of image resources in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4614,7 +4917,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -4625,6 +4928,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -4685,7 +4993,7 @@
         ],
         "operationId": "getImage",
         "summary": "Get image resource as DXL",
-        "description": "Export one image resource as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one image resource as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -4707,6 +5015,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -4832,6 +5145,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -4942,6 +5260,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -5012,7 +5335,7 @@
         ],
         "operationId": "listFileResources",
         "summary": "List file resource names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of file resources in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of file resources in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5035,7 +5358,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -5046,6 +5369,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -5106,7 +5434,7 @@
         ],
         "operationId": "getFileResource",
         "summary": "Get file resource as DXL",
-        "description": "Export one file resource as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one file resource as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5128,6 +5456,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -5253,6 +5586,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -5363,6 +5701,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -5433,7 +5776,7 @@
         ],
         "operationId": "listStyleSheets",
         "summary": "List style sheet names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of style sheets in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of style sheets in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5456,7 +5799,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -5467,6 +5810,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -5527,7 +5875,7 @@
         ],
         "operationId": "getStyleSheet",
         "summary": "Get style sheet as DXL",
-        "description": "Export one style sheet as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one style sheet as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5549,6 +5897,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -5674,6 +6027,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -5784,6 +6142,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -5854,7 +6217,7 @@
         ],
         "operationId": "listThemes",
         "summary": "List theme names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of themes in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of themes in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5877,7 +6240,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -5888,6 +6251,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -5948,7 +6316,7 @@
         ],
         "operationId": "getTheme",
         "summary": "Get theme as DXL",
-        "description": "Export one theme as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one theme as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -5970,6 +6338,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -6095,6 +6468,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -6157,7 +6535,7 @@
         ],
         "operationId": "getAcl",
         "summary": "Get ACL as DXL",
-        "description": "Export the database ACL via DxlExporter.exportACL. Requires ?nsfPath=. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export the database ACL via DxlExporter.exportACL. Requires ?nsfPath=. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6180,6 +6558,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -6214,7 +6597,7 @@
         ],
         "operationId": "updateAcl",
         "summary": "Replace ACL from DXL",
-        "description": "Upload DXL with root <acl>. Full ACL replace (overwrite/drop). The imported ACL is left as sent. Requires ?nsfPath=.",
+        "description": "Upload DXL with root <acl>. Full ACL replace. -Default- and LocalDomainServers must remain; a payload that omits either is rejected and the ACL is left unchanged. Requires Manager and ?nsfPath=.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6289,7 +6672,7 @@
         ],
         "operationId": "getAbout",
         "summary": "Get About document as DXL",
-        "description": "Export the About document as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export the About document as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6312,6 +6695,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -6393,6 +6781,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "source": {
                       "type": "string",
@@ -6530,6 +6923,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "source": {
                       "type": "string",
                       "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
@@ -6603,7 +7001,7 @@
         ],
         "operationId": "getUsing",
         "summary": "Get Using document as DXL",
-        "description": "Export the Using document as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export the Using document as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6626,6 +7024,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -6707,6 +7110,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "source": {
                       "type": "string",
@@ -6843,6 +7251,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "source": {
                       "type": "string",
@@ -6990,6 +7403,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -7122,6 +7540,11 @@
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
                           },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
+                          },
                           "aliases": {
                             "type": "array",
                             "description": "Names after |, used by a URL or OpenForm.",
@@ -7192,7 +7615,7 @@
         ],
         "operationId": "getAgent",
         "summary": "Get agent as DXL",
-        "description": "Export one agent as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and kind when the note has them.",
+        "description": "Export one agent as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases and kind when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7214,6 +7637,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -7349,6 +7777,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "name": {
                       "type": "string"
@@ -7495,6 +7928,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -7625,6 +8063,11 @@
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
                           },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
+                          },
                           "aliases": {
                             "type": "array",
                             "description": "Names after |, used by a URL or OpenForm.",
@@ -7694,7 +8137,7 @@
         ],
         "operationId": "getScriptLibrary",
         "summary": "Get script library as DXL",
-        "description": "Export one script library as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases and kind when the note has them.",
+        "description": "Export one script library as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases and kind when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -7716,6 +8159,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -7851,6 +8299,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -7971,6 +8424,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -8041,7 +8499,7 @@
         ],
         "operationId": "listSharedActions",
         "summary": "List Shared Actions note names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of Shared Actions notes in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of Shared Actions notes in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8064,7 +8522,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -8075,6 +8533,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -8135,7 +8598,7 @@
         ],
         "operationId": "getSharedActions",
         "summary": "Get Shared Actions note as DXL",
-        "description": "Export one Shared Actions note as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one Shared Actions note as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8157,6 +8620,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "type": {
                       "type": "string",
@@ -8290,6 +8758,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -8352,7 +8825,7 @@
         ],
         "operationId": "getApplicationProperties",
         "summary": "Get Application Properties as DXL",
-        "description": "Export Application Properties as Domino DXL. Always present on a normal NSF. Requires ?nsfPath=. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export Application Properties as Domino DXL. Always present on a normal NSF. Requires ?nsfPath=. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8375,6 +8848,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -8451,6 +8929,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "source": {
                       "type": "string",
                       "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
@@ -8510,7 +8993,7 @@
         ],
         "operationId": "getXspProperties",
         "summary": "Get XPages xsp.properties as DXL",
-        "description": "Export XPages xsp.properties as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export XPages xsp.properties as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8533,6 +9016,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "name": {
                       "type": "string",
@@ -8612,6 +9100,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "source": {
                       "type": "string",
@@ -8698,6 +9191,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "source": {
                       "type": "string",
@@ -8823,7 +9321,7 @@
         ],
         "operationId": "getDatabaseScript",
         "summary": "Get Database Script as DXL",
-        "description": "Export the Database Script as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export the Database Script as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -8846,6 +9344,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -8927,6 +9430,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "source": {
                       "type": "string",
@@ -9064,6 +9572,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "source": {
                       "type": "string",
                       "description": "Where the written DXL came from: the request body (dxl) or the template (default).",
@@ -9185,6 +9698,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -9294,6 +9812,11 @@
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
                           },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
+                          },
                           "fileName": {
                             "type": "string",
                             "description": "File name Domino uses for the page. Renaming the design leaves it unchanged. The XPage URL and a custom control reference use this name."
@@ -9379,6 +9902,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "fileName": {
                       "type": "string",
@@ -9508,6 +10036,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -9616,6 +10149,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "name": {
                       "type": "string"
@@ -9726,6 +10264,11 @@
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
                           },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
+                          },
                           "fileName": {
                             "type": "string",
                             "description": "File name Domino uses for the page. Renaming the design leaves it unchanged. The XPage URL and a custom control reference use this name."
@@ -9811,6 +10354,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "fileName": {
                       "type": "string",
@@ -9935,6 +10483,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -10044,6 +10597,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -10114,7 +10672,7 @@
         ],
         "operationId": "listWebServices",
         "summary": "List web service provider names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of web service providers in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of web service providers in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10137,7 +10695,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -10148,6 +10706,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -10208,7 +10771,7 @@
         ],
         "operationId": "getWebService",
         "summary": "Get web service provider as DXL",
-        "description": "Export one web service provider as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one web service provider as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10230,6 +10793,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -10350,6 +10918,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -10455,6 +11028,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -10525,7 +11103,7 @@
         ],
         "operationId": "listWebServiceConsumers",
         "summary": "List web service consumer names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of web service consumers in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of web service consumers in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10548,7 +11126,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -10559,6 +11137,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -10619,7 +11202,7 @@
         ],
         "operationId": "getWebServiceConsumer",
         "summary": "Get web service consumer as DXL",
-        "description": "Export one web service consumer as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one web service consumer as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10641,6 +11224,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -10761,6 +11349,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -10866,6 +11459,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -10936,7 +11534,7 @@
         ],
         "operationId": "listNavigators",
         "summary": "List navigator names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of navigators in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of navigators in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -10959,7 +11557,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -10970,6 +11568,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -11030,7 +11633,7 @@
         ],
         "operationId": "getNavigator",
         "summary": "Get navigator as DXL",
-        "description": "Export one navigator as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one navigator as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -11052,6 +11655,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -11172,6 +11780,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -11277,6 +11890,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -11347,7 +11965,7 @@
         ],
         "operationId": "listDataConnections",
         "summary": "List data connection names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of data connections in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of data connections in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -11370,7 +11988,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -11381,6 +11999,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -11441,7 +12064,7 @@
         ],
         "operationId": "getDataConnection",
         "summary": "Get data connection as DXL",
-        "description": "Export one data connection as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one data connection as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -11463,6 +12086,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -11583,6 +12211,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -11688,6 +12321,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -11758,7 +12396,7 @@
         ],
         "operationId": "listJars",
         "summary": "List JAR names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of JARs in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of JARs in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -11781,7 +12419,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -11792,6 +12430,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -11852,7 +12495,7 @@
         ],
         "operationId": "getJar",
         "summary": "Get JAR as DXL",
-        "description": "Export one JAR as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one JAR as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -11874,6 +12517,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -11994,6 +12642,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -12099,6 +12752,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -12169,7 +12827,7 @@
         ],
         "operationId": "listXPagesResources",
         "summary": "List XPages project files in the NSF",
-        "description": "Requires ?nsfPath=. XPagesResources is the name array. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. XPagesResources is the name array. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -12192,7 +12850,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -12203,6 +12861,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -12263,7 +12926,7 @@
         ],
         "operationId": "getXPagesResource",
         "summary": "Get an XPages project file as DXL",
-        "description": "Export one project file as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one project file as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -12285,6 +12948,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -12363,6 +13031,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "name": {
                       "type": "string"
@@ -12515,6 +13188,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -12585,7 +13263,7 @@
         ],
         "operationId": "listWebContent",
         "summary": "List WebContent files in the NSF",
-        "description": "Requires ?nsfPath=. Returns WebContent file names. elements adds noteId, plus aliases when the note has them. WEB-INF is not included.",
+        "description": "Requires ?nsfPath=. Returns WebContent file names. elements adds noteId and unid, plus aliases when the note has them. WEB-INF is not included.",
         "x-keep-version": 1,
         "security": [
           {
@@ -12608,7 +13286,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -12619,6 +13297,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -12679,7 +13362,7 @@
         ],
         "operationId": "getWebContent",
         "summary": "Get WebContent file as DXL",
-        "description": "Export one WebContent file as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one WebContent file as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -12701,6 +13384,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -12821,6 +13509,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -12926,6 +13619,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -12996,7 +13694,7 @@
         ],
         "operationId": "listApplets",
         "summary": "List applet names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of applets in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of applets in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -13019,7 +13717,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -13030,6 +13728,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -13090,7 +13793,7 @@
         ],
         "operationId": "getApplet",
         "summary": "Get applet as DXL",
-        "description": "Export one applet as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one applet as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -13112,6 +13815,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -13231,6 +13939,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "name": {
                       "type": "string"
@@ -13360,6 +14073,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -13488,6 +14206,11 @@
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
                           },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
+                          },
                           "aliases": {
                             "type": "array",
                             "description": "Names after |, used by a URL or OpenForm.",
@@ -13556,7 +14279,7 @@
         ],
         "operationId": "getJavaSource",
         "summary": "Get Java source as DXL",
-        "description": "Export one Java source as Domino DXL. Requires ?nsfPath=. 404 if missing. Name is the Java path ending in .java (e.g. se/infoware/kyber/NewJava.java). The response includes noteId, plus aliases and kind when the note has them.",
+        "description": "Export one Java source as Domino DXL. Requires ?nsfPath=. 404 if missing. Name is the Java path ending in .java (e.g. se/infoware/kyber/NewJava.java). The response includes noteId and unid, plus aliases and kind when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -13578,6 +14301,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -13707,6 +14435,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -13821,6 +14554,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -13891,7 +14629,7 @@
         ],
         "operationId": "listWiringProperties",
         "summary": "List wiring properties names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of wiring properties in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of wiring properties in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -13914,7 +14652,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -13925,6 +14663,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -13985,7 +14728,7 @@
         ],
         "operationId": "getWiringProperties",
         "summary": "Get wiring properties as DXL",
-        "description": "Export one wiring properties as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one wiring properties as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -14007,6 +14750,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -14127,6 +14875,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -14232,6 +14985,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -14302,7 +15060,7 @@
         ],
         "operationId": "listCompositeApplications",
         "summary": "List composite application names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of composite applications in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of composite applications in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -14325,7 +15083,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -14336,6 +15094,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -14396,7 +15159,7 @@
         ],
         "operationId": "getCompositeApplication",
         "summary": "Get composite application as DXL",
-        "description": "Export one composite application as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one composite application as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -14418,6 +15181,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -14538,6 +15306,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -14643,6 +15416,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -14713,7 +15491,7 @@
         ],
         "operationId": "listCompositeComponents",
         "summary": "List composite component names in the NSF",
-        "description": "Requires ?nsfPath=. Returns the name list of composite components in the target database. elements adds noteId, plus aliases when the note has them.",
+        "description": "Requires ?nsfPath=. Returns the name list of composite components in the target database. elements adds noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -14736,7 +15514,7 @@
                     },
                     "elements": {
                       "type": "array",
-                      "description": "The same notes as the name array, with noteId, plus aliases when the note has them.",
+                      "description": "The same notes as the name array, with noteId and unid, plus aliases when the note has them.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -14747,6 +15525,11 @@
                             "type": "string",
                             "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                             "example": "368a"
+                          },
+                          "unid": {
+                            "type": "string",
+                            "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                            "example": "AABBCCDDEEFF00112233445566778899"
                           },
                           "aliases": {
                             "type": "array",
@@ -14807,7 +15590,7 @@
         ],
         "operationId": "getCompositeComponent",
         "summary": "Get composite component as DXL",
-        "description": "Export one composite component as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export one composite component as Domino DXL. Requires ?nsfPath=. 404 if missing. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -14829,6 +15612,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -14949,6 +15737,11 @@
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
                     },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -14993,7 +15786,7 @@
     },
     "/dbicon": {
       "summary": "Get or update database icon ($DBIcon)",
-      "description": "Singleton $DBIcon - always present when the NSF is created. GET/PUT only; no create or DELETE. Not listed under /images. Requires ?nsfPath=.",
+        "description": "Singleton $DBIcon image resource. A PUT also updates the workspace icon note and keeps that note's launch settings. GET/PUT only; no create or DELETE. Not listed under /images. Requires ?nsfPath=.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -15011,7 +15804,7 @@
         ],
         "operationId": "getDbIcon",
         "summary": "Get database icon as DXL",
-        "description": "Export the $DBIcon image resource as Domino DXL. Always present on a normal NSF. Requires ?nsfPath=. The response includes noteId, plus aliases when the note has them.",
+        "description": "Export the $DBIcon image resource as Domino DXL. Always present on a normal NSF. Requires ?nsfPath=. The response includes noteId and unid, plus aliases when the note has them.",
         "x-keep-version": 1,
         "security": [
           {
@@ -15034,6 +15827,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "aliases": {
                       "type": "array",
@@ -15068,7 +15866,7 @@
         ],
         "operationId": "updateDbIcon",
         "summary": "Update database icon (404 if missing)",
-        "description": "Replace existing $DBIcon with the request body DXL. Always present on a normal NSF - use GET then PUT, not create. Requires ?nsfPath=. 404 if missing.",
+        "description": "Replace existing $DBIcon with the request body DXL, and copy that picture onto the workspace icon note. Launch settings on the icon note stay. Always present on a normal NSF - use GET then PUT, not create. Requires ?nsfPath=. 404 if missing.",
         "x-keep-version": 1,
         "security": [
           {
@@ -15115,6 +15913,11 @@
                       "type": "string",
                       "description": "Note id in this NSF, the hex Domino writes on the note. An export file uses it as Name-368a.dxl. Copying or replacing the note assigns a new one.",
                       "example": "368a"
+                    },
+                    "unid": {
+                      "type": "string",
+                      "description": "UNID of the note in this replica. It stays when the name changes. noteId is local to this NSF and changes when the note is replaced.",
+                      "example": "AABBCCDDEEFF00112233445566778899"
                     },
                     "source": {
                       "type": "string",

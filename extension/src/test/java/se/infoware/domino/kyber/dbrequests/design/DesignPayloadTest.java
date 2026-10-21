@@ -85,4 +85,17 @@ class DesignPayloadTest {
     assertEquals("Open", aliases.getString(0));
     assertEquals("Web", aliases.getString(1));
   }
+
+  @Test
+  void noteExposesUnidFromNoteinfo() {
+    String dxl =
+        """
+        <form name='Smoke'>
+        <noteinfo noteid='368a' unid='aabbccddeeff00112233445566778899'/>
+        </form>
+        """;
+    JsonObject out = DesignPayload.note("Smoke", dxl);
+    assertEquals("368a", out.getString("noteId"));
+    assertEquals("AABBCCDDEEFF00112233445566778899", out.getString("unid"));
+  }
 }

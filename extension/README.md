@@ -4,7 +4,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
-| **Version** | 0.24.19 |
+| **Version** | 0.24.20 |
 | **API** | `/api/kyber-v1` |
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
@@ -28,7 +28,7 @@ Standard collection CRUD:
 
 Same pattern for other named types (`/forms`, `/scriptlibraries`, `/xpagesresources`, …). Write responses include exported `dxl`.
 
-A list keeps the name array and adds `elements`: `name`, plus `fileName`, `aliases` and `kind` when the note has them. `kind` is filled for agents, script libraries and Java sources. `aliases` is the part of the name after `|`, the name used by a URL or `OpenForm`.
+A list keeps the name array and adds `elements`: `name`, `noteId`, and `unid`, plus `fileName`, `aliases` and `kind` when the note has them. `unid` stays when the name changes. `kind` is filled for agents, script libraries and Java sources. `aliases` is the part of the name after `|`, the name used by a URL or `OpenForm`.
 
 ## Supported types
 
@@ -64,6 +64,7 @@ A database without that category responds **403** with the message **Not Kyber e
 | GET | `/defaults/{type}` | Get one design template. `kind` for an agent, a script library, or a Java source |
 | GET | `/export?nsfPath=` | Design export of a database that already exists |
 | PUT | `/import?nsfPath=&dbTitle=` | Design import. When the file is missing, checks Create databases & templates and creates the NSF |
+| POST | `/validate?nsfPath=` | Check that import document without writing. `valid` is false when an element would be rejected. No importer log. The NSF must already exist |
 | POST | `/database?nsfPath=&dbTitle=` | Create database. Checks Create databases & templates and sets the category KyberEnabled. 409 if the file exists |
 | DELETE | `/database?nsfPath=` | Delete database. Needs Manager and the category KyberEnabled. KeepConfig.nsf cannot be deleted |
 | GET | `/databases?fileType=` | List databases this user can open whose category is KyberEnabled. `fileType` is `database` (1247, default), `template` (1248), `replica_candidate` (1245), or `template_candidate` (1246). `more` is set when other databases of that type exist |
@@ -201,7 +202,7 @@ On a database that already exists, the limit is that NSF's ACL.
 | ACL on the target NSF | Operations |
 |--|--|
 | Designer | list, get, create, update, delete of design (not the ACL) |
-| Manager | replace the ACL, and delete the NSF when its category is KyberEnabled. A Manager includes the Designer rights above. |
+| Manager | replace the ACL, and delete the NSF when its category is KyberEnabled. `-Default-` and `LocalDomainServers` must remain in the new ACL. A Manager includes the Designer rights above. |
 
 The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**. A blank field allows everyone, and a name in the field may be a user, a server, or a group. The import then creates the file, sets the category **KyberEnabled**, and imports the design. `POST /database` checks that same privilege and creates an empty NSF. `DELETE /database` needs Manager on an NSF whose category is KyberEnabled. The same import into a database that already exists uses the ACL table above. `GET /databases` uses the NotesDbDirectory file types. `fileType` defaults to `database` (1247). `more` is true when other databases of that type exist, and those paths are not returned.
 
@@ -358,7 +359,7 @@ Named types share the same CRUD shape: **list** `GET /{types}`, **create** `POST
 | Method | Path |
 |--------|------|
 | GET | `/api/kyber-v1/acl?nsfPath=` |
-| PUT | `/api/kyber-v1/acl?nsfPath=` (`text/xml` `<acl>` DXL; requires Manager) |
+| PUT | `/api/kyber-v1/acl?nsfPath=` (`text/xml` `<acl>` DXL; requires Manager; `-Default-` and `LocalDomainServers` must remain or the call is **400**) |
 
 ### About Document
 
