@@ -17,6 +17,10 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 | **HCL DXL API** | [How 1.1.8 differs](docs/hcl-dxl-api.md) |
 | **Source** | https://github.com/infoware-se/kyber |
 
+## Language
+
+Comments, commit messages, and documentation are written in English.
+
 ## Kyber enabled
 
 Every call acts only on a database whose catalog category is **KyberEnabled**. In Designer that field is Database properties, on the Design tab, Categories. Setting it on a database that already exists needs **Designer** or higher in that database ACL.
@@ -29,6 +33,7 @@ A database without that category responds **403** with the message **Not Kyber e
 
 ## Contents
 
+- [Language](#language)
 - [Kyber enabled](#kyber-enabled)
 - [What you can do](#what-you-can-do)
 - [Install](#install)
