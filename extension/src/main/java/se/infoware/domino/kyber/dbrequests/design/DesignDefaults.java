@@ -211,61 +211,8 @@ final class DesignDefaults {
     return out;
   }
 
-  static JsonArray resolveAll(KeepJnxSession session) {
-    Set<String> types = new LinkedHashSet<>(embeddedTypes());
-    Optional<Database> nsf = tryOpenDefaultsDb(session);
-    if (nsf.isPresent()) {
-      try {
-        JsonArray exported = DesignElementExport.exportAll(nsf.get());
-        for (int i = 0; i < exported.size(); i++) {
-          JsonObject el = exported.getJsonObject(i);
-          String t = DesignBulkTypes.normalize(el.getString("type", ""));
-          if (!t.isBlank()) {
-            types.add(t);
-          }
-        }
-      } catch (Exception ignored) {
-        // fall through with embedded-only set
-      }
-    }
-
-    JsonArray out = new JsonArray();
-    for (String t : types) {
-      String[] kinds = kindsFor(t);
-      if (kinds != null) {
-        for (String kind : kinds) {
-          try {
-            out.add(resolveOne(session, t, kind));
-          } catch (KeepExceptionWrongDataRequest ignored) {
-            // skip missing kind
-          }
-        }
-        continue;
-      }
-      try {
-        out.add(resolveOne(session, t));
-      } catch (KeepExceptionWrongDataRequest ignored) {
-        // skip types with neither NSF nor embedded
-      }
-    }
-    return out;
-  }
-
   private static boolean isKindedType(String type) {
     return "scriptlibrary".equals(type) || "agent".equals(type) || "javasource".equals(type);
-  }
-
-  private static String[] kindsFor(String type) {
-    if ("scriptlibrary".equals(type)) {
-      return ScriptLibraryKinds.ALL;
-    }
-    if ("agent".equals(type)) {
-      return AgentKinds.ALL;
-    }
-    if ("javasource".equals(type)) {
-      return JavaSourceKinds.ALL;
-    }
-    return null;
   }
 
   private static String normalizeKind(String type, String kind)

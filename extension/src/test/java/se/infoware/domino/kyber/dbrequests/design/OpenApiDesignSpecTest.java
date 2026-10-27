@@ -46,7 +46,8 @@ class OpenApiDesignSpecTest {
             .getJsonObject("schema")
             .getJsonObject("properties")
             .getJsonObject("more"));
-    assertTrue(root.getJsonObject("paths").containsKey("/defaults/{type}"));
+    assertFalse(root.getJsonObject("paths").containsKey("/defaults"));
+    assertFalse(root.getJsonObject("paths").containsKey("/defaults/{type}"));
     JsonObject export = root.getJsonObject("paths").getJsonObject("/export");
     assertNotNull(export.getJsonObject("get").getJsonObject("responses").getJsonObject("200"));
     JsonObject getProps =
@@ -200,12 +201,6 @@ class OpenApiDesignSpecTest {
     assertFalse(libraryWritten.containsKey("compiled"));
     assertFalse(libraryWritten.containsKey("log"));
     assertFalse(libraryWritten.containsKey("signedBy"));
-
-    JsonObject template = schemaProps(paths, "/defaults/{type}", "get");
-    assertEquals("api,nsf", enumOf(template.getJsonObject("source")));
-    assertFalse(template.containsKey("code"));
-    assertFalse(template.containsKey("fileName"));
-    assertNotNull(template.getJsonObject("kind"));
 
     assertEquals(
         "updateAcl", paths.getJsonObject("/acl").getJsonObject("put").getString("operationId"));

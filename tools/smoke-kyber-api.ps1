@@ -1,13 +1,11 @@
 <#
 .SYNOPSIS
-  Live smoke of kyber-v1 against DRAPI: defaults, CRUD status codes, and XPages.
+  Live smoke of kyber-v1 against DRAPI: CRUD status codes, and XPages.
 
 .DESCRIPTION
   Auth via DOMINO_REST_* / REST_ADMIN_* or a gitignored .env. Notes COM uses DOMINO_SERVER.
   Uses kybertest.nsf (PUT /import?dbTitle=... creates it when missing), then asserts:
 
-  - GET /defaults lists starters. source is api or nsf, and kind is set for agents, script libraries, and Java sources
-  - GET /defaults/{type} for a few types, with the same source and kind checks
   - missing form → not found
   - every named CRUD collection: list, empty-body create or keep, 409, get, put, list contains name.
     Get, put, and the list element include noteId and unid. Kinded types return that kind.
@@ -24,6 +22,8 @@
   - kinded agents, script libraries and Java sources, one element per kind
   - singletons about, using, databasescript, xspproperties: create or keep, 409, get, put, Hello World
   - applicationproperties, dbicon and acl: get + put of the same DXL
+  - PUT /acl that drops -Default- or LocalDomainServers is 400 and the ACL is unchanged
+  - GET /defaults and GET /defaults/{type} stay 404
   - a NSF created by this run has the embedded Kyber database icon
   - export-to-repo.ps1 writes kybertest.nsf to a temp folder, then import-from-repo.ps1
     restores that tree into kybersmoke-import.nsf. The repo domino/ templates are not touched.
@@ -1084,49 +1084,6 @@ if ($JavaHelloOnly) {
   exit 0
 }
 
-# --- Defaults ---
-$code = Invoke-Design GET "$base/api/kyber-v1/defaults" -OutFile $out
-if ($code -ne "200") { Fail "GET /defaults -> HTTP $code $(Get-ResponseText)" }
-$catalog = Get-Content $out -Raw | ConvertFrom-Json
-$starters = @($catalog.elements)
-if ($starters.Count -lt 1) { Fail "GET /defaults has no elements" }
-foreach ($el in $starters) {
-  if ([string]$el.source -notin @("api", "nsf")) {
-    Fail "GET /defaults $($el.type) source '$($el.source)'"
-  }
-  $kinded = [string]$el.type -in @("agent", "scriptlibrary", "javasource")
-  if ($kinded -and [string]::IsNullOrWhiteSpace([string]$el.kind)) {
-    Fail "GET /defaults $($el.type) $($el.name) missing kind"
-  }
-  if (-not $kinded -and -not [string]::IsNullOrWhiteSpace([string]$el.kind)) {
-    Fail "GET /defaults $($el.type) has kind '$($el.kind)'"
-  }
-}
-if (@($starters | Where-Object { $_.type -eq "agent" -and $_.kind -eq "lotusscript" }).Count -lt 1) {
-  Fail "GET /defaults missing agent lotusscript"
-}
-Ok "GET /defaults elements=$($starters.Count)"
-foreach ($q in @(
-  "form",
-  "agent?kind=lotusscript",
-  "scriptlibrary?kind=java",
-  "javasource?kind=class",
-  "xpage"
-)) {
-  $code = Invoke-Design GET "$base/api/kyber-v1/defaults/$q" -OutFile $out
-  if ($code -ne "200") { Fail "GET /defaults/$q -> HTTP $code" }
-  $j = Get-Content $out -Raw | ConvertFrom-Json
-  if (-not $j.dxl) { Fail "GET /defaults/$q missing dxl" }
-  if ([string]$j.source -notin @("api", "nsf")) { Fail "GET /defaults/$q source '$($j.source)'" }
-  $expectKind = ""
-  if ($q -match "kind=([^&]+)") { $expectKind = $Matches[1] }
-  if ($expectKind -and [string]$j.kind -ne $expectKind) { Fail "GET /defaults/$q kind '$($j.kind)'" }
-  if (-not $expectKind -and -not [string]::IsNullOrWhiteSpace([string]$j.kind)) {
-    Fail "GET /defaults/$q has kind '$($j.kind)'"
-  }
-  Ok "defaults/$q source=$($j.source) name=$($j.name)"
-}
-
 # --- Ensure NSF ---
 $smokeTitle = "Kyber Smoke Test"
 $bulkFile = Join-Path $env:TEMP "smoke-bulk.json"
@@ -1145,13 +1102,36 @@ Assert-Code "POST /validate broken" $code @("200")
 $validated = Get-ResponseText | ConvertFrom-Json
 if ($validated.valid) { Fail "POST /validate accepted broken DXL" }
 if (@($validated.errors).Count -lt 1) { Fail "POST /validate returned no errors" }
+foreach ($extra in @("log", "code")) {
+  if ($validated.PSObject.Properties.Name -contains $extra) {
+    Fail "POST /validate returned $extra"
+  }
+}
+$broken = @($validated.errors)[0]
+if ([string]$broken.type -ne "form" -or [string]::IsNullOrWhiteSpace([string]$broken.message)) {
+  Fail "POST /validate error is missing type or message"
+}
 [IO.File]::WriteAllText($validateFile, '{"elements":[{"type":"form","dxl":"<form name=''SmokeValidate'' xmlns=''http://www.lotus.com/dxl''/>"}]}')
 $code = Invoke-Design POST (Design-Url "validate") -BodyFile $validateFile `
   -ContentType "application/json" -OutFile $out
 Assert-Code "POST /validate form" $code @("200")
 $validated = Get-ResponseText | ConvertFrom-Json
 if (-not $validated.valid) { Fail "POST /validate rejected a form: $(Get-ResponseText)" }
+foreach ($extra in @("log", "code")) {
+  if ($validated.PSObject.Properties.Name -contains $extra) {
+    Fail "POST /validate returned $extra"
+  }
+}
+[IO.File]::WriteAllText($validateFile, "{}")
+$code = Invoke-Design POST (Design-Url "validate") -BodyFile $validateFile `
+  -ContentType "application/json" -OutFile $out
+Assert-Code "POST /validate without elements" $code @("400")
 Ok "POST /validate"
+foreach ($gone in @("defaults", "defaults/form", "defaults/agent")) {
+  $code = Invoke-Design GET (Design-Url $gone) -OutFile $out
+  if ($code -ne "404") { Fail "GET /$gone should be gone, got HTTP $code" }
+}
+Ok "GET /defaults is gone"
 if ($bulkResp.created -and $bulkResp.dbTitle -ne $smokeTitle) {
   Fail "expected dbTitle=$smokeTitle on create, got $($bulkResp.dbTitle)"
 }
@@ -1241,6 +1221,56 @@ Ok "xpagesresource create/get/delete"
 
 foreach ($path in @("applicationproperties", "acl")) {
   Invoke-UpdateOnly $path
+}
+Assert-AclKeepsProtectedEntries
+
+function Assert-AclKeepsProtectedEntries {
+  $url = Design-Url "acl"
+  foreach ($entry in @("-Default-", "LocalDomainServers")) {
+    $code = Invoke-Design GET $url -OutFile $out
+    Assert-Code "GET /acl before dropping $entry" $code @("200")
+    $original = (Get-ResponseText | ConvertFrom-Json).dxl
+    if (-not (Test-AclEntry $original $entry)) { Fail "ACL is missing $entry before the drop check" }
+    $stripped = Remove-AclEntry $original $entry
+    if ($stripped -eq $original) { Fail "could not build an ACL without $entry" }
+    $dropFile = Join-Path $env:TEMP "smoke-acl-drop.dxl"
+    [IO.File]::WriteAllText($dropFile, $stripped)
+    $code = Invoke-Design PUT $url -BodyFile $dropFile -ContentType "text/xml" -OutFile $out
+    if ($code -ne "400") {
+      [IO.File]::WriteAllText($dropFile, $original)
+      Invoke-Design PUT $url -BodyFile $dropFile -ContentType "text/xml" -OutFile $out | Out-Null
+      Fail "PUT /acl without $entry -> HTTP $code"
+    }
+    if ((Get-ResponseText) -notmatch "cannot be removed") {
+      Fail "PUT /acl without $entry was not the protected-entry refusal"
+    }
+    $code = Invoke-Design GET $url -OutFile $out
+    Assert-Code "GET /acl after dropping $entry" $code @("200")
+    $after = (Get-ResponseText | ConvertFrom-Json).dxl
+    foreach ($kept in @("-Default-", "LocalDomainServers")) {
+      if (-not (Test-AclEntry $after $kept)) { Fail "ACL lost $kept after a refused drop" }
+    }
+    Ok "PUT /acl without $entry refused"
+  }
+}
+
+function Test-AclEntry([string]$Dxl, [string]$Name) {
+  $quoted = [regex]::Escape($Name)
+  return $Dxl -match "(?i)<aclentry\b[^>]*\bname='$quoted'" -or $Dxl -match "(?i)<aclentry\b[^>]*\bname=""$quoted"""
+}
+
+function Remove-AclEntry([string]$Dxl, [string]$Name) {
+  $quoted = [regex]::Escape($Name)
+  foreach ($pattern in @(
+      "(?is)<aclentry\b[^>]*\bname='$quoted'[^>]*/>",
+      "(?is)<aclentry\b[^>]*\bname=""$quoted""[^>]*/>",
+      "(?is)<aclentry\b[^>]*\bname='$quoted'[^>]*>.*?</aclentry>",
+      "(?is)<aclentry\b[^>]*\bname=""$quoted""[^>]*>.*?</aclentry>"
+    )) {
+    $stripped = [regex]::Replace($Dxl, $pattern, "", 1)
+    if ($stripped -ne $Dxl) { return $stripped }
+  }
+  return $Dxl
 }
 # A NSF created by PUT /import receives the embedded icon, including kyber.nsf.
 # An existing smoke NSF keeps whatever icon it already has.

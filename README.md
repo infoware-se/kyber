@@ -6,11 +6,11 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.24.20 |
+| **Version** | 0.24.21 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
-| **Swagger tags** | `design-element` for typed CRUD, `design-handler` for `/defaults`, `/export`, `/import`, and `/databases` |
+| **Swagger tags** | `design-element` for typed CRUD, `design-handler` for `/export`, `/import`, and `/databases` |
 | **Template NSF** | `kyber.nsf` (`kyber.defaultNsf`) |
 | **Category** | `KyberEnabled`. A database without it responds 403 **Not Kyber enabled** |
 | **Reference** | [extension/README.md](extension/README.md) |
@@ -65,7 +65,7 @@ Create, update, and the round trip use Domino DXL. Send it as `text/xml`, or as 
 
 `kyber.nsf` is the template library, an ordinary NSF on the server. Design the forms, agents, script libraries, and other elements you want to reuse, and store them there. The file name is `kyber.defaultNsf` in `kyber.properties`, and the default is `kyber.nsf`.
 
-`GET /defaults` lists the template types. `GET /defaults/{type}` returns the first element of that type, in case-insensitive name order. Agents, script libraries, and Java sources take `?kind=` so the match is the right kind. An empty create copies that element into the target NSF and names it with `?name=`. For those three types the empty create is `?kind=&name=`. When `kyber.nsf` has no element of that type, Kyber uses the starter in the API. `source` is `nsf` or `api`.
+An empty create copies the first element of that type from `kyber.nsf`, in case-insensitive name order, and names it with `?name=`. Agents, script libraries, and Java sources take `?kind=` so the copy is the right kind. For those three types the empty create is `?kind=&name=`. When `kyber.nsf` has no element of that type, Kyber uses the starter in the API.
 
 Kyber creates `kyber.nsf` on the first design write when the file is missing. The new file has a title, an ACL, and About and Using text that describes the database. It holds no templates until you add them. While that About and Using text is still the text Kyber wrote, those two documents are usage text and are not templates. The database icon is the tile for `kyber.nsf` and is not a template either. Replace an element in `kyber.nsf` and the next empty create uses the replacement.
 

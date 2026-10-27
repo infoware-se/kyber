@@ -4,7 +4,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
-| **Version** | 0.24.20 |
+| **Version** | 0.24.21 |
 | **API** | `/api/kyber-v1` |
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
@@ -14,7 +14,7 @@ Kyber is complete CRUD for the design elements in an NSF. The target database is
 
 The body of a create, an update, and a round trip is Domino DXL. Send `text/xml`, or `application/json` with `dxl` set to that DXL. The design comment is the `comment` attribute in the DXL. A payload without that attribute leaves the comment already on the note. The grammar is the DTD shipped with Designer, `xmlschemas/domino_*.dtd`. The stored design is the DXL.
 
-`kyber.nsf` is the template library. The property `kyber.defaultNsf` names it and defaults to `kyber.nsf`. Put the design elements you want to reuse in that database. `GET /defaults/{type}` returns the first match by name, with `?kind=` for an agent, a script library, or a Java source. An empty create copies that element into the target NSF. When the template database has no such element, Kyber uses the starter in the API. `source` is `nsf` or `api`. Kyber creates `kyber.nsf` on the first design write if the file is missing. The new file explains itself in About and Using and holds no templates until you add them. Those two documents, and the database icon, are not templates.
+`kyber.nsf` is the template library. The property `kyber.defaultNsf` names it and defaults to `kyber.nsf`. Put the design elements you want to reuse in that database. An empty create copies the first match by name, with `?kind=` for an agent, a script library, or a Java source. When the template database has no such element, Kyber uses the starter in the API. Kyber creates `kyber.nsf` on the first design write if the file is missing. The new file explains itself in About and Using and holds no templates until you add them. Those two documents, and the database icon, are not templates.
 
 Standard collection CRUD:
 
@@ -60,8 +60,6 @@ A database without that category responds **403** with the message **Not Kyber e
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/defaults` | List the design templates |
-| GET | `/defaults/{type}` | Get one design template. `kind` for an agent, a script library, or a Java source |
 | GET | `/export?nsfPath=` | Design export of a database that already exists |
 | PUT | `/import?nsfPath=&dbTitle=` | Design import. When the file is missing, checks Create databases & templates and creates the NSF |
 | POST | `/validate?nsfPath=` | Check that import document without writing. `valid` is false when an element would be rejected. No importer log. The NSF must already exist |
@@ -70,7 +68,7 @@ A database without that category responds **403** with the message **Not Kyber e
 | GET | `/databases?fileType=` | List databases this user can open whose category is KyberEnabled. `fileType` is `database` (1247, default), `template` (1248), `replica_candidate` (1245), or `template_candidate` (1246). `more` is set when other databases of that type exist |
 Per-type CRUD stays under **`design-element`**.
 
-**Templates** live in `kyber.nsf`, or whichever NSF `kyber.defaultNsf` names. `GET /defaults/{type}` returns the first element of that type, matched by case-insensitive name, and `?kind=` when the type has kinds. An empty create copies it into the target NSF. When the template database has no such element, Kyber uses the starter in the API. `source` is `nsf` or `api`.
+**Templates** live in `kyber.nsf`, or whichever NSF `kyber.defaultNsf` names. An empty create copies the first element of that type, matched by case-insensitive name, and `?kind=` when the type has kinds. When the template database has no such element, Kyber uses the starter in the API.
 
 Element `type` is the API name (`form`, `about`, `image`, …). The folder is the Package Explorer name (`Forms`, `Resources`, `Resources/Images`, …). Bridge scripts in [`tools/`](../tools/):
 
@@ -134,7 +132,7 @@ Package Explorer also shows JRE System Library, Plug-in Dependencies, Referenced
 
 After PUT, the API compiles LotusScript, script libraries first. A note that reports "Error processing use list module" after a restore usually means that code was not compiled. Re-import, or run Designer **Recompile All LotusScript**. Some complex libraries can still report syntax errors after a DXL round trip. Open those in Designer if needed.
 
-**Bulk-only type** (no list/get/put/delete endpoints; only in `/export` and `/import`): `designnote` for a remaining named design note. The export folder is `_designnotes`. XPages project files (`.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties`, i18n `*.properties`) are `xpagesresource` on `/xpagesresources`. Percent-encode a slash in the path (`WEB-INF%2Ffaces-config.xml`). Starters: `GET /defaults/{type}` for `xpagesresource` (not `designnote`).
+**Bulk-only type** (no list/get/put/delete endpoints; only in `/export` and `/import`): `designnote` for a remaining named design note. The export folder is `_designnotes`. XPages project files (`.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties`, i18n `*.properties`) are `xpagesresource` on `/xpagesresources`. Percent-encode a slash in the path (`WEB-INF%2Ffaces-config.xml`). An empty create of `xpagesresource` copies the starter. `designnote` has no starter.
 
 **Blank NSF baseline** (reference DXL, not starters): [`resources/defaults/blank/`](src/main/resources/defaults/blank/) — `acl.dxl`, `applicationproperties.dxl`, `image-DBIcon.dxl`, `view-default.dxl`, plus `manifest.json` from a Domino blank database.
 
@@ -173,8 +171,8 @@ Sections follow Package Explorer. "In" = typed DXL CRUD; "Bulk" = `/export` and 
 | Custom Controls | Custom Controls | `/customcontrols` (`.xsp` notes without XPage `K` flag; not Composite Components) |
 | (XPages project) | `.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties` | `/xpagesresources` |
 | Shared Elements | Navigators | `/navigators` |
-| Code | Web Service Providers | `/webservices` + `GET /defaults/webservice` |
-| Code | Web Service Consumers | `/webserviceconsumers` + `GET /defaults/webserviceconsumer` |
+| Code | Web Service Providers | `/webservices` |
+| Code | Web Service Consumers | `/webserviceconsumers` |
 | Code | Java (class/interface/enum) | `/javasources` — kinds `class` \| `interface` \| `enum` |
 | Code | Jars | `/jars` |
 | Resources | Data Connections | `/dataconnections` (export folder `Resources/DataConnections`) |
@@ -388,7 +386,6 @@ Kinds: `lotusscript` (default), `formula`, `simpleaction`, `java`, `importedjava
 | GET | `/api/kyber-v1/agents?nsfPath=` |
 | POST | `/api/kyber-v1/agents?nsfPath=` (`text/xml` agent DXL of any kind; optional `?name=`) |
 | POST | `/api/kyber-v1/agents?nsfPath=&kind=&name=` (empty body → create from starter; **409** if exists) |
-| GET | `/api/kyber-v1/defaults/agent?kind=` |
 | GET | `/api/kyber-v1/agents/{name}?nsfPath=` |
 | PUT | `/api/kyber-v1/agents/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/kyber-v1/agents/{name}?nsfPath=` |
@@ -402,7 +399,6 @@ Kinds: `lotusscript` (default), `javascript` (client), `ssjs` (server JS), `java
 | GET | `/api/kyber-v1/scriptlibraries?nsfPath=` |
 | POST | `/api/kyber-v1/scriptlibraries?nsfPath=` (`text/xml` scriptlibrary DXL of any kind; optional `?name=`) |
 | POST | `/api/kyber-v1/scriptlibraries?nsfPath=&kind=&name=` (empty body → create from starter; **409** if exists) |
-| GET | `/api/kyber-v1/defaults/scriptlibrary?kind=` |
 | GET | `/api/kyber-v1/scriptlibraries/{name}?nsfPath=` |
 | PUT | `/api/kyber-v1/scriptlibraries/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/kyber-v1/scriptlibraries/{name}?nsfPath=` |
@@ -416,7 +412,6 @@ Kinds: `class` (default), `interface`, `enum`.
 | GET | `/api/kyber-v1/javasources?nsfPath=` |
 | POST | `/api/kyber-v1/javasources?nsfPath=` (`text/xml`; optional `?name=`) |
 | POST | `/api/kyber-v1/javasources?nsfPath=&kind=&name=` (empty body → create from starter; **409** if exists) |
-| GET | `/api/kyber-v1/defaults/javasource?kind=` |
 | GET | `/api/kyber-v1/javasources/{name}?nsfPath=` |
 | PUT | `/api/kyber-v1/javasources/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/kyber-v1/javasources/{name}?nsfPath=` |
@@ -590,7 +585,7 @@ extension/
 
 ## Adding another design type
 
-1. OpenAPI paths + `operationId`s (`listX`, `getX`, `createX`, `updateX`, `deleteX`) under tag **`design-element`**; `/defaults*`, `/export`, and `/import` under **`design-handler`**
+1. OpenAPI paths + `operationId`s (`listX`, `getX`, `createX`, `updateX`, `deleteX`) under tag **`design-element`**; `/export`, `/import`, and `/validate` under **`design-handler`**
 2. `dbrequests/design` handlers (JNX list/get/delete, DXL import via `DesignCrud` / `DesignDxl`)
 3. `handlers/design/CreateX` and `UpdateX` extending `AbstractImportDxlHandler` for `text/xml` **POST** (create) and **PUT** (update)
 4. Document the type in this README table
