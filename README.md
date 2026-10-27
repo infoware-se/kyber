@@ -37,6 +37,7 @@ A database without that category responds **403** with the message **Not Kyber e
 - [Coverage](#coverage)
 - [Round trip](#round-trip)
 - [HCL DXL API](#hcl-dxl-api)
+- [Improvements](#improvements)
 - [Security](#security)
 
 ## What you can do
@@ -201,6 +202,28 @@ Named notes with no Designer folder land in `_designnotes` and are type `designn
 ## HCL DXL API
 
 Domino REST API 1.1.8 adds an experimental DXL API under `/api/dxl`. It is off until `keepconfig.d` enables it, and HCL does not support it for production. It covers 16 classic design types and returns one `<database>` DXL. The differences from Kyber, including access, import, and the icon note, are in [docs/hcl-dxl-api.md](docs/hcl-dxl-api.md).
+
+## Improvements
+
+API gaps that MCP adapters (Aldhani) and agents hit today. Aldhani's own backlog lives in that product's README under Improvements; several of those tools wait on routes here.
+
+Lookup and search. Get a design element by `unid` or `noteId` without knowing the current name. Search names or DXL substrings across collections in one call. Return `aliases`, `kind`, and schedule metadata on list without a full get.
+
+Templates. Empty create still picks the first alphabetical element of that type in `kyber.nsf`. Accept a template `name` (and keep `kind` where it applies). List templates per type from the template NSF. Optional dry-run that returns which template or starter would be copied and the resulting DXL.
+
+Copy, rename, patch. First-class copy (same NSF or another `nsfPath`), rename that keeps `unid` stable, and a partial DXL patch so callers need not round-trip the whole note.
+
+`designnote` CRUD. Named notes with no Package Explorer folder are export/import only under `_designnotes`. Typed list/get/put/delete would match the other collections.
+
+Binary resources. Put and get images, file resources, and jars as bytes or base64 without callers assembling DXL wrappers by hand. Same idea for `$DBIcon` from an image payload.
+
+Compile and category. After a LotusScript or script-library restore, expose recompile (Designer **Recompile All LotusScript** equivalent) and surface compile errors in the response. Set or clear the **KyberEnabled** category on an existing NSF without a full import. Richer `POST /validate` / import diagnostics (importer log, per-element reject reasons), not only `valid: false`.
+
+Design inherit. Domino design template inherit / refresh from an NTF when the platform allows it through the API. Export already returns `skipped`; document and keep those entries stable so clients can show what was omitted.
+
+Title and ACL helpers. Set database title without rewriting all of application-properties DXL. Optional structured ACL **read** (entries and roles as JSON). ACL **replace** and database **delete** stay privileged Manager operations; MCP products may keep refusing them.
+
+Out of scope for Kyber. Application documents, DQL, running agents as a general automation API, server console, and admin directory changes are not this design API.
 
 ## Security
 

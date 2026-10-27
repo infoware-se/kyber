@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Full jar build needs HCL DRAPI keep-* JARs on a Domino host.
+# This job checks release metadata; CodeQL covers static analysis.
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: README and pom versions match
+        run: |
+          pom=$(sed -n 's/.*<version>\([^<]*\)<\/version>.*/\1/p' extension/pom.xml | head -1)
+          echo "pom=$pom"
+          grep -F "**Version** | $pom" README.md
+          test -f LICENSE
+          test -f SECURITY.md
