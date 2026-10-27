@@ -1,0 +1,29 @@
+name: Bug report
+description: Something in Kyber does not work as documented
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Expected vs actual behavior. No tokens or passwords.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Kyber version
+      placeholder: "0.24.21"
+    validations:
+      required: true
+  - type: input
+    id: drapi
+    attributes:
+      label: Domino REST API / KEEP version (if known)
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: HTTP method, path, nsfPath, and response status when relevant.
+    validations:
+      required: true

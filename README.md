@@ -16,6 +16,9 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 | **Reference** | [extension/README.md](extension/README.md) |
 | **HCL DXL API** | [How 1.1.8 differs](docs/hcl-dxl-api.md) |
 | **Source** | https://github.com/infoware-se/kyber |
+| **MCP** | [Aldhani](https://github.com/infoware-se/aldhani) |
+| **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) |
+| **Security** | [SECURITY.md](SECURITY.md) |
 
 ## Language
 
