@@ -1,4 +1,4 @@
-# Kyber — Infoware REST API for design elements
+# Kyber — Infoware REST API for HCL Domino design elements
 
 Kyber is complete CRUD for the design elements in a Domino NSF. The design you send and store is [DXL](#dxl), the XML Domino Designer already documents. The elements you want to reuse live in [`kyber.nsf`](#templates-in-kybernsf) on the server, and an empty create copies one of them.
 
