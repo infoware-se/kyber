@@ -1,5 +1,9 @@
 # Kyber — Infoware REST API for HCL Domino design elements
 
+[![CI](https://github.com/infoware-se/kyber/actions/workflows/ci.yml/badge.svg)](https://github.com/infoware-se/kyber/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/infoware-se/kyber)](https://github.com/infoware-se/kyber/releases/latest)
+[![License](https://img.shields.io/github/license/infoware-se/kyber)](LICENSE)
+
 Kyber is complete CRUD for the design elements in a Domino NSF. The design you send and store is [DXL](#dxl), the XML Domino Designer already documents. The elements you want to reuse live in [`kyber.nsf`](#templates-in-kybernsf) on the server, and an empty create copies one of them.
 
 Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware Solutions Svenska AB product, not an HCL product, and it is published under [Apache-2.0](LICENSE).
