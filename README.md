@@ -18,7 +18,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 | **Template NSF** | `kyber.nsf` (`kyber.defaultNsf`) |
 | **Category** | `KyberEnabled`. A database without it responds 403 **Not Kyber enabled** |
 | **Reference** | [extension/README.md](extension/README.md) |
-| **HCL DXL API** | [How 1.1.8 differs](docs/hcl-dxl-api.md) |
+| **HCL DXL API** | [How 1.1.8 differs from Kyber](docs/hcl-dxl-api-and-kyber.md) |
 | **Source** | https://github.com/infoware-se/kyber |
 | **MCP** | [Aldhani](https://github.com/infoware-se/aldhani) |
 | **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) |
@@ -213,7 +213,7 @@ Named notes with no Designer folder land in `_designnotes` and are type `designn
 
 ## HCL DXL API
 
-Domino REST API 1.1.8 adds an experimental DXL API under `/api/dxl`. Kyber does not call it. Kyber stays a KEEP extension under `/api/kyber-v1`. HCL's API is off until `keepconfig.d` enables it, and HCL does not support it for production. It covers 16 classic design types and returns one `<database>` DXL. The differences from Kyber, including access, import, and the icon note, are in [docs/hcl-dxl-api.md](docs/hcl-dxl-api.md).
+Domino REST API 1.1.8 adds an experimental DXL API under `/api/dxl`. Kyber does not call it. Kyber stays a KEEP extension under `/api/kyber-v1`. HCL's API is off until `keepconfig.d` enables it, and HCL does not support it for production. It covers 16 classic design types and returns one `<database>` DXL. The differences from Kyber, including access, import, and the icon note, are in [docs/hcl-dxl-api-and-kyber.md](docs/hcl-dxl-api-and-kyber.md).
 
 ## Improvements
 
