@@ -33,6 +33,7 @@ class OpenApiDesignSpecTest {
     assertFalse(root.getJsonObject("paths").containsKey("/xpagesproject"));
     JsonObject database = root.getJsonObject("paths").getJsonObject("/database");
     assertEquals("createDatabase", database.getJsonObject("post").getString("operationId"));
+    assertEquals("updateDatabaseTitle", database.getJsonObject("put").getString("operationId"));
     assertEquals("deleteDatabase", database.getJsonObject("delete").getString("operationId"));
     JsonObject databases = root.getJsonObject("paths").getJsonObject("/databases");
     assertEquals("listDatabases", databases.getJsonObject("get").getString("operationId"));
@@ -59,6 +60,10 @@ class OpenApiDesignSpecTest {
             .getJsonObject("schema")
             .getJsonObject("properties");
     assertNotNull(getProps.getJsonObject("skipped"));
+    JsonObject skippedItem =
+        getProps.getJsonObject("skipped").getJsonObject("items").getJsonObject("properties");
+    assertNotNull(skippedItem.getJsonObject("type"));
+    assertNotNull(skippedItem.getJsonObject("message"));
     JsonObject exported =
         getProps
             .getJsonObject("elements")
@@ -74,6 +79,17 @@ class OpenApiDesignSpecTest {
             .getJsonObject("/validate")
             .getJsonObject("post")
             .getString("operationId"));
+    JsonObject validateError =
+        schemaProps(root.getJsonObject("paths"), "/validate", "post")
+            .getJsonObject("errors")
+            .getJsonObject("items")
+            .getJsonObject("properties");
+    assertNotNull(validateError.getJsonObject("index"));
+    assertNotNull(validateError.getJsonObject("code"));
+    JsonObject aclGet =
+        schemaProps(root.getJsonObject("paths"), "/acl", "get");
+    assertNotNull(aclGet.getJsonObject("entries"));
+    assertNotNull(aclGet.getJsonObject("roles"));
     assertEquals("8525812300456789", getProps.getJsonObject("replicaId").getString("example"));
     assertEquals(
         "8525812300456789",

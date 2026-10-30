@@ -5,11 +5,15 @@ import com.hcl.domino.security.Acl;
 import com.hcl.domino.security.AclEntry;
 import com.hcl.domino.security.AclFlag;
 import com.hcl.domino.security.AclLevel;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * ACL entries applied when this API creates a database.
@@ -108,6 +112,63 @@ final class DesignAcl {
       upsert(acl, entry);
     }
     acl.save();
+  }
+
+  /**
+   * Structured ACL for {@code GET /acl}. The DXL remains the write format; this is read-only JSON
+   * beside it. Each entry has {@code name}, {@code level}, {@code flags}, and {@code roles}.
+   */
+  static JsonObject readJson(Database db) {
+    JsonObject out = new JsonObject();
+    if (db == null) {
+      out.put("entries", new JsonArray());
+      out.put("roles", new JsonArray());
+      return out;
+    }
+    Acl acl = db.getACL();
+    String admin = acl.getAdminServer();
+    if (admin != null && !admin.isBlank()) {
+      out.put("adminServer", admin.trim());
+    }
+    JsonArray roles = new JsonArray();
+    for (String role : acl.getRoles()) {
+      if (role != null && !role.isBlank()) {
+        roles.add(role);
+      }
+    }
+    out.put("roles", roles);
+    JsonArray entries = new JsonArray();
+    for (AclEntry entry : acl.getEntries()) {
+      if (entry == null || entry.getName() == null || entry.getName().isBlank()) {
+        continue;
+      }
+      JsonObject row = new JsonObject().put("name", entry.getName());
+      if (entry.getAclLevel() != null) {
+        row.put("level", entry.getAclLevel().name().toLowerCase(Locale.ROOT));
+      }
+      JsonArray flags = new JsonArray();
+      if (entry.getAclFlags() != null) {
+        for (AclFlag flag :
+            entry.getAclFlags().stream()
+                .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))
+                .collect(Collectors.toList())) {
+          flags.add(flag.name().toLowerCase(Locale.ROOT));
+        }
+      }
+      row.put("flags", flags);
+      JsonArray entryRoles = new JsonArray();
+      if (entry.getRoles() != null) {
+        for (String role : entry.getRoles()) {
+          if (role != null && !role.isBlank()) {
+            entryRoles.add(role);
+          }
+        }
+      }
+      row.put("roles", entryRoles);
+      entries.add(row);
+    }
+    out.put("entries", entries);
+    return out;
   }
 
   private static StarterEntry entry(String name, AclLevel level, Collection<AclFlag> flags) {

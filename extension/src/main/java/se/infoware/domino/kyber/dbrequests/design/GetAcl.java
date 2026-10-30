@@ -19,6 +19,13 @@ public class GetAcl extends KyberRequest {
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();
     StringWriter sw = new StringWriter();
     exporter.exportACL(db, sw);
-    request.emit(DesignPayload.note(null, sw.toString()).put("type", "acl"));
+    JsonObject out = DesignPayload.note(null, sw.toString()).put("type", "acl");
+    JsonObject structured = DesignAcl.readJson(db);
+    out.put("entries", structured.getJsonArray("entries"));
+    out.put("roles", structured.getJsonArray("roles"));
+    if (structured.containsKey("adminServer")) {
+      out.put("adminServer", structured.getString("adminServer"));
+    }
+    request.emit(out);
   }
 }

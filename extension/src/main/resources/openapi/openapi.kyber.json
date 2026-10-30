@@ -23,7 +23,7 @@
   "paths": {
     "/export": {
       "summary": "Design export",
-      "description": "Design export of a database that already exists. Returns nsfPath, replicaId, elements with type, name, noteId, and dxl, and skipped for notes that were not exported.",
+      "description": "Design export of a database that already exists. Returns nsfPath, replicaId, elements with type, name, noteId, and dxl, and skipped for notes that were not exported. Each skipped row always has type and message; name is set when known. That shape is stable for clients.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -41,7 +41,7 @@
         ],
         "operationId": "exportDesign",
         "summary": "Design export",
-        "description": "Design export of a database that already exists. Returns nsfPath, replicaId, elements with type, name, noteId, and dxl, and skipped for notes that were not exported.",
+        "description": "Design export of a database that already exists. Returns nsfPath, replicaId, elements with type, name, noteId, and dxl, and skipped for notes that were not exported. Each skipped row always has type and message; name is set when known.",
         "x-keep-version": 1,
         "security": [
           {
@@ -98,18 +98,21 @@
                     },
                     "skipped": {
                       "type": "array",
-                      "description": "Notes that were not included in elements",
+                      "description": "Notes that were not included in elements. Stable fields: type and message are always present; name when Kyber knows it. Clients may show or log these rows; do not require fields beyond that contract.",
                       "items": {
                         "type": "object",
                         "properties": {
                           "type": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "Design type Kyber would have used, or designnote."
                           },
                           "name": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "Element name when known."
                           },
                           "message": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "Why the note was omitted (exporter failure, prolog-only DXL, and similar)."
                           }
                         },
                         "required": [
@@ -297,7 +300,7 @@
     },
     "/validate": {
       "summary": "Check a design import without writing",
-      "description": "Dry run of PUT /import. The body is the same document. Nothing is written and the response has no importer log. valid is false when an element would be rejected before Domino stores it. A note Domino itself cannot store still fails on the import. Requires Designer. An ACL in the document requires Manager. Requires ?nsfPath= on a database that already exists.",
+      "description": "Dry run of PUT /import. The body is the same document. Nothing is written and the response has no importer log. valid is false when an element would be rejected before Domino stores it. Each error has index, type, message, and a stable code (for example invalid_dxl, missing_dxl, protected_acl). name is set when present. A note Domino itself cannot store still fails on the import. Requires Designer. An ACL in the document requires Manager. Requires ?nsfPath= on a database that already exists.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -315,7 +318,7 @@
         ],
         "operationId": "validateDesign",
         "summary": "Check a design import without writing",
-        "description": "Dry run of PUT /import. The body is the same document. Nothing is written and the response has no importer log. valid is false when an element would be rejected before Domino stores it. Requires Designer. An ACL in the document requires Manager. Requires ?nsfPath=.",
+        "description": "Dry run of PUT /import. The body is the same document. Nothing is written and the response has no importer log. valid is false when an element would be rejected before Domino stores it. Errors include index, type, message, and code. Requires Designer. An ACL in the document requires Manager. Requires ?nsfPath=.",
         "x-keep-version": 1,
         "security": [
           {
@@ -376,10 +379,20 @@
                       "type": "array",
                       "items": {
                         "type": "object",
+                        "required": ["index", "type", "message", "code"],
                         "properties": {
+                          "index": {
+                            "type": "integer",
+                            "description": "Zero-based index in the elements array."
+                          },
                           "type": { "type": "string" },
                           "name": { "type": "string" },
-                          "message": { "type": "string" }
+                          "message": { "type": "string" },
+                          "code": {
+                            "type": "string",
+                            "description": "Stable machine code: invalid_dxl, missing_dxl, protected_acl, unknown_type, missing_name, webcontent_path, acl_delete, invalid_element, or rejected.",
+                            "example": "invalid_dxl"
+                          }
                         }
                       }
                     }
@@ -468,12 +481,12 @@
       }
     },
     "/database": {
-      "summary": "Create or delete a database",
-      "description": "POST creates an NSF that does not exist yet, after the server privilege Create databases & templates, and sets the catalog category KyberEnabled. DELETE deletes an NSF whose catalog category is KyberEnabled and needs Manager on that NSF. KeepConfig.nsf cannot be created or deleted.",
+      "summary": "Create, retitle, or delete a database",
+      "description": "POST creates an NSF that does not exist yet, after the server privilege Create databases & templates, and sets the catalog category KyberEnabled. PUT sets dbTitle on an existing Kyber-enabled NSF without rewriting application-properties DXL. DELETE deletes an NSF whose catalog category is KyberEnabled and needs Manager on that NSF. KeepConfig.nsf cannot be created or deleted.",
       "parameters": [
         {
           "name": "nsfPath",
-          "description": "NSF to create or delete.",
+          "description": "NSF to create, retitle, or delete.",
           "schema": {
             "type": "string"
           },
@@ -482,7 +495,7 @@
         },
         {
           "name": "dbTitle",
-          "description": "Database title when POST creates the NSF. Prefer dbTitle over title — KEEP may already populate title from the bootstrap database.",
+          "description": "Database title when POST creates the NSF, or when PUT retitles an existing NSF. Prefer dbTitle over title — KEEP may already populate title from the bootstrap database.",
           "schema": {
             "type": "string"
           },
@@ -491,7 +504,7 @@
         },
         {
           "name": "encryption",
-          "description": "Encryption for an NSF created by POST. Default none (unencrypted). aes256 is the usual choice for a new encrypted database.",
+          "description": "Encryption for an NSF created by POST. Default none (unencrypted). aes256 is the usual choice for a new encrypted database. Ignored on PUT.",
           "schema": {
             "type": "string",
             "enum": ["none", "simple", "medium", "strong", "aes128", "aes256"]
@@ -528,6 +541,49 @@
           "400": { "$ref": "#/components/responses/400BadRequest" },
           "403": { "$ref": "#/components/responses/403Forbidden" },
           "409": { "description": "Already exists" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      },
+      "put": {
+        "tags": ["design-handler"],
+        "operationId": "updateDatabaseTitle",
+        "summary": "Set database title",
+        "description": "Sets dbTitle on an existing NSF whose catalog category is KyberEnabled. Does not rewrite application-properties DXL. Requires Designer and ?nsfPath=. Pass dbTitle as a query parameter or in a JSON body.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "dbTitle": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Title updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "nsfPath": { "type": "string" },
+                    "replicaId": { "type": "string", "description": "Replica id of this NSF, 16 hex digits.", "example": "8525812300456789" },
+                    "dbTitle": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
           "500": { "$ref": "#/components/responses/500InternalServerError" }
         }
       },
@@ -6295,7 +6351,7 @@
     },
     "/acl": {
       "summary": "Get or replace the database ACL",
-      "description": "Singleton database ACL as DXL (no name path parameter). No DELETE - the ACL always exists. PUT requires Manager access. Requires ?nsfPath=.",
+      "description": "Singleton database ACL (no name path parameter). GET returns DXL plus structured entries and roles. No DELETE - the ACL always exists. PUT replaces from DXL and requires Manager. Requires ?nsfPath=.",
       "parameters": [
         {
           "name": "nsfPath",
@@ -6312,8 +6368,8 @@
           "design-element"
         ],
         "operationId": "getAcl",
-        "summary": "Get ACL as DXL",
-        "description": "Export the database ACL via DxlExporter.exportACL. Requires ?nsfPath=. The response includes noteId and unid, plus aliases when the note has them.",
+        "summary": "Get ACL as DXL and JSON entries",
+        "description": "Export the database ACL via DxlExporter.exportACL and list entries from JNX. Requires ?nsfPath=. The response includes dxl, entries (name, level, flags, roles), roles on the ACL, adminServer when set, and noteId/unid when present.",
         "x-keep-version": 1,
         "security": [
           {
@@ -6351,7 +6407,40 @@
                     },
                     "dxl": {
                       "type": "string",
-                      "description": "DXL stored on the note."
+                      "description": "ACL DXL. PUT /acl still requires this format for a full replace."
+                    },
+                    "adminServer": {
+                      "type": "string",
+                      "description": "Administration server on the ACL when set."
+                    },
+                    "roles": {
+                      "type": "array",
+                      "description": "Role names defined on the ACL.",
+                      "items": { "type": "string" }
+                    },
+                    "entries": {
+                      "type": "array",
+                      "description": "Structured ACL entries. Read-only convenience beside dxl. level and flags use lowercase Domino names.",
+                      "items": {
+                        "type": "object",
+                        "required": ["name", "level", "flags", "roles"],
+                        "properties": {
+                          "name": { "type": "string" },
+                          "level": {
+                            "type": "string",
+                            "example": "manager"
+                          },
+                          "flags": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "example": ["person", "group"]
+                          },
+                          "roles": {
+                            "type": "array",
+                            "items": { "type": "string" }
+                          }
+                        }
+                      }
                     }
                   }
                 }

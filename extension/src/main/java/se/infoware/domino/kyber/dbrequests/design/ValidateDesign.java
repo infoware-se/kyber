@@ -13,7 +13,8 @@ import java.util.Set;
  *
  * <p>The body is the same document as {@code PUT /import}. Nothing is written, and the response
  * has no importer log. {@code valid} is false when Kyber would reject an element before Domino
- * sees it. A note Domino itself cannot store still fails on the import.
+ * sees it. Each error has {@code index}, {@code type}, {@code message}, {@code code}, and {@code
+ * name} when present. A note Domino itself cannot store still fails on the import.
  */
 @MinimumAcl(AclLevel.DESIGNER)
 public class ValidateDesign extends KyberRequest {
@@ -38,20 +39,14 @@ public class ValidateDesign extends KyberRequest {
       Object value = elements.getValue(i);
       if (!(value instanceof JsonObject element)) {
         errors.add(
-            new JsonObject()
-                .put("message", "elements[" + i + "] must be an object"));
+            DesignValidate.errorRow(i, null, "elements[" + i + "] must be an object"));
         continue;
       }
       try {
         DesignImportCheck.check(element);
       } catch (Exception e) {
         String message = e.getMessage() == null ? e.toString() : e.getMessage();
-        JsonObject row = new JsonObject().put("type", element.getString("type", "")).put("message", message);
-        String name = element.getString("name");
-        if (name != null && !name.isBlank()) {
-          row.put("name", name);
-        }
-        errors.add(row);
+        errors.add(DesignValidate.errorRow(i, element, message));
       }
     }
     request.emit(new JsonObject().put("valid", errors.isEmpty()).put("errors", errors));

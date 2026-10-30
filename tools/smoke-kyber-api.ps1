@@ -24,6 +24,9 @@
   - applicationproperties, dbicon and acl: get + put of the same DXL
   - PUT /acl that drops -Default- or LocalDomainServers is 400 and the ACL is unchanged
   - GET /defaults and GET /defaults/{type} stay 404
+  - POST /validate broken DXL returns errors with index and code=invalid_dxl
+  - PUT /database?dbTitle= retitles kybertest.nsf and restores the smoke title
+  - GET /acl returns structured entries (including -Default-) and roles
   - a NSF created by this run has the embedded Kyber database icon
   - export-to-repo.ps1 writes kybertest.nsf to a temp folder, then import-from-repo.ps1
     restores that tree into kybersmoke-import.nsf. The repo domino/ templates are not touched.
@@ -1111,6 +1114,9 @@ $broken = @($validated.errors)[0]
 if ([string]$broken.type -ne "form" -or [string]::IsNullOrWhiteSpace([string]$broken.message)) {
   Fail "POST /validate error is missing type or message"
 }
+if ($null -eq $broken.index -or [string]$broken.code -ne "invalid_dxl") {
+  Fail "POST /validate error missing index/code=invalid_dxl (index=$($broken.index) code=$($broken.code))"
+}
 [IO.File]::WriteAllText($validateFile, '{"elements":[{"type":"form","dxl":"<form name=''SmokeValidate'' xmlns=''http://www.lotus.com/dxl''/>"}]}')
 $code = Invoke-Design POST (Design-Url "validate") -BodyFile $validateFile `
   -ContentType "application/json" -OutFile $out
@@ -1136,6 +1142,30 @@ if ($bulkResp.created -and $bulkResp.dbTitle -ne $smokeTitle) {
   Fail "expected dbTitle=$smokeTitle on create, got $($bulkResp.dbTitle)"
 }
 Ok "nsf ready created=$($bulkResp.created) dbTitle=$($bulkResp.dbTitle)"
+$retitle = "Kyber Smoke Retitle"
+$code = Invoke-Design PUT (Design-Url "database" "dbTitle=$([uri]::EscapeDataString($retitle))") -OutFile $out
+Assert-Code "PUT /database dbTitle" $code @("200")
+$titled = Get-ResponseText | ConvertFrom-Json
+if (-not $titled.success -or [string]$titled.dbTitle -ne $retitle) {
+  Fail "PUT /database dbTitle expected success+$retitle, got $(Get-ResponseText)"
+}
+$code = Invoke-Design PUT (Design-Url "database" "dbTitle=$([uri]::EscapeDataString($smokeTitle))") -OutFile $out
+Assert-Code "PUT /database restore dbTitle" $code @("200")
+Ok "PUT /database dbTitle"
+$code = Invoke-Design GET (Design-Url "acl") -OutFile $out
+Assert-Code "GET /acl structured" $code @("200")
+$aclJson = Get-ResponseText | ConvertFrom-Json
+if (-not $aclJson.entries -or @($aclJson.entries).Count -lt 1) {
+  Fail "GET /acl missing entries"
+}
+if ($null -eq $aclJson.roles) {
+  Fail "GET /acl missing roles"
+}
+$defaultEntry = @($aclJson.entries) | Where-Object { [string]$_.name -eq "-Default-" } | Select-Object -First 1
+if (-not $defaultEntry -or [string]::IsNullOrWhiteSpace([string]$defaultEntry.level)) {
+  Fail "GET /acl entries missing -Default- with level"
+}
+Ok "GET /acl entries/roles"
 
 # Verify title on application properties when freshly created
 if ($bulkResp.created) {

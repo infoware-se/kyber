@@ -60,10 +60,11 @@ A database without that category responds **403** with the message **Not Kyber e
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/export?nsfPath=` | Design export of a database that already exists |
+| GET | `/export?nsfPath=` | Design export of a database that already exists. `skipped` rows always have `type` and `message`; `name` when known |
 | PUT | `/import?nsfPath=&dbTitle=` | Design import. When the file is missing, checks Create databases & templates and creates the NSF |
-| POST | `/validate?nsfPath=` | Check that import document without writing. `valid` is false when an element would be rejected. No importer log. The NSF must already exist |
+| POST | `/validate?nsfPath=` | Check that import document without writing. `valid` is false when an element would be rejected. Each error has `index`, `type`, `message`, and stable `code`. No importer log. The NSF must already exist |
 | POST | `/database?nsfPath=&dbTitle=` | Create database. Checks Create databases & templates and sets the category KyberEnabled. 409 if the file exists |
+| PUT | `/database?nsfPath=&dbTitle=` | Set database title on an existing Kyber-enabled NSF without rewriting application-properties DXL |
 | DELETE | `/database?nsfPath=` | Delete database. Needs Manager and the category KyberEnabled. KeepConfig.nsf cannot be deleted |
 | GET | `/databases?fileType=` | List databases this user can open whose category is KyberEnabled. `fileType` is `database` (1247, default), `template` (1248), `replica_candidate` (1245), or `template_candidate` (1246). `more` is set when other databases of that type exist |
 Per-type CRUD stays under **`design-element`**.
@@ -356,7 +357,7 @@ Named types share the same CRUD shape: **list** `GET /{types}`, **create** `POST
 
 | Method | Path |
 |--------|------|
-| GET | `/api/kyber-v1/acl?nsfPath=` |
+| GET | `/api/kyber-v1/acl?nsfPath=` (DXL plus structured `entries` and `roles`; `adminServer` when set) |
 | PUT | `/api/kyber-v1/acl?nsfPath=` (`text/xml` `<acl>` DXL; requires Manager; `-Default-` and `LocalDomainServers` must remain or the call is **400**) |
 
 ### About Document
