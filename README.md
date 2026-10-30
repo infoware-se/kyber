@@ -213,11 +213,11 @@ Named notes with no Designer folder land in `_designnotes` and are type `designn
 
 ## HCL DXL API
 
-Domino REST API 1.1.8 adds an experimental DXL API under `/api/dxl`. It is off until `keepconfig.d` enables it, and HCL does not support it for production. It covers 16 classic design types and returns one `<database>` DXL. The differences from Kyber, including access, import, and the icon note, are in [docs/hcl-dxl-api.md](docs/hcl-dxl-api.md).
+Domino REST API 1.1.8 adds an experimental DXL API under `/api/dxl`. Kyber does not call it. Kyber stays a KEEP extension under `/api/kyber-v1`. HCL's API is off until `keepconfig.d` enables it, and HCL does not support it for production. It covers 16 classic design types and returns one `<database>` DXL. The differences from Kyber, including access, import, and the icon note, are in [docs/hcl-dxl-api.md](docs/hcl-dxl-api.md).
 
 ## Improvements
 
-API gaps that MCP adapters (Aldhani) and agents hit today. Aldhani's own backlog lives in that product's README under Improvements; several of those tools wait on routes here.
+Kyber is the design API on DRAPI. It uses Domino JNX for design work. Infoware product work for agents and MCP adapters belongs here. A local wishlist for **DRAPI and Domino JNX** (API and docs) stays under `ignore/` and is not published with the repo. Aldhani's MCP and policy backlog is in that product's README under Improvements; its design tools wait on routes listed below.
 
 Lookup and search. Get a design element by `unid` or `noteId` without knowing the current name. Search names or DXL substrings across collections in one call. Return `aliases`, `kind`, and schedule metadata on list without a full get.
 

@@ -27,3 +27,6 @@ Desktop.ini
 .env
 .env.*
 !.env.example
+
+# Local notes (HCL feedback, drafts). Not published.
+/ignore/

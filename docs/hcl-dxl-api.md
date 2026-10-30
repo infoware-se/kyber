@@ -1,6 +1,8 @@
 # HCL DXL API and Kyber
 
-Domino REST API 1.1.8 adds an experimental [DXL Extension API](https://opensource.hcltechsw.com/Domino-rest-api/references/dxl/dxlAPIs.html) under `/api/dxl`. This note records how that API differs from Kyber 0.24.20. It was written on 21 October 2026 from HCL's published pages for that release.
+Domino REST API 1.1.8 adds an experimental [DXL Extension API](https://opensource.hcltechsw.com/Domino-rest-api/references/dxl/dxlAPIs.html) under `/api/dxl`. This note records how that API differs from Kyber. It was written on 21 October 2026 from HCL's published pages for that release.
+
+**Kyber does not call `/api/dxl`.** Kyber is a KEEP extension under `/api/kyber-v1`. It uses Domino JNX and the DXL importer/exporter directly. HCL's DXL API stays experimental, off until enabled, and is not part of Infoware's production path. This document is a comparison only.
 
 HCL describes the API as something to try. It is not supported for production, and it stays off until a JSON file in `keepconfig.d` sets `versions.dxl.active` and the `restapi` task is restarted. The enable steps are in [Enable CalDAV, CardDAV, and DXL extension APIs](https://opensource.hcltechsw.com/Domino-rest-api/howto/production/davdxl.html). The release note is [What's new in 1.1.8](https://opensource.hcltechsw.com/Domino-rest-api/whatsnew/v1.1.8.html).
 
@@ -111,3 +113,37 @@ Kyber replaces the ACL as one DXL document on `PUT /acl`, and that call needs Ma
 HCL's DXL API has an import job with the importer's options, and the importer log in the response. Its dry run runs the importer. It also has the JSON for a frameset, an outline, launch settings, and a single ACL entry.
 
 Kyber has the design outside those 16 types, including XPages, Java, jars, web services, and WebContent. It has the `KyberEnabled` category, `POST /database`, and `DELETE /database`. Its export is one DXL per note, with `skipped` for what was left out. The `comment` attribute in the DXL is kept. LotusScript is compiled on write. The response leaves out the importer log, `signedBy`, `code`, and `compiled`.
+
+## Platform needs vs the experimental API
+
+Kyber does not call `/api/dxl`. Infoware’s local wishlist for **Domino JNX** and **DRAPI** (not published) maps each ask to whether it already appears here. That does not mean Kyber should switch; it means HCL may already have solved a product shape in `/api/dxl` while the **JNX** primitives and **KEEP** host Kyber uses still need the same clarity.
+
+### Domino JNX–oriented needs
+
+| Need | Already in experimental `/api/dxl`? | Note |
+|--|--|--|
+| DXLExporter: no prolog-only body; stable skipped reason | Related | `GET setup-v1/dxl` skips what it cannot export (setup API). Kyber needs the same honesty from DXLExporter |
+| `Document.sign()` must not create an empty `%%object%%.jar` on a Java library | No | JNX signing pitfall Kyber works around |
+| Frameset lookup after import (`Optional.empty` in JNX) | No | HCL’s JSON frameset path does not fix Kyber’s post-import sign via JNX |
+| LotusScript compile errors with agent/library name | No | Kyber compiles on write; not a documented `/api/dxl` feature |
+| Types beyond the classic sixteen (XPages, Java, WebContent, …) | No | Still why modern design needs Kyber + deeper JNX |
+| Icon note separate from `$DBIcon`; keep launch settings | Yes | `/dbicon` is the icon note; `propsRestored`. Kyber’s `/dbicon` is `$DBIcon` and syncs the workspace icon |
+| Importer log / dry-run validate (as platform diagnostics) | Yes | Put/import `log`; validate runs the importer. Kyber keeps log out of its public response; JNX/extension callers still want diagnostics |
+
+### DRAPI / KEEP–oriented needs
+
+| Need | Already in experimental `/api/dxl`? | Note |
+|--|--|--|
+| Missing element → HTTP **404** | Partial | HCL delete documents **404**; KEEP `KeepExceptionNotFound` often **400** for extensions |
+| Protect `-Default-` and `LocalDomainServers` on ACL change | Yes | Cannot delete those entries. Kyber enforces the same on full ACL DXL replace |
+| Async import job and `designOption` / `documentsOption` | Yes | Kyber stays synchronous `PUT /import` |
+| Reader ACL for list/get/export/validate | Yes | Kyber requires Designer for design read and write |
+| JSON frameset layout, outline entries, DB title / launch | Yes | Kyber stays DXL-first |
+| `tell restapi reload` picks up a replaced `libs` JAR | No | KEEP host / ops |
+| Soft failure on REST health / certificate panic | No | KEEP host |
+| Third-party extension load logging and OpenAPI binding | No | KEEP extension model |
+| Domino HTTP pass-through for `Authorization: Bearer` to an OSGi servlet | No | HTTP task; Aldhani |
+
+### Documentation
+
+Public comparison of the two design APIs is this page. Asks for better **Domino JNX** and **DRAPI** documentation (exporter behaviour, signing, compile, extension lifecycle, reload vs quit/load) live in the local wishlist under `ignore/`, not in the published repo.
