@@ -1249,10 +1249,24 @@ $code = Invoke-Design DELETE (Design-Url $probeItem) -OutFile $out
 Assert-Code "DELETE xpagesresource probe" $code @("200")
 Ok "xpagesresource create/get/delete"
 
-foreach ($path in @("applicationproperties", "acl")) {
-  Invoke-UpdateOnly $path
+function Test-AclEntry([string]$Dxl, [string]$Name) {
+  $quoted = [regex]::Escape($Name)
+  return $Dxl -match "(?i)<aclentry\b[^>]*\bname='$quoted'" -or $Dxl -match "(?i)<aclentry\b[^>]*\bname=""$quoted"""
 }
-Assert-AclKeepsProtectedEntries
+
+function Remove-AclEntry([string]$Dxl, [string]$Name) {
+  $quoted = [regex]::Escape($Name)
+  foreach ($pattern in @(
+      "(?is)<aclentry\b[^>]*\bname='$quoted'[^>]*/>",
+      "(?is)<aclentry\b[^>]*\bname=""$quoted""[^>]*/>",
+      "(?is)<aclentry\b[^>]*\bname='$quoted'[^>]*>.*?</aclentry>",
+      "(?is)<aclentry\b[^>]*\bname=""$quoted""[^>]*>.*?</aclentry>"
+    )) {
+    $stripped = [regex]::Replace($Dxl, $pattern, "", 1)
+    if ($stripped -ne $Dxl) { return $stripped }
+  }
+  return $Dxl
+}
 
 function Assert-AclKeepsProtectedEntries {
   $url = Design-Url "acl"
@@ -1284,24 +1298,11 @@ function Assert-AclKeepsProtectedEntries {
   }
 }
 
-function Test-AclEntry([string]$Dxl, [string]$Name) {
-  $quoted = [regex]::Escape($Name)
-  return $Dxl -match "(?i)<aclentry\b[^>]*\bname='$quoted'" -or $Dxl -match "(?i)<aclentry\b[^>]*\bname=""$quoted"""
+foreach ($path in @("applicationproperties", "acl")) {
+  Invoke-UpdateOnly $path
 }
+Assert-AclKeepsProtectedEntries
 
-function Remove-AclEntry([string]$Dxl, [string]$Name) {
-  $quoted = [regex]::Escape($Name)
-  foreach ($pattern in @(
-      "(?is)<aclentry\b[^>]*\bname='$quoted'[^>]*/>",
-      "(?is)<aclentry\b[^>]*\bname=""$quoted""[^>]*/>",
-      "(?is)<aclentry\b[^>]*\bname='$quoted'[^>]*>.*?</aclentry>",
-      "(?is)<aclentry\b[^>]*\bname=""$quoted""[^>]*>.*?</aclentry>"
-    )) {
-    $stripped = [regex]::Replace($Dxl, $pattern, "", 1)
-    if ($stripped -ne $Dxl) { return $stripped }
-  }
-  return $Dxl
-}
 # A NSF created by PUT /import receives the embedded icon, including kyber.nsf.
 # An existing smoke NSF keeps whatever icon it already has.
 if ($bulkResp.created) {

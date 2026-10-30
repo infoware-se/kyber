@@ -20,7 +20,7 @@
         <domino.version>14.5.0</domino.version>
         <java.version>21</java.version>
         <!-- Match keep-core/keep-extension version from DRAPI installation -->
-        <keep.version>1.42.7</keep.version>
+        <keep.version>1.50.2</keep.version>
         <domino.jnx.version>1.53.3</domino.jnx.version>
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
         <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
