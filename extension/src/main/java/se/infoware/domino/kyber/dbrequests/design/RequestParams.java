@@ -10,11 +10,42 @@ final class RequestParams {
 
   private RequestParams() {}
 
-  static String requireName(JsonObject incoming) throws KeepExceptionWrongDataRequest {
+  /** Optional design name from query or path; URL-decoded. */
+  static String optionalName(JsonObject incoming) {
+    if (incoming == null) {
+      return null;
+    }
     String name = incoming.getString("name");
     if (name == null || name.isBlank()) {
-      throw new KeepExceptionWrongDataRequest("name path parameter is required");
+      return null;
     }
     return URLDecoder.decode(name, StandardCharsets.UTF_8);
+  }
+
+  static String requireName(JsonObject incoming) throws KeepExceptionWrongDataRequest {
+    String name = optionalName(incoming);
+    if (name == null) {
+      throw new KeepExceptionWrongDataRequest("name parameter is required");
+    }
+    return name;
+  }
+
+  /** API type from path {@code /named/{type}} (form, subform, …). */
+  static String requireType(JsonObject incoming) throws KeepExceptionWrongDataRequest {
+    if (incoming == null) {
+      throw new KeepExceptionWrongDataRequest("type path parameter is required");
+    }
+    String type = incoming.getString("type");
+    if (type == null || type.isBlank()) {
+      throw new KeepExceptionWrongDataRequest("type path parameter is required");
+    }
+    String t = DesignBulkTypes.normalize(type);
+    if (!DesignBulkTypes.isKnown(t) || DesignBulkTypes.isSingleton(t) || "acl".equals(t)) {
+      throw new KeepExceptionWrongDataRequest("Unsupported named type: " + type);
+    }
+    if ("designnote".equals(t)) {
+      throw new KeepExceptionWrongDataRequest("designnote is bulk-only; use /export and /import");
+    }
+    return t;
   }
 }

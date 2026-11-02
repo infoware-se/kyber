@@ -92,6 +92,12 @@ public class ImportDesign extends KyberRequest {
     Database db = openTargetForWrite(session, target, requiredWriteLevel(elements));
     if (created) {
       DesignCatalog.mark(db);
+      if (!isDefaultNsfPath(target)) {
+        BlankApplication.ensure(session, db);
+      }
+      if (XPagesProject.requiredForElements(elements)) {
+        XPagesProject.ensure(session, db);
+      }
     } else {
       DesignCatalog.require(db);
     }
@@ -123,7 +129,15 @@ public class ImportDesign extends KyberRequest {
           one =
               DesignElementImport.deleteOne(db, type, el.getString("name"));
         } else {
-          one = DesignElementImport.importOne(importer, db, type, dxl, session);
+          one =
+              DesignElementImport.importOne(
+                  importer,
+                  db,
+                  type,
+                  dxl,
+                  session,
+                  DxlDesignPatch.Mode.UPSERT,
+                  el.getString("name"));
         }
         results.add(one);
         ok++;

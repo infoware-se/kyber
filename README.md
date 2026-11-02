@@ -10,7 +10,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.24.21 |
+| **Version** | 0.24.22 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
@@ -19,6 +19,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 | **Category** | `KyberEnabled`. A database without it responds 403 **Not Kyber enabled** |
 | **Reference** | [extension/README.md](extension/README.md) |
 | **HCL DXL API** | [How 1.1.8 differs from Kyber](docs/hcl-dxl-api-and-kyber.md) |
+| **DXL round-trip fixes** | [Catalog + how to add fixes](docs/dxl-roundtrip-fixes.md) |
 | **Source** | https://github.com/infoware-se/kyber |
 | **MCP** | [Aldhani](https://github.com/infoware-se/aldhani) |
 | **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) |
@@ -78,9 +79,23 @@ Create, update, and the round trip use Domino DXL. Send it as `text/xml`, or as 
 
 `kyber.nsf` is the template library, an ordinary NSF on the server. Design the forms, agents, script libraries, and other elements you want to reuse, and store them there. The file name is `kyber.defaultNsf` in `kyber.properties`, and the default is `kyber.nsf`.
 
-An empty create copies the first element of that type from `kyber.nsf`, in case-insensitive name order, and names it with `?name=`. Agents, script libraries, and Java sources take `?kind=` so the copy is the right kind. For those three types the empty create is `?kind=&name=`. When `kyber.nsf` has no element of that type, Kyber uses the starter in the API.
+An empty create copies an element of that type from `kyber.nsf` and names it with `?name=`. Optional `?template=` selects which template by case-insensitive name; without it, Kyber uses the first match in case-insensitive name order. Agents, script libraries, and Java sources take `?kind=` so the copy is the right kind. For those three types the empty create is `?kind=&name=` (and optional `?template=`). A `?template=` that is missing from `kyber.nsf` is **400**. When `kyber.nsf` has no element of that type and `template` is omitted, Kyber uses the starter DXL embedded in the JAR (`extension/src/main/resources/defaults`).
 
 Kyber creates `kyber.nsf` on the first design write when the file is missing. The new file has a title, an ACL, and About and Using text that describes the database. It holds no templates until you add them. While that About and Using text is still the text Kyber wrote, those two documents are usage text and are not templates. The database icon is the tile for `kyber.nsf` and is not a template either. Replace an element in `kyber.nsf` and the next empty create uses the replacement.
+
+**JAR starters (dev only).** Runtime never opens `kyber_jar.nsf`. Edit starters there in Designer when you want. Sync into `extension/src/main/resources/defaults` only on the occasions you choose to extend or replace the embedded JAR defaults, then rebuild the JAR:
+
+```powershell
+.\tools\kyber-jar-nsf.ps1 -Seed -SkipCertificateCheck   # rare: load current JAR DXL into kyber_jar.nsf
+.\tools\kyber-jar-nsf.ps1 -Sync -SkipCertificateCheck   # when you want those notes in the JAR
+```
+
+**Empty-create reference (dev only).** `kyber_blank.nsf` is created with the same `POST /database` path as any new Kyber NSF — open it in Designer to see what that yields (icon, category, launch of `$MainFrameset`, frameset/outline/pages/untitled view from classpath blank DXL; XPages skeleton is ensured later on first XPage / Java write):
+
+```powershell
+.\tools\kyber-blank-nsf.ps1 -SkipCertificateCheck
+.\tools\kyber-blank-nsf.ps1 -Recreate -SkipCertificateCheck   # delete and create again
+```
 
 ## Install
 
@@ -189,7 +204,7 @@ About, Using, the database script, and Xsp Properties are one note per database:
 
 `POST /xpages`, and creating an agent, script library, or Java source, creates the XPages project files when they are missing: `plugin.xml`, `META-INF/MANIFEST.MF` (`Bundle-SymbolicName: kyber_nsf`), `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, and `xsp.properties`. Designer writes `Local/plugin/Activator.java` when the project is opened. JRE System Library, Plug-in Dependencies, Referenced Libraries, and Data are views Designer builds. They are not design notes. `.classpath` and `plugin.xml` carry the JRE and plug-in references. Jars stored in the NSF are under `/jars`.
 
-The blank-NSF baseline is the snapshot of what Domino puts in a new empty database: [`extension/src/main/resources/defaults/blank/`](extension/src/main/resources/defaults/blank/) holds `acl`, application properties, `$DBIcon`, the untitled default view, and `manifest.json`. A sync uses it so those notes are not treated as application design to remove. The files there are a reference. They are not the templates in `kyber.nsf`.
+The blank-NSF baseline under [`extension/src/main/resources/defaults/blank/`](extension/src/main/resources/defaults/blank/) holds the DXL empty create uses (untitled view, outline, pages, framesets, launch) plus reference ACL/props/icon files and `manifest.json`. A sync uses the baseline so those notes are not treated as application design to remove. They are not the templates in `kyber.nsf`.
 
 Endpoint tables for each collection are in [extension/README.md](extension/README.md).
 
@@ -198,6 +213,8 @@ Endpoint tables for each collection are in [extension/README.md](extension/READM
 The design export, `GET /api/kyber-v1/export?nsfPath=`, returns `{ nsfPath, elements: [{ type, name?, noteId?, unid?, dxl }], skipped }`. Each `skipped` row always has `type` and `message`; `name` when known. That shape is stable for clients. The design import is `PUT /import` of that document. `POST /validate` checks the same document and does not write. `valid` is false when an element would be rejected before Domino stores it. Each error has `index`, `type`, `message`, and a stable `code` (for example `invalid_dxl`, `protected_acl`). The response has no importer log. A note Domino itself cannot store still fails on the import. `POST /database` creates a missing NSF without importing design. `PUT /database?dbTitle=` sets the title on an existing NSF without rewriting application-properties DXL. Per-type create needs a database that already exists. On create, `dbTitle` sets the database title. The source `replicaid` is removed, so the target keeps its own. A new NSF receives the embedded Kyber database icon unless the payload already includes one, and a later design refresh is allowed to replace that icon. The ACL is `GET`/`PUT /acl`. GET returns DXL plus structured `entries` and `roles`. Replacing the ACL requires Manager. `-Default-` and `LocalDomainServers` must remain. A payload that omits either of them is **400**, and the ACL is left unchanged.
 
 The DXL DTD that ships with Designer, `xmlschemas/domino_14_5_1.dtd`, is the limit of a round trip. A design detail that the DTD does not define is left unhandled by the exporter and the importer.
+
+**DXL round-trip fixes** live in [`DxlImportFixes`](extension/src/main/java/se/infoware/domino/kyber/dbrequests/design/DxlImportFixes.java) (after every design import / prepare-incoming hooks) and the catalog [`docs/dxl-roundtrip-fixes.md`](docs/dxl-roundtrip-fixes.md) — framesets, subform tablerows, view `$Readers`, unmatched `REM {DNT Begin}`, ACL protect entries, and related in-import cleanups. Live coverage: [`tools/smoke-dxl-roundtrip.ps1`](tools/smoke-dxl-roundtrip.ps1) and full-server NTF regress [`tools/run-bulk-roundtrip-advanced.ps1`](tools/run-bulk-roundtrip-advanced.ps1). Other round-trip limits still follow the Designer DTD; when a new gap appears, add a fix to `DxlImportFixes` and the catalog — do not depend on optional server template NSFs.
 
 [`tools/export-to-repo.ps1`](tools/export-to-repo.ps1) writes that export to disk:
 
@@ -219,21 +236,23 @@ Domino REST API 1.1.8 adds an experimental DXL API under `/api/dxl`. Kyber does 
 
 Kyber is the design API on DRAPI. It uses Domino JNX for design work. Infoware product work for agents and MCP adapters belongs here. A local wishlist for **DRAPI and Domino JNX** (API and docs) stays under `ignore/` and is not published with the repo. Aldhani's MCP and policy backlog is in that product's README under Improvements; its design tools wait on routes listed below.
 
-Lookup and search. Get a design element by `unid` or `noteId` without knowing the current name. Search names or DXL substrings across collections in one call. Return `aliases`, `kind`, and schedule metadata on list without a full get.
+Ordered for Kyber product work (value and how localized the change is):
 
-Templates. Empty create still picks the first alphabetical element of that type in `kyber.nsf`. Accept a template `name` (and keep `kind` where it applies). List templates per type from the template NSF. Optional dry-run that returns which template or starter would be copied and the resulting DXL.
+1. Templates (in progress). Empty create accepts `?template=` to pick by name in `kyber.nsf` (with `?kind=` where it applies). Still open: list templates per type from the template NSF, and an optional dry-run that returns which template or starter would be copied and the resulting DXL.
 
-Copy, rename, patch. First-class copy (same NSF or another `nsfPath`), rename that keeps `unid` stable, and a partial DXL patch so callers need not round-trip the whole note.
+2. Lookup and search. Get a design element by `unid` or `noteId` without knowing the current name. Search names or DXL substrings across collections in one call. Return richer list metadata (for example agent schedule) without a full get — lists already expose `noteId`, `unid`, and often `aliases` / `kind`. Domino names with `(…)` in a **raw** path segment 404 in Vert.x; use **`/named/{type}?name=`** (or encode `%28`/`%29`) — see [docs/dxl-roundtrip-fixes.md](docs/dxl-roundtrip-fixes.md).
 
-`designnote` CRUD. Named notes with no Package Explorer folder are export/import only under `_designnotes`. Typed list/get/put/delete would match the other collections.
+3. Copy, rename, patch. First-class copy (same NSF or another `nsfPath`), rename that keeps `unid` stable, and a partial DXL patch so callers need not round-trip the whole note.
 
-Binary resources. Put and get images, file resources, and jars as bytes or base64 without callers assembling DXL wrappers by hand. Same idea for `$DBIcon` from an image payload.
+4. Binary resources. Put and get images, file resources, and jars as bytes or base64 without callers assembling DXL wrappers by hand. Same idea for `$DBIcon` from an image payload.
 
-Compile and category. After a LotusScript or script-library restore, expose recompile (Designer **Recompile All LotusScript** equivalent) and surface compile errors in the response. Set or clear the **KyberEnabled** category on an existing NSF without a full import. `POST /validate` already returns per-element `index`, `type`, `message`, and stable `code`. An importer log on import is still open.
+5. `designnote` CRUD. Named notes with no Package Explorer folder are export/import only under `_designnotes`. Typed list/get/put/delete would match the other collections.
 
-Design inherit. Domino design template inherit / refresh from an NTF when the platform allows it through the API. Export `skipped` rows (`type`, `message`, optional `name`) are documented and kept stable for clients.
+6. Compile and category. After a LotusScript or script-library restore, expose recompile (Designer **Recompile All LotusScript** equivalent) and surface compile errors in the response. Set or clear the **KyberEnabled** category on an existing NSF without a full import. `POST /validate` already returns per-element `index`, `type`, `message`, and stable `code`. An importer log on import is still open.
 
-Title and ACL helpers. `PUT /database?dbTitle=` sets the title without rewriting application-properties DXL. `GET /acl` returns structured `entries` and `roles` beside the DXL. ACL **replace** and database **delete** stay privileged Manager operations; MCP products may keep refusing them.
+7. Design inherit. Domino design template inherit / refresh from an NTF when the platform allows it through the API. Export `skipped` rows (`type`, `message`, optional `name`) are documented and kept stable for clients.
+
+Shipped helpers. `PUT /database?dbTitle=` sets the title without rewriting application-properties DXL. `GET /acl` returns structured `entries` and `roles` beside the DXL. ACL **replace** and database **delete** stay privileged Manager operations; MCP products may keep refusing them.
 
 Out of scope for Kyber. Application documents, DQL, running agents as a general automation API, server console, and admin directory changes are not this design API.
 

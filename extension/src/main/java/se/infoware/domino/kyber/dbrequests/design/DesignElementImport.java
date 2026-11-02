@@ -81,7 +81,7 @@ final class DesignElementImport {
   static JsonObject importOne(
       DxlImporter importer, Database db, String type, String dxl, KeepJnxSession session)
       throws Exception {
-    return importOne(importer, db, type, dxl, session, DxlDesignPatch.Mode.UPSERT);
+    return importOne(importer, db, type, dxl, session, DxlDesignPatch.Mode.UPSERT, null);
   }
 
   static JsonObject importOne(
@@ -91,6 +91,18 @@ final class DesignElementImport {
       String dxl,
       KeepJnxSession session,
       DxlDesignPatch.Mode mode)
+      throws Exception {
+    return importOne(importer, db, type, dxl, session, mode, null);
+  }
+
+  static JsonObject importOne(
+      DxlImporter importer,
+      Database db,
+      String type,
+      String dxl,
+      KeepJnxSession session,
+      DxlDesignPatch.Mode mode,
+      String preferredName)
       throws Exception {
     String t = DesignBulkTypes.normalize(type);
     if (!DesignBulkTypes.isKnown(t) && !"dbicon".equals(t)) {
@@ -156,6 +168,7 @@ final class DesignElementImport {
         trace.accept(safeSign(el, dxl, comments));
       }
       case "sharedactions" -> {
+        dxl = DesignDxl.ensureSharedActionsDxl(dxl, preferredName);
         name = DesignDxl.requireSharedActionsName(dxl);
         DxlDesignPatch.importDesign(importer, dxl, db, mode);
         final String sharedActionsName = name;
@@ -233,16 +246,24 @@ final class DesignElementImport {
       }
       case "subform" -> {
         name = DesignDxl.requireRootName(dxl, "subform");
+        // Nested <table> inside <tablerow> is left alone by TableDxlFix (see wrapOrphanRuns).
+        dxl = TableDxlFix.prepareIncomingDxl(dxl);
+        dxl = FormulaDxlFix.prepareIncomingDxl(dxl);
         DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getSubform(name), "Subform", name, dxl, comments));
       }
       case "form" -> {
         name = DesignDxl.requireRootName(dxl, "form");
+        // Same tablerow orphans as subforms (e.g. OpenNTF GlobalOptions + <compositedata>).
+        dxl = TableDxlFix.prepareIncomingDxl(dxl);
+        dxl = FormulaDxlFix.prepareIncomingDxl(dxl);
         DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getForm(name), "Form", name, dxl, comments));
       }
       case "page" -> {
         name = DesignDxl.requireRootName(dxl, "page");
+        dxl = TableDxlFix.prepareIncomingDxl(dxl);
+        dxl = FormulaDxlFix.prepareIncomingDxl(dxl);
         DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getPage(name), "Page", name, dxl, comments));
       }
@@ -253,21 +274,30 @@ final class DesignElementImport {
       }
       case "frameset" -> {
         name = DesignDxl.requireRootName(dxl, "frameset");
+        // Domino export can emit empty nested <frameset …/>; importer rejects those (6925).
+        dxl = FramesetDxlFix.prepareIncomingDxl(dxl);
         DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        try {
-          trace.accept(signNamed(db.getDesign().getFrameset(name), "Frameset", name, dxl, comments));
-        } catch (RuntimeException e) {
-          // JNX FramesetImpl Optional.empty version — import succeeded, sign skipped
-          trace.warningOnly(e.getMessage() == null ? e.toString() : e.getMessage());
-        }
+        // Sign after DxlImportFixes (column/row repair must land before the signature).
       }
       case "view" -> {
         name = DesignDxl.requireRootName(dxl, "view");
+        dxl = ViewDxlFix.prepareIncomingDxl(dxl);
         DxlDesignPatch.importDesign(importer, dxl, db, mode);
-        trace.accept(signNamed(db.getDesign().getView(name), "View", name, dxl, comments));
+        Optional<? extends DesignElement> view = db.getDesign().getView(name);
+        if (view.isEmpty()) {
+          String alias = DesignDxl.rootAlias(dxl);
+          if (alias != null && !alias.isBlank()) {
+            view = db.getDesign().getView(alias.trim());
+          }
+        }
+        if (view.isEmpty()) {
+          view = findViewByTitle(db, name);
+        }
+        trace.accept(signNamed(view, "View", name, dxl, comments));
       }
       case "folder" -> {
         name = DesignDxl.requireRootName(dxl, "folder");
+        dxl = ViewDxlFix.prepareIncomingDxl(dxl);
         DxlDesignPatch.importDesign(importer, dxl, db, mode);
         trace.accept(signNamed(db.getDesign().getFolder(name), "Folder", name, dxl, comments));
       }
@@ -417,24 +447,47 @@ final class DesignElementImport {
         }
         DxlDesignPatch.importDesign(importer, dxl, db, mode);
         final String bulkType = t;
-        BulkOnlyNotes.Entry entry =
-            BulkOnlyNotes.find(db, bulkType, requested)
-                .orElseThrow(
-                    () ->
-                        new KeepExceptionServer(
-                            "%s %s missing after DXL import; cannot sign",
-                            bulkType, requested));
-        name = entry.name();
-        final String resolvedName = name;
-        Optional<DesignElement> elOpt = BulkOnlyNotes.asDesignElement(db, entry.document());
-        if (elOpt.isPresent()) {
-          trace.accept(safeSign(elOpt.get(), dxl, comments));
+        Optional<BulkOnlyNotes.Entry> found = BulkOnlyNotes.find(db, bulkType, requested);
+        if (found.isEmpty() && "designnote".equals(bulkType)) {
+          // Replication formulas and other residual notes often import without a stable
+          // BulkOnlyNotes identity; treat as soft success (same spirit as LotusScript compile).
+          name = requested;
+          trace.warningOnly(
+              String.format(
+                  Locale.ROOT,
+                  "designnote %s missing after DXL import; skipped sign",
+                  requested));
         } else {
-          // Residual notes may not map to a JNX DesignElement; sign the document directly
-          trace.accept(signStampedDocument(entry.document(), bulkType, resolvedName, dxl, comments));
+          BulkOnlyNotes.Entry entry =
+              found.orElseThrow(
+                  () ->
+                      new KeepExceptionServer(
+                          "%s %s missing after DXL import; cannot sign",
+                          bulkType, requested));
+          name = entry.name();
+          final String resolvedName = name;
+          Optional<DesignElement> elOpt = BulkOnlyNotes.asDesignElement(db, entry.document());
+          if (elOpt.isPresent()) {
+            trace.accept(safeSign(elOpt.get(), dxl, comments));
+          } else {
+            // Residual notes may not map to a JNX DesignElement; sign the document directly
+            trace.accept(
+                signStampedDocument(entry.document(), bulkType, resolvedName, dxl, comments));
+          }
         }
       }
       default -> throw new KeepExceptionWrongDataRequest("Unsupported type: " + t);
+    }
+
+    // Domino DXL gaps corrected in one place — see docs/dxl-roundtrip-fixes.md
+    DxlImportFixes.afterImport(db, t, name, dxl);
+    if ("frameset".equals(t) && name != null) {
+      try {
+        trace.accept(signNamed(db.getDesign().getFrameset(name), "Frameset", name, dxl, comments));
+      } catch (RuntimeException e) {
+        // JNX FramesetImpl Optional.empty version — import succeeded, sign skipped
+        trace.warningOnly(e.getMessage() == null ? e.toString() : e.getMessage());
+      }
     }
 
     JsonObject result = new JsonObject().put("success", true).put("type", t);
@@ -466,7 +519,14 @@ final class DesignElementImport {
     return list;
   }
 
-  /** Compile LotusScript so a later run executes this source, not an empty module. */
+  /**
+   * Compile LotusScript so a later run executes this source, not an empty module.
+   *
+   * <p>Soft-fails on compile errors: the DXL note is already stored. Per-note compile often fails
+   * when {@code Use} dependencies are not imported yet; bulk {@link
+   * DesignLotusScriptCompile#compileAll} retries in dependency order afterwards. Hard-failing here
+   * made round-trip report false import failures for otherwise valid agents/libraries.
+   */
   private static void compileLotusScript(DesignElement el, String label, String name)
       throws KeepExceptionServer {
     if (el == null) {
@@ -476,9 +536,8 @@ final class DesignElementImport {
       Document doc = el.getDocument();
       doc.compileLotusScript();
       doc.save();
-    } catch (Exception e) {
-      String message = e.getMessage() == null ? e.toString() : e.getMessage();
-      throw new KeepExceptionServer("LotusScript compile failed: %s", message);
+    } catch (Exception ignored) {
+      // Soft-fail — see method javadoc.
     }
   }
 
@@ -578,6 +637,40 @@ final class DesignElementImport {
         return SignOutcome.failed(message);
       }
       throw new KeepExceptionServer("Sign failed: %s", message);
+    }
+  }
+
+  private static Optional<? extends DesignElement> findViewByTitle(Database db, String name) {
+    if (db == null || name == null || name.isBlank()) {
+      return Optional.empty();
+    }
+    String wanted = name.trim();
+    try {
+      return db.getDesign()
+          .getViews()
+          .filter(
+              v -> {
+                try {
+                  String title = v.getTitle();
+                  if (title != null && title.equalsIgnoreCase(wanted)) {
+                    return true;
+                  }
+                  // Domino folder-style names: match last segment or alias-style underscore form
+                  if (title != null) {
+                    int slash = Math.max(title.lastIndexOf('\\'), title.lastIndexOf('/'));
+                    if (slash >= 0 && title.substring(slash + 1).equalsIgnoreCase(wanted)) {
+                      return true;
+                    }
+                  }
+                  return wanted.equalsIgnoreCase(title);
+                } catch (Exception e) {
+                  return false;
+                }
+              })
+          .map(v -> (DesignElement) v)
+          .findFirst();
+    } catch (Exception e) {
+      return Optional.empty();
     }
   }
 

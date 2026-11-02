@@ -1,29 +1,74 @@
 {
-  "source": "blank.nsf",
-  "description": "Platform baseline design notes present in a newly created blank Domino database. Keep these; do not treat as app design to delete on sync.",
-  "captured": "2026-07-29",
+  "source": "kyber_blank.nsf",
+  "description": "Blank chrome DXL for empty POST /database. Frameset imports go through FramesetDxlFix so columns/rows survive Domino's $FrameSet rebuild. ACL and Kyber icon are applied separately; XPages project is ensured on first XPage/Java write, not here.",
+  "captured": "2026-11-02",
   "elements": [
     {
       "type": "acl",
-      "role": "databaseAcl",
-      "file": "acl.dxl"
+      "role": "databaseAclReference",
+      "file": "acl.dxl",
+      "note": "Reference only — create uses DesignAcl.applicationAclEntries"
     },
     {
       "type": "applicationproperties",
-      "role": "dbproperties",
-      "file": "applicationproperties.dxl"
+      "role": "dbpropertiesReference",
+      "file": "applicationproperties.dxl",
+      "note": "Reference only"
     },
     {
       "type": "image",
-      "role": "dbicon",
+      "role": "dbiconReference",
       "name": "$DBIcon",
-      "file": "image-DBIcon.dxl"
+      "file": "image-DBIcon.dxl",
+      "note": "Reference only — create uses defaults/kyber-dbicon.dxl"
     },
     {
       "type": "view",
       "role": "defaultUntitledView",
-      "file": "view-default.dxl",
-      "match": "default=true and noviewformat=true (no $TITLE)"
+      "name": "(untitled)",
+      "file": "view-default.dxl"
+    },
+    {
+      "type": "outline",
+      "role": "appOutline",
+      "name": "$AppOutline",
+      "file": "outline-AppOutline.dxl"
+    },
+    {
+      "type": "page",
+      "role": "appTitle",
+      "name": "$AppTitle",
+      "file": "page-AppTitle.dxl"
+    },
+    {
+      "type": "page",
+      "role": "dbLocTitle",
+      "name": "$DBLocTitle",
+      "file": "page-DBLocTitle.dxl"
+    },
+    {
+      "type": "page",
+      "role": "outlinePage",
+      "name": "$OutlinePage",
+      "file": "page-OutlinePage.dxl"
+    },
+    {
+      "type": "frameset",
+      "role": "viewFrameset",
+      "name": "$ViewFrameset",
+      "file": "frameset-ViewFrameset.dxl"
+    },
+    {
+      "type": "frameset",
+      "role": "mainFrameset",
+      "name": "$MainFrameset",
+      "file": "frameset-MainFrameset.dxl"
+    },
+    {
+      "type": "launchsettings",
+      "role": "notesLaunchFrameset",
+      "file": "launch-frameset.dxl",
+      "note": "Applied via DxlDesignPatch.importLaunchSettings after shell notes"
     }
   ]
 }

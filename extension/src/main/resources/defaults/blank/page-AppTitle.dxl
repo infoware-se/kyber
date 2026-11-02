@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE page SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<page name='$AppTitle' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258EA3004252DD' publicaccess='false' designerversion='8.5.3'
+ bgcolor='#0066b0' renderpassthrough='true'>
+<noteinfo noteid='172' unid='C660BF620AD1D903C1258EA30048DCE0' sequence='1'>
+<created><datetime>20261102T141551,36+01</datetime></created>
+<modified><datetime>20261102T141551,37+01</datetime></modified>
+<revised><datetime>20261102T141551,36+01</datetime></revised>
+<lastaccessed><datetime>20261102T141551,36+01</datetime></lastaccessed>
+<addedtofile><datetime>20261102T141551,36+01</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=onInfoware</name></updatedby>
+<wassignedby><name>CN=Domino Administrator/O=onInfoware</name></wassignedby>
+<body><richtext>
+<pardef id='1' hide='notes web mobile'/>
+<par def='1'><run><font name='Arial' pitch='variable' truetype='true' familyid='20'
+ color='#f7f7f7'/></run></par>
+<table widthtype='fitmargins' minrowheight='0.5000in' cellbordercolor='#c6c6c6'
+ refwidth='10.8750in'><border style='solid' insidewidth='0px 0px 0px 1px'
+ color='#cad0dd'/><tablecolumn width='100%'/>
+<tablerow>
+<tablecell valign='center' borderwidth='0px'>
+<pardef id='3' leftmargin='0%' keepwithnext='true' keeptogether='true'/>
+<par def='3'><run><font style='bold' name='Arial' pitch='variable' truetype='true'
+ familyid='20' color='#f7f7f7'/></run><run><font style='bold' name='Arial'
+ pitch='variable' truetype='true' familyid='20' color='#f7f7f7'/><computedtext
+><code event='value'><formula>@DbTitle</formula></code></computedtext></run><run
+><font style='bold' name='Arial' pitch='variable' truetype='true' familyid='20'
+ color='#f7f7f7'/></run></par></tablecell></tablerow></table>
+<pardef id='4' leftmargin='0.7500in'/>
+<par def='4'><run><font name='Arial' pitch='variable' truetype='true' familyid='20'
+ color='#f7f7f7'/></run></par></richtext></body>
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item>
+<item name='$$ScriptName' summary='false' sign='true'><text>$AppTitle</text></item></page>
+
+

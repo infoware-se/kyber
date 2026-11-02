@@ -19,40 +19,32 @@ import java.util.stream.Collectors;
  * ACL entries applied when this API creates a database.
  *
  * <p>{@code kyber.nsf} gets the entries in {@link #createdAclEntries()}. Any other new database
- * gets the shape of {@code kyber_discussion145.nsf}, with the creating user and the server the
- * file is created on in place of the names stored in that database. An ACL imported later is left
- * as imported.
+ * matches the shape of the curated {@code kyber_blank.nsf} reference: {@code -Default-} and
+ * Anonymous at No Access, LocalDomainAdmins / LocalDomainServers / creator as Manager, no ACL
+ * roles and no administration server. An ACL imported later is left as imported.
  */
 final class DesignAcl {
 
   private static final String LOCAL_DOMAIN_ADMINS = "LocalDomainAdmins";
   private static final String LOCAL_DOMAIN_SERVERS = "LocalDomainServers";
-  /** Designer shows this role as {@code [Configuration]}. */
-  private static final String CONFIGURATION_ROLE = "Configuration";
 
   private DesignAcl() {}
 
   /**
-   * Entries for a new database other than {@code kyber.nsf}. A blank creator or server is omitted.
-   * When both names are the same, only the server entry is written.
+   * Entries for a new database other than {@code kyber.nsf}. {@code creator} becomes Manager
+   * (Person) when set. {@code server} is ignored for the entry list (LocalDomainServers covers
+   * servers). No ACL roles — Designer {@code [Configuration]} is not created.
    */
   static List<StarterEntry> applicationAclEntries(String creator, String server) {
     String person = blankToNull(creator);
-    String host = blankToNull(server);
-    if (person != null && host != null && person.equalsIgnoreCase(host)) {
-      person = null;
-    }
     List<StarterEntry> entries = new ArrayList<>();
-    entries.add(entry("-Default-", AclLevel.AUTHOR, EnumSet.of(AclFlag.CREATE_PRFOLDER)));
+    entries.add(entry("-Default-", AclLevel.NOACCESS, EnumSet.noneOf(AclFlag.class)));
     entries.add(entry("Anonymous", AclLevel.NOACCESS, EnumSet.noneOf(AclFlag.class)));
     entries.add(
         entry(
             "OtherDomainServers",
             AclLevel.NOACCESS,
             EnumSet.of(AclFlag.SERVER, AclFlag.GROUP)));
-    if (host != null) {
-      entries.add(entry(host, AclLevel.MANAGER, EnumSet.of(AclFlag.SERVER)));
-    }
     if (person != null) {
       entries.add(entry(person, AclLevel.MANAGER, EnumSet.of(AclFlag.PERSON)));
     }
@@ -60,8 +52,7 @@ final class DesignAcl {
         entry(
             LOCAL_DOMAIN_ADMINS,
             AclLevel.MANAGER,
-            EnumSet.of(AclFlag.GROUP),
-            List.of(CONFIGURATION_ROLE)));
+            EnumSet.of(AclFlag.PERSON, AclFlag.GROUP)));
     entries.add(
         entry(
             LOCAL_DOMAIN_SERVERS,
@@ -92,11 +83,6 @@ final class DesignAcl {
       return;
     }
     Acl acl = db.getACL();
-    acl.addRole(CONFIGURATION_ROLE);
-    String host = blankToNull(server);
-    if (host != null) {
-      acl.setAdminServer(host);
-    }
     for (StarterEntry entry : applicationAclEntries(creator, server)) {
       upsert(acl, entry);
     }

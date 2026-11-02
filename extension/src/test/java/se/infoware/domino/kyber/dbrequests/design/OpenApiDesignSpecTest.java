@@ -259,4 +259,23 @@ class OpenApiDesignSpecTest {
       assertNotNull(item.getJsonObject("delete"));
     }
   }
+
+  @Test
+  void namedTypePathExposesGetPutDeleteWithNameQuery() throws Exception {
+    JsonObject named = loadSpec().getJsonObject("paths").getJsonObject("/named/{type}");
+    assertNotNull(named);
+    assertEquals("getNamed", named.getJsonObject("get").getString("operationId"));
+    assertEquals("updateNamed", named.getJsonObject("put").getString("operationId"));
+    assertEquals("deleteNamed", named.getJsonObject("delete").getString("operationId"));
+    boolean hasNameQuery = false;
+    for (Object p : named.getJsonArray("parameters")) {
+      if (p instanceof JsonObject param
+          && "name".equals(param.getString("name"))
+          && "query".equals(param.getString("in"))) {
+        hasNameQuery = true;
+        assertTrue(param.getBoolean("required"));
+      }
+    }
+    assertTrue(hasNameQuery);
+  }
 }

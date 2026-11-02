@@ -4,7 +4,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
-| **Version** | 0.24.21 |
+| **Version** | 0.24.22 |
 | **API** | `/api/kyber-v1` |
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
@@ -14,7 +14,9 @@ Kyber is complete CRUD for the design elements in an NSF. The target database is
 
 The body of a create, an update, and a round trip is Domino DXL. Send `text/xml`, or `application/json` with `dxl` set to that DXL. The design comment is the `comment` attribute in the DXL. A payload without that attribute leaves the comment already on the note. The grammar is the DTD shipped with Designer, `xmlschemas/domino_*.dtd`. The stored design is the DXL.
 
-`kyber.nsf` is the template library. The property `kyber.defaultNsf` names it and defaults to `kyber.nsf`. Put the design elements you want to reuse in that database. An empty create copies the first match by name, with `?kind=` for an agent, a script library, or a Java source. When the template database has no such element, Kyber uses the starter in the API. Kyber creates `kyber.nsf` on the first design write if the file is missing. The new file explains itself in About and Using and holds no templates until you add them. Those two documents, and the database icon, are not templates.
+`kyber.nsf` is the site template library. The property `kyber.defaultNsf` names it and defaults to `kyber.nsf`. Put the design elements you want to reuse in that database. An empty create copies a match by name, with optional `?template=` to pick which one and `?kind=` for an agent, a script library, or a Java source. Without `?template=`, Kyber uses the first match by case-insensitive name. A missing `?template=` is **400**. When the template database has no such element and `template` is omitted, Kyber uses the starter DXL in the JAR (`resources/defaults`). Kyber creates `kyber.nsf` on the first design write if the file is missing. The new file explains itself in About and Using and holds no templates until you add them. Those two documents, and the database icon, are not templates.
+
+JAR starters are developed in a local `kyber_jar.nsf` only — that NSF is not part of runtime resolution. Use [`tools/kyber-jar-nsf.ps1`](../tools/kyber-jar-nsf.ps1) `-Sync` when you intentionally want to update the embedded `defaults/` DXL; `-Seed` only to (re)load JAR files into the NSF. Inspect a Kyber empty create with [`tools/kyber-blank-nsf.ps1`](../tools/kyber-blank-nsf.ps1) (`kyber_blank.nsf` via `POST /database`).
 
 Standard collection CRUD:
 
@@ -25,8 +27,9 @@ Standard collection CRUD:
 | **Get** | `GET /agents/{name}` | `getAgent` |
 | **Update** | `PUT /agents/{name}` (**404** if missing) | `updateAgent` |
 | **Delete** | `DELETE /agents/{name}` | `deleteAgent` |
+| **Special names** | `GET\|PUT\|DELETE /named/{type}?name=` (e.g. type `subform`, name `(SignatureOption)`) | `getNamed` / `updateNamed` / `deleteNamed` |
 
-Same pattern for other named types (`/forms`, `/scriptlibraries`, `/xpagesresources`, …). Write responses include exported `dxl`.
+Same pattern for other named types (`/forms`, `/scriptlibraries`, `/xpagesresources`, …). Write responses include exported `dxl`. Use `/named/{type}?name=` when the Domino title has parentheses or other characters that Vert.x rejects **raw** in a path segment (encode `%28`/`%29` also works on `/…/{name}`).
 
 A list keeps the name array and adds `elements`: `name`, `noteId`, and `unid`, plus `fileName`, `aliases` and `kind` when the note has them. `unid` stays when the name changes. `kind` is filled for agents, script libraries and Java sources. `aliases` is the part of the name after `|`, the name used by a URL or `OpenForm`.
 
@@ -69,7 +72,7 @@ A database without that category responds **403** with the message **Not Kyber e
 | GET | `/databases?fileType=` | List databases this user can open whose category is KyberEnabled. `fileType` is `database` (1247, default), `template` (1248), `replica_candidate` (1245), or `template_candidate` (1246). `more` is set when other databases of that type exist |
 Per-type CRUD stays under **`design-element`**.
 
-**Templates** live in `kyber.nsf`, or whichever NSF `kyber.defaultNsf` names. An empty create copies the first element of that type, matched by case-insensitive name, and `?kind=` when the type has kinds. When the template database has no such element, Kyber uses the starter in the API.
+**Templates** live in `kyber.nsf`, or whichever NSF `kyber.defaultNsf` names. An empty create copies an element of that type; `?template=` selects by case-insensitive name, otherwise the first match, and `?kind=` when the type has kinds. When the template database has no such element and `template` is omitted, Kyber uses the JAR starter under `resources/defaults`. Update those JAR files from `kyber_jar.nsf` with `tools/kyber-jar-nsf.ps1 -Sync` only when you choose to (dev only).
 
 Element `type` is the API name (`form`, `about`, `image`, …). The folder is the Package Explorer name (`Forms`, `Resources`, `Resources/Images`, …). Bridge scripts in [`tools/`](../tools/):
 
@@ -168,7 +171,8 @@ Sections follow Package Explorer. "In" = typed DXL CRUD; "Bulk" = `/export` and 
 | Resources | Themes | `/themes` |
 | Resources | About Document | `/about` (singleton) |
 | Resources | Using Document | `/using` (singleton) |
-| XPages | XPages | `/xpages` (named — list/create + `/{name}` get/update/delete; not a singleton). `POST /xpages` also ensures project skeleton. |
+| XPages | XPages | `/xpages` (named — list/create + `/{name}` get/update/delete; not a singleton). First create of an XPage, `javasource`, or Java agent/script library ensures the project skeleton; empty `POST /database` does not. |
+| Framesets | Framesets | `/framesets`. Post-import size repair via `DxlImportFixes` / `FramesetDxlFix` — see [`docs/dxl-roundtrip-fixes.md`](../docs/dxl-roundtrip-fixes.md). |
 | Custom Controls | Custom Controls | `/customcontrols` (`.xsp` notes without XPage `K` flag; not Composite Components) |
 | (XPages project) | `.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties` | `/xpagesresources` |
 | Shared Elements | Navigators | `/navigators` |

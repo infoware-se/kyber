@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE frameset SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<frameset name='$ViewFrameset' alias='$ViewFrameset' xmlns='http://www.lotus.com/dxl'
+ version='14.5' maintenanceversion='1.0' replicaid='C1258EA3004BF40C' hide='web'
+ publicaccess='false' designerversion='8.5.3' language='en' rows='98% 0px'
+ spacing='0px' borderwidth='0px' bordercolor='silver'>
+<noteinfo noteid='1b2' unid='C1258EA3004BF40C85258900005124FB' sequence='18'>
+<created><datetime>20221120T094618,83-05</datetime></created>
+<modified><datetime>20261102T145955,22+01</datetime></modified>
+<revised><datetime>20240823T112641,18+00</datetime></revised>
+<lastaccessed><datetime>20261102T145955,21+01</datetime></lastaccessed>
+<addedtofile><datetime>20261102T145955,21+01</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Template Development/O=Domino</name></updatedby>
+<wassignedby><name>CN=Domino Template Development/O=Domino</name></wassignedby>
+<frame name='NotesView' targetframe='NotesPreview' border3d='false'><namedelementlink
+ type='view' name='All Documents'/></frame>
+<frame name='NotesPreview' border3d='false'><bordercaption show='caption arrows'
+ justify='center' open='40%'><code event='value'><formula>"Preview"</formula></code></bordercaption></frame></frameset>
+

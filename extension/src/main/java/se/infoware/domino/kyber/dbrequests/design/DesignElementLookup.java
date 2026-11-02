@@ -188,6 +188,108 @@ final class DesignElementLookup {
     };
   }
 
+  /** Delete one named design note; 400-style when missing (caller may map). */
+  static void deleteNamed(Database db, String type, String name) throws Exception {
+    String t = DesignBulkTypes.normalize(type);
+    if (name == null || name.isBlank()) {
+      throw new KeepExceptionWrongDataRequest(typeLabel(t) + " name is required");
+    }
+    String n = name.trim();
+    boolean removed =
+        switch (t) {
+          case "form" -> deleteOpt(db.getDesign().getForm(n));
+          case "page" -> deleteOpt(db.getDesign().getPage(n));
+          case "outline" -> deleteOpt(db.getDesign().getOutline(n));
+          case "frameset" -> {
+            try {
+              yield deleteOpt(db.getDesign().getFrameset(n));
+            } catch (RuntimeException e) {
+              yield false;
+            }
+          }
+          case "view" -> deleteOpt(db.getDesign().getView(n));
+          case "folder" -> deleteOpt(db.getDesign().getFolder(n));
+          case "subform" -> deleteOpt(db.getDesign().getSubform(n));
+          case "sharedfield" -> deleteOpt(db.getDesign().getSharedField(n));
+          case "sharedcolumn" -> deleteOpt(db.getDesign().getSharedColumn(n));
+          case "sharedactions" -> {
+            var opt = SharedActionsNotes.find(db, n);
+            if (opt.isEmpty()) {
+              yield false;
+            }
+            opt.get().delete();
+            yield true;
+          }
+          case "agent" -> deleteOpt(db.getDesign().getAgent(n));
+          case "scriptlibrary" -> deleteOpt(db.getDesign().getScriptLibrary(n));
+          case "image" -> deleteOpt(db.getDesign().getImageResource(n));
+          case "fileresource" -> deleteOpt(db.getDesign().getFileResource(n));
+          case "stylesheet" -> deleteOpt(db.getDesign().getStyleSheet(n));
+          case "theme" -> deleteOpt(db.getDesign().getTheme(n));
+          case "navigator" -> deleteOpt(db.getDesign().getNavigator(n));
+          case "xpage" -> deleteOpt(db.getDesign().getXPage(n));
+          case "wiringproperties" -> deleteOpt(db.getDesign().getWiringPropertiesElement(n));
+          case "compositeapplication" -> deleteOpt(db.getDesign().getCompositeApplication(n));
+          case "compositecomponent" -> deleteOpt(db.getDesign().getCompositeComponent(n));
+          case "customcontrol" -> {
+            var opt = CustomControls.find(db, n);
+            if (opt.isEmpty()) {
+              yield false;
+            }
+            var el = CustomControls.asDesignElement(db, opt.get().document());
+            if (el.isPresent()) {
+              el.get().delete();
+            } else {
+              opt.get().document().delete();
+            }
+            yield true;
+          }
+          case "webservice" -> {
+            var opt = WebServices.find(db, WebServices.Kind.PROVIDER, n);
+            if (opt.isEmpty()) {
+              yield false;
+            }
+            var el = WebServices.asDesignElement(db, opt.get().document());
+            if (el.isPresent()) {
+              el.get().delete();
+            } else {
+              opt.get().document().delete();
+            }
+            yield true;
+          }
+          case "webserviceconsumer" -> {
+            var opt = WebServices.find(db, WebServices.Kind.CONSUMER, n);
+            if (opt.isEmpty()) {
+              yield false;
+            }
+            var el = WebServices.asDesignElement(db, opt.get().document());
+            if (el.isPresent()) {
+              el.get().delete();
+            } else {
+              opt.get().document().delete();
+            }
+            yield true;
+          }
+          case "jar", "applet", "javasource", "dataconnection", "webcontent", "xpagesresource" -> {
+            ResidualDesign.delete(db, t, n);
+            yield true;
+          }
+          default ->
+              throw new KeepExceptionWrongDataRequest("Unsupported type for delete: " + t);
+        };
+    if (!removed) {
+      throw new KeepExceptionWrongDataRequest(typeLabel(t) + " not found: " + n);
+    }
+  }
+
+  private static boolean deleteOpt(Optional<? extends DesignElement> opt) throws Exception {
+    if (opt.isEmpty()) {
+      return false;
+    }
+    opt.get().delete();
+    return true;
+  }
+
   private static Optional<String> exportDoc(
       DxlExporter exporter, Optional<? extends com.hcl.domino.data.Document> doc) throws Exception {
     if (doc.isEmpty()) {

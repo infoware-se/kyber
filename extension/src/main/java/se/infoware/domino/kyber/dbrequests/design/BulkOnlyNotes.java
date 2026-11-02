@@ -60,7 +60,7 @@ final class BulkOnlyNotes {
       if (unid != null && seen.contains(unid)) {
         continue;
       }
-      if (isHandledElsewhere(doc) || isDataDocument(doc)) {
+      if (isHandledElsewhere(doc) || isDataDocument(doc) || isReplicationFormula(doc)) {
         continue;
       }
 
@@ -186,6 +186,11 @@ final class BulkOnlyNotes {
     } catch (Exception ignored) {
       return false;
     }
+  }
+
+  /** Replication formulas are not application design; Domino export/import is not reliable. */
+  private static boolean isReplicationFormula(Document doc) {
+    return itemText(doc, "$ReplFormula") != null;
   }
 
   private static boolean isHandledElsewhere(Document doc) {

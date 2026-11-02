@@ -4,7 +4,6 @@ import com.hcl.domino.DominoClient;
 import com.hcl.domino.data.Database;
 import com.hcl.domino.dxl.DxlImporter;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.dbrequests.KeepJnxSession;
 import com.hcl.domino.keep.exceptions.ErrorClassification;
 import com.hcl.domino.keep.exceptions.KeepException;
 import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
@@ -66,7 +65,7 @@ final class DesignCrud {
     ensureEmptyDefaultsNsf(request);
     String t = DesignBulkTypes.normalize(type);
     String dxl = request.incoming.getString("dxl", "");
-    String nameParam = request.incoming.getString("name");
+    String nameParam = RequestParams.optionalName(request.incoming);
     String source = "dxl";
     String name;
 
@@ -81,7 +80,9 @@ final class DesignCrud {
       if ("image".equals(t)) {
         DesignElementLookup.normalizeImageNameCheck(name);
       }
-      JsonObject starter = DesignDefaults.resolveOne(request.session(), t);
+      JsonObject starter =
+          DesignDefaults.resolveOne(
+              request.session(), t, null, request.incoming.getString("template"));
       dxl = DesignDxl.forNewNote(rewriteName(t, starter.getString("dxl", ""), name, dxlRoots));
       source = "default";
     } else {
@@ -105,14 +106,9 @@ final class DesignCrud {
 
     Database db = request.db();
     JsonObject xpagesProject = null;
-    if (mode == DxlDesignPatch.Mode.CREATE
-        && ("xpage".equals(t)
-            || "agent".equals(t)
-            || "scriptlibrary".equals(t)
-            || "javasource".equals(t))) {
-      // Java elements build against the XPages project. The manifest must already be in the NSF,
-      // or Designer writes it a moment too late and the new project stays unbuilt until a clean.
-      xpagesProject = XPagesProject.ensure(request.session(), db);
+    if (mode == DxlDesignPatch.Mode.CREATE) {
+      // XPage / Java only — LS/Formula/JS agents and libraries do not need the OSGi project.
+      xpagesProject = XPagesProject.ensureIfNeeded(request.session(), db, t, null);
     }
     if (mode == DxlDesignPatch.Mode.CREATE) {
       conflictIfExists(db, t, name);
@@ -182,7 +178,7 @@ final class DesignCrud {
     String t = DesignBulkTypes.normalize(type);
     String dxl = request.incoming.getString("dxl", "");
     String kindParam = request.incoming.getString("kind");
-    String nameParam = request.incoming.getString("name");
+    String nameParam = RequestParams.optionalName(request.incoming);
     String kind;
     String name;
     String source;
@@ -200,7 +196,9 @@ final class DesignCrud {
       }
       kind = kinds.normalize(kindParam);
       name = nameParam.trim();
-      JsonObject starter = DesignDefaults.resolveOne(request.session(), t, kind);
+      JsonObject starter =
+          DesignDefaults.resolveOne(
+              request.session(), t, kind, request.incoming.getString("template"));
       dxl = DesignDxl.forNewNote(kinds.withName(starter.getString("dxl", ""), name));
       source = "default";
     } else {
@@ -216,7 +214,10 @@ final class DesignCrud {
     }
 
     Database db = request.db();
+    JsonObject xpagesProject = null;
     if (mode == DxlDesignPatch.Mode.CREATE) {
+      // Java agents / Java script libraries / javasource build against the XPages project.
+      xpagesProject = XPagesProject.ensureIfNeeded(request.session(), db, t, kind);
       conflictIfExists(db, t, name);
     } else if (mode == DxlDesignPatch.Mode.REPLACE) {
       notFoundIfMissing(db, t, name);
@@ -238,6 +239,9 @@ final class DesignCrud {
             .put("kind", kind)
             .put("source", source)
             .put("dxl", exported);
+    if (xpagesProject != null) {
+      out.put("xpagesProject", xpagesProject);
+    }
     if (imported.containsKey("signWarning")) {
       out.put("signWarning", imported.getString("signWarning"));
     }
@@ -278,7 +282,12 @@ final class DesignCrud {
         throw new KeepExceptionWrongDataRequest("dxl body is required");
       }
       String defaultType = "dbicon".equals(t) ? "dbicon" : t;
-      JsonObject starter = resolveSingletonDefault(request.session(), defaultType);
+      JsonObject starter =
+          DesignDefaults.resolveOne(
+              request.session(),
+              defaultType,
+              null,
+              request.incoming.getString("template"));
       dxl = starter.getString("dxl", "");
       source = "default";
       if ("dbicon".equals(t)) {
@@ -343,11 +352,6 @@ final class DesignCrud {
       return XPagesResource.withName(dxl, name);
     }
     return DesignDxl.withName(dxl, name, dxlRoots);
-  }
-
-  private static JsonObject resolveSingletonDefault(KeepJnxSession session, String type)
-      throws KeepExceptionWrongDataRequest {
-    return DesignDefaults.resolveOne(session, type);
   }
 
   /**

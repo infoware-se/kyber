@@ -108,29 +108,29 @@ final class DesignElementExport {
           return Optional.of(exporter.exportDocument(opt.get().getDocument()));
         });
 
-    exportNamed(elements, "image", db.getDesign().getImageResources(), exporter, exportedUnids);
-    exportNamed(elements, "fileresource", db.getDesign().getFileResources(), exporter, exportedUnids);
-    exportNamed(elements, "stylesheet", db.getDesign().getStyleSheets(), exporter, exportedUnids);
-    exportNamed(elements, "theme", db.getDesign().getThemes(), exporter, exportedUnids);
-    exportScriptLibraries(elements, db, exporter, exportedUnids);
-    exportNamed(elements, "sharedfield", db.getDesign().getSharedFields(), exporter, exportedUnids);
-    exportNamed(elements, "sharedcolumn", db.getDesign().getSharedColumns(), exporter, exportedUnids);
-    exportNamed(elements, "subform", db.getDesign().getSubforms(), exporter, exportedUnids);
-    exportNamed(elements, "form", db.getDesign().getForms(), exporter, exportedUnids);
-    exportNamed(elements, "page", db.getDesign().getPages(), exporter, exportedUnids);
-    exportNamed(elements, "outline", db.getDesign().getOutlines(), exporter, exportedUnids);
+    exportNamed(elements, "image", db.getDesign().getImageResources(), exporter, exportedUnids, skipped);
+    exportNamed(elements, "fileresource", db.getDesign().getFileResources(), exporter, exportedUnids, skipped);
+    exportNamed(elements, "stylesheet", db.getDesign().getStyleSheets(), exporter, exportedUnids, skipped);
+    exportNamed(elements, "theme", db.getDesign().getThemes(), exporter, exportedUnids, skipped);
+    exportScriptLibraries(elements, db, exporter, exportedUnids, skipped);
+    exportNamed(elements, "sharedfield", db.getDesign().getSharedFields(), exporter, exportedUnids, skipped);
+    exportNamed(elements, "sharedcolumn", db.getDesign().getSharedColumns(), exporter, exportedUnids, skipped);
+    exportNamed(elements, "subform", db.getDesign().getSubforms(), exporter, exportedUnids, skipped);
+    exportNamed(elements, "form", db.getDesign().getForms(), exporter, exportedUnids, skipped);
+    exportNamed(elements, "page", db.getDesign().getPages(), exporter, exportedUnids, skipped);
+    exportNamed(elements, "outline", db.getDesign().getOutlines(), exporter, exportedUnids, skipped);
     exportNamedSafe(
         elements, "navigator", db.getDesign().getNavigators(), exporter, exportedUnids, skipped);
     // JNX FramesetImpl can throw on missing frameset version (Optional.empty); skip bad
     // notes so bulk GET continues — residual notes may still appear as designnote.
     exportNamedSafe(
         elements, "frameset", db.getDesign().getFramesets(), exporter, exportedUnids, skipped);
-    exportNamed(elements, "view", db.getDesign().getViews(), exporter, exportedUnids);
-    exportNamed(elements, "folder", db.getDesign().getFolders(), exporter, exportedUnids);
-    exportNamed(elements, "agent", db.getDesign().getAgents(), exporter, exportedUnids);
+    exportNamed(elements, "view", db.getDesign().getViews(), exporter, exportedUnids, skipped);
+    exportNamed(elements, "folder", db.getDesign().getFolders(), exporter, exportedUnids, skipped);
+    exportNamed(elements, "agent", db.getDesign().getAgents(), exporter, exportedUnids, skipped);
     exportCustomControls(elements, db, exporter, exportedUnids);
     exportWebServices(elements, db, exporter, exportedUnids);
-    exportNamed(elements, "xpage", db.getDesign().getXPages(), exporter, exportedUnids);
+    exportNamed(elements, "xpage", db.getDesign().getXPages(), exporter, exportedUnids, skipped);
     exportNamedSafe(
         elements,
         "wiringproperties",
@@ -218,7 +218,8 @@ final class DesignElementExport {
       String type,
       Stream<? extends DesignElement.NamedDesignElement> stream,
       DxlExporter exporter,
-      Set<String> exportedUnids)
+      Set<String> exportedUnids,
+      JsonArray skipped)
       throws Exception {
     List<? extends DesignElement.NamedDesignElement> list =
         stream
@@ -232,11 +233,16 @@ final class DesignElementExport {
       if (DesignDxl.designName(dxl) == null) {
         continue;
       }
-      trackUnid(exportedUnids, el.getDocument());
       String title = el.getTitle();
       if ("agent".equals(type)) {
         title = DesignDxl.unwrapAgentTitle(title);
       }
+      if (!hasRoundTripBody(dxl)) {
+        // Source NSF unchanged — only omit from bulk payload; see skipped[].
+        recordSkip(skipped, type, title, HOLLOW_DXL_SKIP);
+        continue;
+      }
+      trackUnid(exportedUnids, el.getDocument());
       elements.add(exportedElement(type, title, dxl));
     }
   }
@@ -289,11 +295,15 @@ final class DesignElementExport {
         if (DesignDxl.designName(dxl) == null) {
           continue;
         }
-        trackUnid(exportedUnids, doc);
         String title = el.getTitle();
         if ("agent".equals(type)) {
           title = DesignDxl.unwrapAgentTitle(title);
         }
+        if (!hasRoundTripBody(dxl)) {
+          recordSkip(skipped, type, title, HOLLOW_DXL_SKIP);
+          continue;
+        }
+        trackUnid(exportedUnids, doc);
         elements.add(exportedElement(type, title, dxl));
       } catch (Exception failed) {
         // leave UNID untracked so exportBulkOnly can try raw DXL
@@ -315,10 +325,17 @@ final class DesignElementExport {
   }
 
   static void recordSkip(JsonArray skipped, String type, String name, Throwable error) {
-    if (skipped == null || error == null) {
+    if (error == null) {
       return;
     }
-    String message = error.getMessage() == null ? error.toString() : error.getMessage();
+    recordSkip(
+        skipped, type, name, error.getMessage() == null ? error.toString() : error.getMessage());
+  }
+
+  static void recordSkip(JsonArray skipped, String type, String name, String message) {
+    if (skipped == null || message == null || message.isBlank()) {
+      return;
+    }
     JsonObject row = new JsonObject().put("type", type).put("message", message);
     if (name != null && !name.isBlank()) {
       row.put("name", name);
@@ -375,7 +392,11 @@ final class DesignElementExport {
 
   /** Script libraries excluding Web Service Consumers (those use type webserviceconsumer). */
   private static void exportScriptLibraries(
-      JsonArray elements, Database db, DxlExporter exporter, Set<String> exportedUnids)
+      JsonArray elements,
+      Database db,
+      DxlExporter exporter,
+      Set<String> exportedUnids,
+      JsonArray skipped)
       throws Exception {
     List<? extends DesignElement.NamedDesignElement> list =
         db.getDesign()
@@ -387,10 +408,16 @@ final class DesignElementExport {
                     DesignElement.NamedDesignElement::getTitle, String.CASE_INSENSITIVE_ORDER))
             .toList();
     for (DesignElement.NamedDesignElement el : list) {
+      String dxl = exporter.exportDocument(el.getDocument());
+      if (DesignDxl.designName(dxl) == null) {
+        continue;
+      }
+      if (!hasRoundTripBody(dxl)) {
+        recordSkip(skipped, "scriptlibrary", el.getTitle(), HOLLOW_DXL_SKIP);
+        continue;
+      }
       trackUnid(exportedUnids, el.getDocument());
-      elements.add(
-          exportedElement(
-              "scriptlibrary", el.getTitle(), exporter.exportDocument(el.getDocument())));
+      elements.add(exportedElement("scriptlibrary", el.getTitle(), dxl));
     }
   }
 
@@ -407,6 +434,10 @@ final class DesignElementExport {
         if (!hasExportableDxl(dxl)) {
           // DXLExporter sometimes returns only an XML prolog for notes COM
           // SelectAllDesignElements also omits — keep bulk identical to COM.
+          continue;
+        }
+        if (!hasRoundTripBody(dxl)) {
+          recordSkip(skipped, entry.type(), entry.name(), HOLLOW_DXL_SKIP);
           continue;
         }
         JsonObject roundTrip = residualRoundTrip(entry.type(), entry.name(), dxl);
@@ -495,6 +526,52 @@ final class DesignElementExport {
     }
     String value = name.group(1).trim();
     return value.isEmpty() ? null : value;
+  }
+
+  /**
+   * Stable {@code skipped[].message} when Domino's DXLExporter returns a named design shell with no
+   * importable payload. The source NSF is untouched; only the bulk export omits the note.
+   */
+  static final String HOLLOW_DXL_SKIP =
+      "DXL exporter omitted payload (named shell only); source NSF unchanged";
+
+  /**
+   * True when exported DXL carries a payload Domino can re-import. Applies a hollow check only to
+   * {@code scriptlibrary} and {@code imageresource} — all other roots stay as today. Named shells
+   * with only {@code noteinfo}/{@code updatedby}/$FileSize metadata are not round-trippable.
+   */
+  static boolean hasRoundTripBody(String dxl) {
+    if (!hasExportableDxl(dxl)) {
+      return false;
+    }
+    String root = DesignDxl.rootLocalName(dxl);
+    if (root == null) {
+      return true;
+    }
+    String lower = dxl.toLowerCase(Locale.ROOT);
+    return switch (root.toLowerCase(Locale.ROOT)) {
+      case "scriptlibrary" ->
+          java.util.regex.Pattern.compile("<(javascript|lotusscript|java|code)\\b")
+              .matcher(lower)
+              .find();
+      case "imageresource" -> {
+        if (java.util.regex.Pattern.compile("<(gif|png|jpeg|jpg)\\b").matcher(lower).find()) {
+          yield true;
+        }
+        var items =
+            java.util.regex.Pattern.compile(
+                    "(?i)<item\\b[^>]*\\bname\\s*=\\s*['\"]([^'\"]+)['\"]")
+                .matcher(dxl);
+        while (items.find()) {
+          String name = items.group(1);
+          if (!"$FileModDT".equalsIgnoreCase(name) && !"$FileSize".equalsIgnoreCase(name)) {
+            yield true;
+          }
+        }
+        yield false;
+      }
+      default -> true;
+    };
   }
 
   /** True when DXL contains a real note (not prolog-only / whitespace). */

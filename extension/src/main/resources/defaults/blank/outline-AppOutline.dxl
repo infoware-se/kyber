@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE outline SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<outline name='$AppOutline' xmlns='http://www.lotus.com/dxl' version='14.5'
+ maintenanceversion='1.0' replicaid='C1258EA3004252DD' publicaccess='false'
+ designerversion='8.5.3'>
+<noteinfo noteid='196' unid='7F6D33A0AFB9DBBAC1258EA3004A418B' sequence='1'>
+<created><datetime>20261102T143104,43+01</datetime></created>
+<modified><datetime>20261102T143104,49+01</datetime></modified>
+<revised><datetime>20261102T143104,48+01</datetime></revised>
+<lastaccessed><datetime>20261102T143104,48+01</datetime></lastaccessed>
+<addedtofile><datetime>20261102T143104,48+01</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Template Development/O=Domino</name><name>CN=Domino Administrator/O=onInfoware</name></updatedby>
+<outlineentry type='otherviews'><imageref name='outline/neutral/light/view.png'/></outlineentry>
+<outlineentry type='otherprivateviews'><imageref
+ name='outline/neutral/light/view.png'/></outlineentry>
+<outlineentry type='otherfolders'><imageref name='outline/neutral/light/folder.png'/></outlineentry>
+<outlineentry type='otherprivatefolders'><imageref
+ name='outline/neutral/light/folder.png'/></outlineentry></outline>
+
+

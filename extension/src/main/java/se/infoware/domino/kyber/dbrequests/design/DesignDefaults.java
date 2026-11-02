@@ -21,11 +21,16 @@ import java.util.Set;
  *
  * <ol>
  *   <li>If {@code kyber.nsf} (or configured default NSF) is openable and has at least one
- *       element of the type (and kind, when kinded) - first match by case-insensitive name order.
- *       The database icon is not a template. About and Using are not templates while they still
+ *       element of the type (and kind, when kinded) — optional {@code template} query picks by
+ *       case-insensitive name; otherwise the first match in case-insensitive name order. The
+ *       database icon is not a template. About and Using are not templates while they still
  *       contain the usage text written when this database is created.
- *   <li>Else classpath {@code /defaults/{type}.dxl} (embedded JAR fallback)
+ *   <li>Else classpath {@code /defaults/{type}.dxl} (embedded JAR fallback). A {@code template}
+ *       name that is not found in the NSF is an error (no silent JAR fallback).
  * </ol>
+ *
+ * <p>Product starters in the JAR are edited via a local {@code kyber_jar.nsf} and the tools under
+ * {@code tools/} (seed / sync). That NSF is not part of runtime resolution.
  *
  * <p>Kinded types:
  *
@@ -172,21 +177,40 @@ final class DesignDefaults {
 
   static JsonObject resolveOne(KeepJnxSession session, String type)
       throws KeepExceptionWrongDataRequest {
-    return resolveOne(session, type, null);
+    return resolveOne(session, type, null, null);
+  }
+
+  static JsonObject resolveOne(KeepJnxSession session, String type, String kind)
+      throws KeepExceptionWrongDataRequest {
+    return resolveOne(session, type, kind, null);
   }
 
   /**
    * Resolve one starter. For kinded types, {@code kind} selects the language/action variant.
-   * Prefers first NSF element of matching type/kind; else JAR.
+   * Prefers an NSF element of matching type/kind; {@code templateName} selects by
+   * case-insensitive name when set; otherwise the first alphabetical NSF match. Else JAR —
+   * unless {@code templateName} was set and missing from the NSF.
    */
-  static JsonObject resolveOne(KeepJnxSession session, String type, String kind)
+  static JsonObject resolveOne(
+      KeepJnxSession session, String type, String kind, String templateName)
       throws KeepExceptionWrongDataRequest {
     String key = normalizeType(type);
     String resolvedKind = isKindedType(key) ? normalizeKind(key, kind) : null;
+    String wantTemplate = blankToNull(templateName);
 
-    Optional<JsonObject> fromNsf = fromNsf(session, key, resolvedKind);
+    Optional<JsonObject> fromNsf = fromNsf(session, key, resolvedKind, wantTemplate);
     if (fromNsf.isPresent()) {
       return fromNsf.get();
+    }
+    if (wantTemplate != null) {
+      throw new KeepExceptionWrongDataRequest(
+          "No template named '"
+              + wantTemplate
+              + "' for type '"
+              + key
+              + (resolvedKind != null ? "' kind '" + resolvedKind : "")
+              + "' in "
+              + defaultNsfPath());
     }
     Optional<String> embedded = classpathDxl(key, resolvedKind);
     if (embedded.isEmpty()) {
@@ -209,6 +233,14 @@ final class DesignDefaults {
       out.put("name", defaultNameFor(key, resolvedKind));
     }
     return out;
+  }
+
+  private static String blankToNull(String value) {
+    if (value == null) {
+      return null;
+    }
+    String trimmed = value.trim();
+    return trimmed.isEmpty() ? null : trimmed;
   }
 
   private static boolean isKindedType(String type) {
@@ -292,7 +324,7 @@ final class DesignDefaults {
   }
 
   private static Optional<JsonObject> fromNsf(
-      KeepJnxSession session, String type, String resolvedKind) {
+      KeepJnxSession session, String type, String resolvedKind, String templateName) {
     Optional<Database> dbOpt = tryOpenDefaultsDb(session);
     if (dbOpt.isEmpty()) {
       return Optional.empty();
@@ -317,7 +349,12 @@ final class DesignDefaults {
       if (matches.isEmpty()) {
         return Optional.empty();
       }
-      return Optional.of(copyWithSource(pickFirstByName(matches), "nsf", resolvedKind));
+      JsonObject picked =
+          templateName != null ? pickByName(matches, templateName) : pickFirstByName(matches);
+      if (picked == null) {
+        return Optional.empty();
+      }
+      return Optional.of(copyWithSource(picked, "nsf", resolvedKind));
     } catch (Exception e) {
       return Optional.empty();
     }
@@ -346,6 +383,26 @@ final class DesignDefaults {
             el -> el.getString("name", ""),
             String.CASE_INSENSITIVE_ORDER.thenComparing(Comparator.naturalOrder())));
     return matches.get(0);
+  }
+
+  /**
+   * Case-insensitive name match. Returns null when no element has that name. When several share
+   * the same name ignoring case, prefers the same order as {@link #pickFirstByName}.
+   */
+  static JsonObject pickByName(List<JsonObject> matches, String templateName) {
+    if (templateName == null || templateName.isBlank() || matches == null || matches.isEmpty()) {
+      return null;
+    }
+    List<JsonObject> named = new ArrayList<>();
+    for (JsonObject el : matches) {
+      if (templateName.equalsIgnoreCase(el.getString("name", ""))) {
+        named.add(el);
+      }
+    }
+    if (named.isEmpty()) {
+      return null;
+    }
+    return pickFirstByName(named);
   }
 
   private static JsonObject copyWithSource(JsonObject el, String source, String resolvedKind) {

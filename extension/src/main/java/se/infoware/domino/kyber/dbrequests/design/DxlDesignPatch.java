@@ -41,6 +41,13 @@ final class DxlDesignPatch {
     configureCommon(importer, designOption(mode));
     importer.setReplaceDbProperties(false);
     importer.importDxl(DesignDxl.withClassIndex(DesignDxl.withoutReplicaId(dxl)), db);
+    // exitOnFirstFatalError is false so Domino can continue; still fail the note when the
+    // importer logged an error (otherwise callers only see "missing after import" at sign).
+    if (importer.importErrorWasLogged()) {
+      String log = importer.getResultLog();
+      throw new IOException(
+          log == null || log.isBlank() ? "DXL import logged an error" : log.trim());
+    }
     return importer.getResultLog();
   }
 
@@ -100,6 +107,8 @@ final class DxlDesignPatch {
    */
   static String importAcl(DxlImporter importer, String dxl, Database db)
       throws IOException, KeepExceptionWrongDataRequest {
+    // Template ACL exports may omit protected entries; inject before the strict check.
+    dxl = DesignDxl.ensureProtectedAclEntries(dxl);
     DesignDxl.requireProtectedAclEntries(dxl);
     importer.setExitOnFirstFatalError(false);
     importer.setDesignImportOption(DXLImportOption.IGNORE);

@@ -120,26 +120,27 @@ class NsfCreatePolicyTest {
   }
 
   @Test
-  void otherNewNsfAclUsesTheCreatorAndTheServer() {
+  void otherNewNsfAclMatchesKyberBlankReference() {
     var entries =
         DesignAcl.applicationAclEntries("CN=Creator/O=Example", "CN=Server/O=Example");
-    assertEquals(AclLevel.AUTHOR, level(entries, "-Default-"));
-    assertTrue(flags(entries, "-Default-").contains(AclFlag.CREATE_PRFOLDER));
+    assertEquals(AclLevel.NOACCESS, level(entries, "-Default-"));
     assertEquals(AclLevel.NOACCESS, level(entries, "Anonymous"));
     assertEquals(AclLevel.NOACCESS, level(entries, "OtherDomainServers"));
+    assertTrue(flags(entries, "OtherDomainServers").contains(AclFlag.SERVER));
+    assertTrue(flags(entries, "OtherDomainServers").contains(AclFlag.GROUP));
     assertEquals(AclLevel.MANAGER, level(entries, "CN=Creator/O=Example"));
     assertTrue(flags(entries, "CN=Creator/O=Example").contains(AclFlag.PERSON));
-    assertEquals(AclLevel.MANAGER, level(entries, "CN=Server/O=Example"));
-    assertTrue(flags(entries, "CN=Server/O=Example").contains(AclFlag.SERVER));
-    assertEquals(List.of("Configuration"), roles(entries, "LocalDomainAdmins"));
+    assertFalse(
+        entries.stream().map(DesignAcl.StarterEntry::name).anyMatch("CN=Server/O=Example"::equals));
+    assertEquals(AclLevel.MANAGER, level(entries, "LocalDomainAdmins"));
+    assertTrue(flags(entries, "LocalDomainAdmins").contains(AclFlag.PERSON));
+    assertTrue(flags(entries, "LocalDomainAdmins").contains(AclFlag.GROUP));
+    assertEquals(List.of(), roles(entries, "LocalDomainAdmins"));
+    assertEquals(AclLevel.MANAGER, level(entries, "LocalDomainServers"));
+    assertTrue(flags(entries, "LocalDomainServers").contains(AclFlag.SERVER));
     assertTrue(flags(entries, "LocalDomainServers").contains(AclFlag.GROUP));
     assertFalse(
         entries.stream().map(DesignAcl.StarterEntry::name).anyMatch("LocalKeepAdmins"::equals));
-
-    var same =
-        DesignAcl.applicationAclEntries("CN=Server/O=Example", "CN=Server/O=Example");
-    assertEquals(1, same.stream().filter(e -> e.name().equals("CN=Server/O=Example")).count());
-    assertTrue(flags(same, "CN=Server/O=Example").contains(AclFlag.SERVER));
   }
 
   private static AclLevel level(java.util.List<DesignAcl.StarterEntry> entries, String name) {

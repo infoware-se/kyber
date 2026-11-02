@@ -33,6 +33,24 @@ final class DesignDxl {
     return requireDesignName(dxl, expectedRoot);
   }
 
+  /** Root {@code alias} attribute when present (views/folders often use {@code Name\\Folder}). */
+  static String rootAlias(String dxl) {
+    if (dxl == null || dxl.isBlank()) {
+      return null;
+    }
+    try {
+      Element root = parseRoot(dxl);
+      String alias = root.getAttribute("alias");
+      if (alias == null || alias.isBlank()) {
+        return null;
+      }
+      int pipe = alias.indexOf('|');
+      return (pipe >= 0 ? alias.substring(0, pipe) : alias).trim();
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
   /**
    * Validates that DXL has the expected root element (e.g. singleton About/Using documents). Does
    * not require a name attribute.
@@ -140,9 +158,20 @@ final class DesignDxl {
 
   /**
    * Shared Actions name: {@code name} attribute, {@code $TITLE}, or {@code $$ScriptName} (often
-   * {@code $ACTIONS}).
+   * {@code $ACTIONS}). Domino often exports the system note with none of those in DXL while the
+   * live note still has {@code $$ScriptName=$ACTIONS}; default to {@code $ACTIONS} so round-trip
+   * import can reinstate identity.
    */
   static String requireSharedActionsName(String dxl) throws KeepExceptionWrongDataRequest {
+    return sharedActionsName(dxl, null);
+  }
+
+  /**
+   * Resolve Shared Actions name, preferring DXL identity, then {@code preferredName}, then {@code
+   * $ACTIONS}.
+   */
+  static String sharedActionsName(String dxl, String preferredName)
+      throws KeepExceptionWrongDataRequest {
     Element root = parseAndRequireRoot(dxl, "sharedactions");
     String resolved = designNameFromRoot(root);
     if (resolved != null) {
@@ -152,8 +181,74 @@ final class DesignDxl {
     if (script != null && !script.isBlank()) {
       return script.trim();
     }
-    throw new KeepExceptionWrongDataRequest(
-        "sharedactions DXL requires a non-empty name attribute, $TITLE, or $$ScriptName item");
+    if (preferredName != null && !preferredName.isBlank()) {
+      return preferredName.trim();
+    }
+    return "$ACTIONS";
+  }
+
+  /**
+   * Ensure Shared Actions DXL carries a resolvable name ({@code name} + {@code $$ScriptName}) so
+   * Domino import and later lookup succeed. Uses {@link #sharedActionsName} for the value.
+   */
+  static String ensureSharedActionsDxl(String dxl, String preferredName)
+      throws KeepExceptionWrongDataRequest {
+    String name = sharedActionsName(dxl, preferredName);
+    String out = withName(dxl, name, "sharedactions");
+    if (!hasTextItem(out, "$$ScriptName")) {
+      out = injectTextItemBeforeRootClose(out, "$$ScriptName", name);
+    }
+    return out;
+  }
+
+  /**
+   * Template ACL exports sometimes omit {@code -Default-} / {@code LocalDomainServers}. Inject
+   * them so a full ACL replace is not rejected as a protected-entry removal. Typed ACL PUT still
+   * calls {@link #requireProtectedAclEntries} on the caller payload as-is.
+   */
+  static String ensureProtectedAclEntries(String dxl) throws KeepExceptionWrongDataRequest {
+    Element root = parseAndRequireRoot(dxl, "acl");
+    NodeList entries = root.getElementsByTagNameNS("*", "aclentry");
+    if (entries.getLength() == 0) {
+      entries = root.getElementsByTagName("aclentry");
+    }
+    boolean hasDefault = false;
+    boolean hasServers = false;
+    for (int i = 0; i < entries.getLength(); i++) {
+      Node node = entries.item(i);
+      if (!(node instanceof Element entry)) {
+        continue;
+      }
+      String name = entry.getAttribute("name");
+      if (name == null) {
+        continue;
+      }
+      String trimmed = name.trim();
+      if ("-Default-".equalsIgnoreCase(trimmed)) {
+        hasDefault = true;
+      } else if ("LocalDomainServers".equalsIgnoreCase(trimmed)) {
+        hasServers = true;
+      }
+    }
+    if (hasDefault && hasServers) {
+      return dxl;
+    }
+    StringBuilder inject = new StringBuilder();
+    if (!hasDefault) {
+      inject.append(
+          "<aclentry name='-Default-' default='true' level='noaccess' readpublicdocs='false'"
+              + " writepublicdocs='false'/>");
+    }
+    if (!hasServers) {
+      inject.append(
+          "<aclentry name='LocalDomainServers' type='servergroup' level='manager'"
+              + " deletedocs='true' noreplicate='false'/>");
+    }
+    Matcher close = Pattern.compile("(?is)</acl\\s*>").matcher(dxl);
+    if (!close.find()) {
+      throw new KeepExceptionWrongDataRequest("invalid ACL DXL: missing </acl>");
+    }
+    return dxl.substring(0, close.start()) + inject + dxl.substring(close.start());
   }
 
   /**
@@ -414,6 +509,28 @@ final class DesignDxl {
     }
     return matcher.replaceFirst(
         Matcher.quoteReplacement(matcher.group(1) + wanted + matcher.group(3)));
+  }
+
+  private static boolean hasTextItem(String dxl, String itemName) {
+    if (dxl == null || dxl.isBlank() || itemName == null) {
+      return false;
+    }
+    return Pattern.compile(
+            "(?is)<item\\s+name=(['\"])" + Pattern.quote(itemName) + "\\1\\b")
+        .matcher(dxl)
+        .find();
+  }
+
+  private static String injectTextItemBeforeRootClose(String dxl, String itemName, String text) {
+    Matcher close = Pattern.compile("(?s)</([A-Za-z][\\w:.-]*)>\\s*$").matcher(dxl);
+    if (!close.find()) {
+      return dxl;
+    }
+    String safeText =
+        text == null ? "" : text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    String item =
+        "<item name='" + xmlAttr(itemName, "'") + "'><text>" + safeText + "</text></item>";
+    return close.replaceFirst(Matcher.quoteReplacement(item + "</" + close.group(1) + ">"));
   }
 
   private static String xmlAttr(String value, String quote) {

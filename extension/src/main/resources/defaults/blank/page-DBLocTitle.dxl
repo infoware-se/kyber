@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE page SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<page name='$DBLocTitle' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258EA3004252DD' publicaccess='false' designerversion='8.5.3'
+ language='en' bgcolor='#e6e6e6' noinitialfocus='true' nofocusonf6='true'>
+<noteinfo noteid='176' unid='9E3C6EF24CA9CBE0C1258EA30048DCE1' sequence='1'>
+<created><datetime>20261102T141551,37+01</datetime></created>
+<modified><datetime>20261102T141551,42+01</datetime></modified>
+<revised><datetime>20261102T141551,41+01</datetime></revised>
+<lastaccessed><datetime>20261102T141551,41+01</datetime></lastaccessed>
+<addedtofile><datetime>20261102T141551,41+01</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Template Development/O=Domino</name><name>CN=Domino Administrator/O=onInfoware</name></updatedby>
+<wassignedby><name>CN=Domino Administrator/O=onInfoware</name></wassignedby><code
+ event='windowtitle'><formula>@DbTitle</formula></code>
+<body><richtext>
+<pardef id='1' align='none' leftmargin='1in' hide='notes' tabs='L0.5000in L1in L1.5000in L2in L2.5000in L3in L3.5000in L4in'/>
+<par def='1'><run html='true'><font size='9pt' name='Arial' truetype='false'
+ familyid='0' color='#262626'/></run></par>
+<table widthtype='fitwindow' cellbordercolor='#c6c6c6' leftmargin='0.7500in'
+ refwidth='15.6875in'><tablecolumn width='100%'/>
+<tablerow>
+<tablecell borderwidth='0px'>
+<pardef id='3' leftmargin='0.1000in' keepwithnext='true' keeptogether='true'/>
+<par def='3'><run><font size='9pt' name='Arial' truetype='false' familyid='0'
+ color='#262626'/></run><run><font size='9pt' name='Arial' truetype='false'
+ familyid='0' color='#262626'/><computedtext><code event='value'><formula
+>LocalTxt:="Local";
+onTxt := "on";
+server := @Subset(@DbName;1);
+serverString := onTxt + " " + @Name([Abbreviate]; server);
+@If(@ClientType="Web"; "on " + @Name([Abbreviate];@ServerName) ;@If(server=""; LocalTxt; serverString))</formula></code></computedtext></run><run
+><font size='9pt' name='Arial' truetype='false' familyid='0' color='#262626'/></run></par></tablecell></tablerow></table>
+<pardef id='4'/>
+<par def='4'><run><font size='9pt' name='Arial' truetype='false' familyid='0'
+ color='#262626'/></run></par></richtext></body>
+<item name='$$ScriptName' summary='false' sign='true'><text>$DBLocTitle</text></item></page>
+
+

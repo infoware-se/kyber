@@ -292,4 +292,32 @@ class DesignDxlTest {
     String dxl = "<?xml version='1.0'?><form name='X' xmlns='http://www.lotus.com/dxl'/>";
     assertThrows(KeepExceptionWrongDataRequest.class, () -> DesignDxl.requireDesignName(dxl, "view"));
   }
+
+  @Test
+  void sharedActionsDefaultsToActionsWhenNameless() throws Exception {
+    String dxl =
+        """
+        <sharedactions xmlns='http://www.lotus.com/dxl' maxid='1'>
+        <action title='Go' id='1'/>
+        </sharedactions>
+        """;
+    assertEquals("$ACTIONS", DesignDxl.requireSharedActionsName(dxl));
+    String fixed = DesignDxl.ensureSharedActionsDxl(dxl, null);
+    assertTrue(fixed.contains("name='$ACTIONS'") || fixed.contains("name=\"$ACTIONS\""));
+    assertTrue(fixed.contains("$$ScriptName"));
+    assertTrue(fixed.contains("$ACTIONS"));
+  }
+
+  @Test
+  void ensureProtectedAclEntriesInjectsMissingServers() throws Exception {
+    String noServers =
+        """
+        <acl>
+        <aclentry name='-Default-' level='noaccess'/>
+        </acl>
+        """;
+    String fixed = DesignDxl.ensureProtectedAclEntries(noServers);
+    DesignDxl.requireProtectedAclEntries(fixed);
+    assertTrue(fixed.contains("LocalDomainServers"));
+  }
 }

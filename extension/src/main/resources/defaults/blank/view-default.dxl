@@ -1,7 +1,41 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE view SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<view xmlns='http://www.lotus.com/dxl' version='14.5' showinmenu='true' publicaccess='false' default='true'
- noviewformat='true'>
-<code event='selection'><formula
->SELECT @All</formula></code>
-<item name='$FormulaClass'><text>1</text></item></view>
+<view name='(untitled)' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+ replicaid='C1258EA3004252DD' showinmenu='false' publicaccess='false' designerversion='8.5.3'
+ default='true' unreadmarks='none' onopengoto='lastopened' onrefresh='displayindicator'
+ headers='simple' opencollapsed='false' showresponsehierarchy='true' showmargin='true'
+ shrinkrows='false' extendlastcolumn='false' showhierarchies='false' unreadcolor='#0066b0'
+ rowlinecount='1' headerlinecount='1' rowspacing='1.5' bgcolor='white' altrowcolor='#f7f7f7'
+ totalscolor='#0066b0' headerbgcolor='#0066b0' boldunreadrows='true' evaluateactions='false'
+ allownewdocuments='false' allowcustomizations='false' hidemarginborder='false'
+ marginwidth='0px' marginbgcolor='white' gridstyle='solid' gridcolor='#c6c6c6'
+ uniquekeys='false'>
+<noteinfo noteid='18a' unid='EF25D8ED6EAE7D13C1258EA300495C39' sequence='10'>
+<created><datetime>20261102T142117,37+01</datetime></created>
+<modified><datetime>20261102T143216,60+01</datetime></modified>
+<revised><datetime>20261102T143216,59+01</datetime></revised>
+<lastaccessed><datetime>20261102T143216,59+01</datetime></lastaccessed>
+<addedtofile><datetime>20261102T142117,37+01</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Domino Administrator/O=onInfoware</name></updatedby>
+<wassignedby><name>CN=Domino Administrator/O=onInfoware</name></wassignedby><code
+ event='selection'><formula>SELECT @All</formula></code>
+<actionbar borderstyle='none' bgcolor='#0066b0' bordercolor='black'><actionbarstyle
+ height='5ex'><font size='9pt' name='Arial' pitch='variable' truetype='true'
+ familyid='20'/></actionbarstyle>
+<actionbuttonstyle heighttype='fixed' height='29' bgcolor='#0066b0' widthtype='background'
+ internalmargin='2px'/><font name='Arial' pitch='variable' truetype='true'
+ familyid='20' size='10pt' color='#f7f7f7'/><border style='solid' width='0px 0px 1px'
+ color='#e6e6e6'/>
+<action title='(Menu separator)' displaytype='menuseparator'/></actionbar>
+<column hidedetailrows='false' itemname='$2' width='10' resizable='true' separatemultiplevalues='false'
+ sortnoaccent='true' sortnocase='true' showaslinks='false'><font name='Arial'
+ pitch='variable' truetype='true' familyid='20'/><columnheader title='#'><font
+ size='9pt' color='#f7f7f7' name='Arial' pitch='variable' truetype='true'
+ familyid='20'/></columnheader><code event='value'><formula>@DocNumber</formula></code></column>
+<item name='$SelQuery' sign='true'>
+<rawitemdata type='f'>
+gQYAAAAAif8SAAAAAAABAAYAbXlGb3Jt
+</rawitemdata></item>
+<item name='$DesignerBuild' sign='true'><text>Build V1451FP1_06262026</text></item></view>
+
+
