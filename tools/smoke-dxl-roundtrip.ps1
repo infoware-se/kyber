@@ -318,12 +318,12 @@ function Assert-FramesetsFromSource([string]$Nsf, $beforeEls, $headers) {
       continue
     }
     $before = Get-ElDxl $el
-    $bs = [string]::Join('|', @(Get-AllFramesetSizeAttrs $before))
+    $bs = [string]::Join('|', @((Get-AllFramesetSizeAttrs $before) | ForEach-Object { $_ }))
     if (-not $bs) { $skipped++; continue }
     $uri = Get-KyberNamedUri 'frameset' $name $q
     try {
       $afterObj = Invoke-Drapi -Method GET -Uri $uri -Headers $headers
-      $as = [string]::Join('|', @(Get-AllFramesetSizeAttrs ([string]$afterObj.dxl)))
+      $as = [string]::Join('|', @((Get-AllFramesetSizeAttrs ([string]$afterObj.dxl)) | ForEach-Object { $_ }))
       $checked++
       if ($bs -ne $as) {
         [void]$assertFail.Add([pscustomobject]@{
@@ -334,10 +334,16 @@ function Assert-FramesetsFromSource([string]$Nsf, $beforeEls, $headers) {
         Write-Host "OK     frameset|$name"
       }
     } catch {
+      $msg = $_.Exception.Message
+      $kind = 'frameset_get'
+      if ($msg -match 'not found' -or $msg -match '\(400\)') {
+        $kind = 'frameset_missing_after_import'
+        $msg = "missing on target after import (often Domino alias collision): $msg"
+      }
       [void]$assertFail.Add([pscustomobject]@{
-          key = "frameset|$name"; kind = 'frameset_get'; before = $bs; after = $_.Exception.Message
+          key = "frameset|$name"; kind = $kind; before = $bs; after = $msg; uri = $uri
         })
-      Write-Host "ASSERT frameset|$name :: $($_.Exception.Message)"
+      Write-Host "ASSERT frameset|$name :: $msg"
     }
   }
   return ,[ordered]@{ checked = $checked; skipped = $skipped; assertFail = $assertFail }

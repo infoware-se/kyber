@@ -109,7 +109,8 @@ public class ImportDesign extends KyberRequest {
     }
     DxlImporter importer = session.getDxlImporter();
 
-    List<JsonObject> ordered = DesignElementImport.sortForImport(elements);
+    List<JsonObject> ordered =
+        AliasCollisionFix.prepareBatch(DesignElementImport.sortForImport(elements));
     JsonArray results = new JsonArray();
     int ok = 0;
     int failed = 0;

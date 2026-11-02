@@ -27,6 +27,7 @@ Registered `DxlImportFixes` / `prepareIncoming` first; related in-import cleanup
 | View lookup | `view` | Folder-style names (`_Admin\…`) not found via `getView(name)` after import | Alias + title scan fallback in `DesignElementImport` |
 | View `$Readers` | `view` / `folder` | Source role readers → note missing/`0x1` on fresh NSF | `ViewDxlFix.prepareIncomingDxl` strips `$Readers` |
 | DNT Begin w/o End | `form` / `subform` / `page` | `REM {DNT Begin}; …` without End → importer 1301 | `FormulaDxlFix.prepareIncomingDxl` strips unmatched Begin |
+| Shared alias collapse | named types (e.g. `frameset`) | Two notes share DXL `alias` → Domino import keeps one; typed GET 400 | `AliasCollisionFix.prepareBatch` before bulk import: keep original alias on one note, set others' alias to their `name` |
 
 ### Live coverage set (2026-11-02)
 
@@ -62,10 +63,18 @@ Faster subset: `-CuratedOnly` (10 apps below). Long runs: `tools/watch-roundtrip
 
 Sources and licenses: `ignore/external-ntf/SOURCES.txt`. Map/probe: `ignore/openntf-ext-copies.json`, `ignore/openntf-ext-type-probe.json`.
 
+**OpenNTF probe-first** (not top-100 blind RT): `tools/openntf-probe-first.ps1` + catalog `ignore/openntf-probe-catalog.json`.
+
+1. `-Download` — fetch GitHub/raw NSF candidates into `ignore/external-ntf/candidates/`
+2. `-Probe` — `CreateFromTemplate` → `kyber_ref\rt_probe_<id>.nsf`, `GET /export` type histogram; write `ignore/openntf-probe-report.json`
+3. `-Promote` — only rows with `promoteRecommended` (new type, rare type, or export error) → `kyber_ref\rt_ext_<id>.nsf` + update copies map
+
+Optional `-RefreshCatalogFromGitHub` merges NSF/NTF blobs from the OpenNTF GitHub org into the catalog. Prefer 10–20 selected probes over popular-download sweeps; full RT stays on promoted `rt_ext_*` via `run-bulk-roundtrip-advanced.ps1`.
+
 **Coverage notes**
 
 - Every design type seen in Domino NTF + ias + OpenNTF-ext exports is one Kyber already models (typed CRUD and/or bulk). No unknown types found in that set.
-- `applet` and `dataconnection` are **exempt from wild fill**: typed CRUD reference is `kybertest.nsf` / `tools/smoke-kyber-api.ps1` (`SmokeApplet`, `SmokeConnection`). They list via `/applets` and `/dataconnections` but are not presently rows in bulk `/export` — treat that as a known export gap, not a missing API type.
+- `applet` and `dataconnection`: typed CRUD via `/applets` / `/dataconnections` (defaults in JAR; smoke seeds `SmokeApplet` / `SmokeConnection` on `kybertest.nsf`). Recreate RT sample with `tools/seed-applet-dataconnection-nsf.ps1` → `kyber_ref\rt_seed_applet_dc.nsf` (in `openntf-ext-copies.json`). Bulk `/export` includes them as residual types (`appletresource` / `dataconnection` DXL roots — `hasExportableDxl` recognizes both). Still rare in shipped Domino/OpenNTF NTFs, so wild fill does not require them in every NTF.
 - `dbicon` is a singleton (`GET`/`PUT /dbicon`); it is not a separate bulk type row (often appears as `image`).
 - `designnote` is bulk-only (no typed list/get/put/delete).
 - Mail `SignatureOption*` empty `<tablerow/>` is repaired by `TableDxlFix` (verified on `mail145` / `mailjrn` in live RT). Odd notes in shipped NTFs may still `importFailed` — keep them as regress signal; record outcomes under `ignore/roundtrip-bulk-*.json` / `ignore/roundtrip-all-domino-ntf-*.log`.
@@ -90,6 +99,8 @@ Do **not** use per-element HTTP for full-app fidelity — it is slow. Bulk impor
 **Typed CRUD and special names:** Vert.x/KEEP returns **404** when `(…)` (and similar) appear **raw** in a path segment. Proper percent-encoding (`%28`/`%29`) works; `.NET`/`EscapeDataString` does **not** encode parentheses. Prefer **`GET|PUT|DELETE /named/{type}?nsfPath=&name=`** for those Domino titles (e.g. subform `(SignatureOption)`). Path `/…/{name}` remains fine for ordinary names.
 
 **How to read the report:** `assert_fail` (frameset sizes) fails the script. `missing` / `importFailed` are real gaps. `extra` often includes blank-chrome notes (`$MainFrameset`, …) created with a new NSF. `dxl_changed` is common — Domino rewrites DXL on import/sign; use it for triage, not as a hard fail.
+
+**Alias collision:** Domino matches import by name or alias. Bulk import runs `AliasCollisionFix.prepareBatch` so shared aliases in the payload do not collapse notes (verified intent: doclib8xl `MainFrameset Notes` + `MainFramesetWeb`). Smoke still flags `frameset_missing_after_import` if a name is absent after import.
 
 ## Adding a fix
 

@@ -88,4 +88,27 @@ class HollowDxlExportTest {
         DesignElementExport.hasRoundTripBody(
             "<view name='V' xmlns='http://www.lotus.com/dxl'><column/></view>"));
   }
+
+  @Test
+  void appletResourceAndDataConnectionAreExportable() {
+    // Bulk residual export previously dropped these roots (hasExportableDxl gap).
+    assertTrue(
+        DesignElementExport.hasRoundTripBody(
+            """
+            <?xml version='1.0' encoding='utf-8'?>
+            <!DOCTYPE appletresource SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+            <appletresource name='SmokeApplet' xmlns='http://www.lotus.com/dxl'>
+            <code event='action'><javaproject><java name='A.java'>class A{}</java></javaproject></code>
+            </appletresource>
+            """));
+    assertTrue(
+        DesignElementExport.hasRoundTripBody(
+            """
+            <?xml version='1.0' encoding='utf-8'?>
+            <!DOCTYPE dataconnection SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+            <dataconnection name='SmokeConnection' xmlns='http://www.lotus.com/dxl'
+             class='rdbms' type='odbc2' datasource='DSN' objectname='T' objecttype='table'>
+            </dataconnection>
+            """));
+  }
 }

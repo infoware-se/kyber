@@ -604,7 +604,10 @@ final class DesignElementExport {
         || hasTag(lower, "scriptlibrary")
         || hasTag(lower, "sharedactions")
         || hasTag(lower, "sharedfield")
-        || hasTag(lower, "fileresource");
+        || hasTag(lower, "fileresource")
+        // Resources > Applets / Data Connections (bulk residual path)
+        || hasTag(lower, "appletresource")
+        || hasTag(lower, "dataconnection");
   }
 
   /** {@code <agent} must not match {@code <agentdata}. */

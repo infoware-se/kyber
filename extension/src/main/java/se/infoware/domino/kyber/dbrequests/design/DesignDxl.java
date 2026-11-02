@@ -270,6 +270,52 @@ final class DesignDxl {
   }
 
   /**
+   * Set or replace the root {@code alias} attribute without a DOM round-trip. Pass blank to remove
+   * {@code alias}. Used when bulk import would otherwise collapse notes that share an alias.
+   */
+  static String withAlias(String dxl, String alias) {
+    if (dxl == null || dxl.isBlank()) {
+      return dxl;
+    }
+    Matcher root = Pattern.compile("(?s)<([A-Za-z][\\w:.-]*)\\b([^>]*)>").matcher(dxl);
+    if (!root.find()) {
+      return dxl;
+    }
+    String attrs = root.group(2);
+    Matcher aliasAttr = Pattern.compile("(?i)\\balias=(['\"])(.*?)\\1").matcher(attrs);
+    String updated;
+    if (alias == null || alias.isBlank()) {
+      if (!aliasAttr.find()) {
+        return dxl;
+      }
+      int start = aliasAttr.start();
+      int end = aliasAttr.end();
+      // Drop a single leading space when present so the tag stays tidy.
+      if (start > 0 && Character.isWhitespace(attrs.charAt(start - 1))) {
+        start--;
+      }
+      updated = attrs.substring(0, start) + attrs.substring(end);
+    } else if (aliasAttr.find()) {
+      String quote = aliasAttr.group(1);
+      updated =
+          attrs.substring(0, aliasAttr.start())
+              + "alias="
+              + quote
+              + xmlAttr(alias.trim(), quote)
+              + quote
+              + attrs.substring(aliasAttr.end());
+    } else {
+      updated = attrs + " alias='" + xmlAttr(alias.trim(), "'") + "'";
+    }
+    return dxl.substring(0, root.start())
+        + "<"
+        + root.group(1)
+        + updated
+        + ">"
+        + dxl.substring(root.end());
+  }
+
+  /**
    * Remove note identity ({@code <noteinfo>}, root {@code replicaid}) so a starter DXL creates a
    * new design note instead of UPSERT-replacing the source note by UNID.
    *
