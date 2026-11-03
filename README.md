@@ -277,6 +277,20 @@ Kyber is the design API on DRAPI. It uses Domino JNX for design work. Infoware p
 
 Also shipped earlier. Bulk DXL round-trip + typed CRUD (applet/dataconnection, alias-collision fix) in **0.25.0**. `PUT /database?dbTitle=`, structured `GET /acl`. Special Domino titles: **`/named/{type}?name=`**. ACL **replace** and database **delete** stay privileged Manager operations; MCP products may refuse them.
 
+**Next (high value for agents / Aldhani)**
+
+Aldhani wraps Kyber; it will not parse DXL locally for these. Ship the routes here first.
+
+1. **Diff** — `GET` or `POST /diff` comparing live design to proposed DXL, or two notes (same or allowlisted NSF). Return structured hunks / field-level changes without requiring the client to hold full DXL bodies.
+2. **Fields** — `GET /fields?nsfPath=&type=form|subform&name=` listing field names, types, and flags from a form/subform without returning the full DXL.
+3. **Columns** — `GET /columns?nsfPath=&type=view|folder&name=` listing column titles, formulas, and sort/hide flags from a view or folder without full DXL.
+4. **Summary** — `GET /summary?nsfPath=&type=&name=` (or by `unid` / `noteId`) returning aliases, forms used, agent schedule/trigger, and other inventory metadata agents invent from `get` + DXL loops today.
+
+**Next (medium)**
+
+1. Agent schedule inventory across an NSF (`list` already carries `trigger` per agent; a cross-collection schedule view would still help).
+2. One-element create-or-replace import (not full `PUT /import`) when a client has a single DXL note.
+
 Out of scope for Kyber. Application documents, DQL, running agents as a general automation API, server console, admin directory changes, and Aldhani MCP policy.
 
 
