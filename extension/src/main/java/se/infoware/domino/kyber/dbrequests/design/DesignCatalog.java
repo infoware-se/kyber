@@ -50,4 +50,28 @@ final class DesignCatalog {
     }
     db.setCategories(current.trim() + ", " + CATEGORY);
   }
+
+  /** Removes {@link #CATEGORY} and keeps every other category token. */
+  static void unmark(Database db) {
+    if (db == null || !has(db)) {
+      return;
+    }
+    String current = db.getCategories();
+    if (current == null || current.isBlank()) {
+      db.setCategories("");
+      return;
+    }
+    StringBuilder kept = new StringBuilder();
+    for (String token : current.split("[,;\\r\\n]+")) {
+      String t = token.trim();
+      if (t.isEmpty() || CATEGORY.equalsIgnoreCase(t)) {
+        continue;
+      }
+      if (kept.length() > 0) {
+        kept.append(", ");
+      }
+      kept.append(t);
+    }
+    db.setCategories(kept.toString());
+  }
 }

@@ -49,6 +49,61 @@ class OpenApiDesignSpecTest {
             .getJsonObject("more"));
     assertFalse(root.getJsonObject("paths").containsKey("/defaults"));
     assertFalse(root.getJsonObject("paths").containsKey("/defaults/{type}"));
+    assertEquals(
+        "lookupDesign",
+        root.getJsonObject("paths").getJsonObject("/lookup").getJsonObject("get").getString("operationId"));
+    assertEquals(
+        "searchDesign",
+        root.getJsonObject("paths").getJsonObject("/search").getJsonObject("get").getString("operationId"));
+    assertEquals(
+        "copyDesign",
+        root.getJsonObject("paths").getJsonObject("/copy").getJsonObject("post").getString("operationId"));
+    assertEquals(
+        "renameDesign",
+        root.getJsonObject("paths").getJsonObject("/rename").getJsonObject("post").getString("operationId"));
+    assertEquals(
+        "patchDesign",
+        root.getJsonObject("paths").getJsonObject("/patch").getJsonObject("patch").getString("operationId"));
+    assertEquals(
+        "getDesignContent",
+        root.getJsonObject("paths").getJsonObject("/content").getJsonObject("get").getString("operationId"));
+    assertEquals(
+        "compileDesign",
+        root.getJsonObject("paths").getJsonObject("/compile").getJsonObject("post").getString("operationId"));
+    assertEquals(
+        "updateDatabaseCategory",
+        root.getJsonObject("paths")
+            .getJsonObject("/database/category")
+            .getJsonObject("put")
+            .getString("operationId"));
+    assertEquals(
+        "createDatabaseFromTemplate",
+        root.getJsonObject("paths")
+            .getJsonObject("/database/fromTemplate")
+            .getJsonObject("post")
+            .getString("operationId"));
+    assertEquals(
+        "inheritDesign",
+        root.getJsonObject("paths")
+            .getJsonObject("/database/inherit")
+            .getJsonObject("post")
+            .getString("operationId"));
+    assertEquals(
+        "listTemplates",
+        root.getJsonObject("paths").getJsonObject("/templates").getJsonObject("get").getString("operationId"));
+    assertEquals(
+        "previewDefault",
+        root.getJsonObject("paths")
+            .getJsonObject("/defaults/preview")
+            .getJsonObject("post")
+            .getString("operationId"));
+    assertEquals(
+        "listDesignNotes",
+        root.getJsonObject("paths")
+            .getJsonObject("/designnotes")
+            .getJsonObject("get")
+            .getString("operationId"));
+
     JsonObject export = root.getJsonObject("paths").getJsonObject("/export");
     assertNotNull(export.getJsonObject("get").getJsonObject("responses").getJsonObject("200"));
     JsonObject getProps =

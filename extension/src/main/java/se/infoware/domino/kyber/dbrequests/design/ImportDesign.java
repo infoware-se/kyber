@@ -194,7 +194,7 @@ public class ImportDesign extends KyberRequest {
       }
     }
 
-    DesignLotusScriptCompile.compileAll(db);
+    JsonObject compile = DesignLotusScriptCompile.compileAll(db);
     if (created) {
       DesignCatalog.mark(db);
     }
@@ -209,11 +209,27 @@ public class ImportDesign extends KyberRequest {
             .put("imported", ok)
             .put("failed", failed)
             .put("aclApplied", hasAcl)
-            .put("results", results);
+            .put("results", results)
+            .put("compile", compile);
+    String importerLog = truncateLog(importer.getResultLog(), 8000);
+    if (importerLog != null) {
+      out.put("importerLog", importerLog);
+    }
     if (created && title != null) {
       out.put("dbTitle", title);
     }
     request.emit(out);
+  }
+
+  static String truncateLog(String log, int max) {
+    if (log == null || log.isBlank()) {
+      return null;
+    }
+    String trimmed = log.trim();
+    if (trimmed.length() <= max) {
+      return trimmed;
+    }
+    return trimmed.substring(0, max) + "\n…(truncated)";
   }
 
   /**

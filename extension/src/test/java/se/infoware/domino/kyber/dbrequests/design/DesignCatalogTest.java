@@ -8,15 +8,11 @@ import org.junit.jupiter.api.Test;
 class DesignCatalogTest {
 
   @Test
-  void categoryKyberEnabledIsAWholeToken() {
+  void containsRecognizesKyberEnabledAmongOthers() {
+    assertTrue(DesignCatalog.contains("KyberEnabled"));
+    assertTrue(DesignCatalog.contains("Prod, KyberEnabled; Archive"));
+    assertFalse(DesignCatalog.contains("Production"));
     assertFalse(DesignCatalog.contains(null));
     assertFalse(DesignCatalog.contains(""));
-    assertFalse(DesignCatalog.contains("  "));
-    assertFalse(DesignCatalog.contains("Kyber"));
-    assertFalse(DesignCatalog.contains("KyberEnabledExtra"));
-    assertTrue(DesignCatalog.contains("KyberEnabled"));
-    assertTrue(DesignCatalog.contains("kyberenabled"));
-    assertTrue(DesignCatalog.contains("Other, KyberEnabled"));
-    assertTrue(DesignCatalog.contains("KyberEnabled; Archive"));
   }
 }

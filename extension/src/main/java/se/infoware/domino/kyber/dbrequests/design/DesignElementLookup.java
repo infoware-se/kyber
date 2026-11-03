@@ -270,7 +270,8 @@ final class DesignElementLookup {
             }
             yield true;
           }
-          case "jar", "applet", "javasource", "dataconnection", "webcontent", "xpagesresource" -> {
+          case "jar", "applet", "javasource", "dataconnection", "webcontent", "xpagesresource",
+                  "designnote" -> {
             ResidualDesign.delete(db, t, n);
             yield true;
           }

@@ -175,6 +175,84 @@ final class DesignDefaults {
     }
   }
 
+  /**
+   * List starter templates for a type: NSF matches (KyberEnabled defaults DB) plus embedded JAR
+   * names when present.
+   */
+  static JsonObject listTemplates(KeepJnxSession session, String type, String kind)
+      throws KeepExceptionWrongDataRequest {
+    String key = normalizeType(type);
+    String resolvedKind = isKindedType(key) ? normalizeKind(key, kind) : null;
+    JsonArray templates = new JsonArray();
+    Optional<Database> dbOpt = tryOpenDefaultsDb(session);
+    if (dbOpt.isPresent()) {
+      try {
+        for (JsonObject el : nsfMatches(dbOpt.get(), key, resolvedKind)) {
+          JsonObject row =
+              new JsonObject()
+                  .put("name", el.getString("name", ""))
+                  .put("source", "nsf")
+                  .put("type", key);
+          if (resolvedKind != null) {
+            row.put("kind", resolvedKind);
+          } else if (isKindedType(key)) {
+            String detected = detectKind(key, el.getString("dxl", ""));
+            if (detected != null) {
+              row.put("kind", detected);
+            }
+          }
+          templates.add(row);
+        }
+      } catch (Exception ignored) {
+        // NSF templates optional when open fails mid-export
+      }
+    }
+    Optional<String> embedded = classpathDxl(key, resolvedKind);
+    if (embedded.isPresent()) {
+      JsonObject row =
+          new JsonObject()
+              .put("name", defaultNameFor(key, resolvedKind))
+              .put("source", "api")
+              .put("type", key);
+      if (resolvedKind != null) {
+        row.put("kind", resolvedKind);
+      }
+      templates.add(row);
+    }
+    return new JsonObject()
+        .put("type", key)
+        .put("kind", resolvedKind)
+        .put("templates", templates)
+        .put("count", templates.size());
+  }
+
+  /** Resolve starter DXL without writing — same rules as empty create. */
+  static JsonObject preview(KeepJnxSession session, String type, String kind, String templateName)
+      throws KeepExceptionWrongDataRequest {
+    return resolveOne(session, type, kind, templateName);
+  }
+
+  private static List<JsonObject> nsfMatches(Database db, String type, String resolvedKind)
+      throws Exception {
+    JsonArray exported = DesignElementExport.exportAll(db);
+    List<JsonObject> matches = new ArrayList<>();
+    for (int i = 0; i < exported.size(); i++) {
+      JsonObject el = exported.getJsonObject(i);
+      String t = DesignBulkTypes.normalize(el.getString("type", ""));
+      if (!type.equals(t) || !countsAsStarter(el)) {
+        continue;
+      }
+      if (resolvedKind != null) {
+        String detected = detectKind(type, el.getString("dxl", ""));
+        if (detected == null || !resolvedKind.equals(detected)) {
+          continue;
+        }
+      }
+      matches.add(el);
+    }
+    return matches;
+  }
+
   static JsonObject resolveOne(KeepJnxSession session, String type)
       throws KeepExceptionWrongDataRequest {
     return resolveOne(session, type, null, null);
