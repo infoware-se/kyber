@@ -39,7 +39,7 @@ class DesignCommentTest {
     assertEquals(once, DesignComment.apply(once, "0.24.4"));
     assertEquals(once, DesignComment.apply(DesignComment.apply(once, "0.24.4"), "0.24.4"));
     assertEquals(
-        "Kyber 0.26.0 Infoware - The Comment", DesignComment.apply(once, "0.26.0"));
+        "Kyber 0.26.1 Infoware - The Comment", DesignComment.apply(once, "0.26.1"));
   }
 
   @Test
@@ -74,9 +74,9 @@ class DesignCommentTest {
 
   @Test
   void packagedVersionIsTheCurrentRelease() {
-    assertEquals("0.26.0", DesignComment.version());
+    assertEquals("0.26.1", DesignComment.version());
     String stamped = DesignComment.apply("The Comment", DesignComment.version());
-    assertEquals("Kyber 0.26.0 Infoware - The Comment", stamped);
+    assertEquals("Kyber 0.26.1 Infoware - The Comment", stamped);
     assertEquals(stamped, DesignComment.apply(stamped, DesignComment.version()));
     assertFalse(DesignComment.version().contains("$"));
   }

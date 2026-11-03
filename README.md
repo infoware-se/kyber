@@ -10,7 +10,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.26.0 |
+| **Version** | 0.26.1 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
@@ -236,6 +236,14 @@ Domino REST API 1.1.8 adds an experimental DXL API under `/api/dxl`. Kyber does 
 ## Improvements
 
 Kyber is the design API on DRAPI. It uses Domino JNX for design work. Infoware product work for agents and MCP adapters belongs here. A local wishlist for **DRAPI and Domino JNX** (API and docs) stays under `ignore/` and is not published with the repo. Aldhani's MCP tool selection and refuse policies stay in that product — Kyber ships complete design routes; MCP products choose their subset.
+
+**Shipped in 0.26.1**
+
+1. Missing design notes return **404** (`KeepExceptionNotFound`); failed post-write lookup is a server error.
+2. `PUT /acl` refuses dropping `-Default-` / `LocalDomainServers` before template ACL inject.
+3. Empty `PUT /import` on an existing NSF skips DxlImporter/`compileAll` (avoids nrestapi LockMemHandle panics on this host).
+4. `/content` reads Designer `<png>`/`<gif>` bodies; agent kind detects `agenttype=formula|simpleaction`.
+5. Blank NSF web launch opens `$MainFrameset`; restart/smoke wait for a stable restapi window after reload.
 
 **Shipped in 0.26.0**
 
