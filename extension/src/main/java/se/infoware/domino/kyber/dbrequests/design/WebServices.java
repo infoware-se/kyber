@@ -6,7 +6,7 @@ import com.hcl.domino.data.DocumentClass;
 import com.hcl.domino.data.IDTable;
 import com.hcl.domino.design.DesignElement;
 import com.hcl.domino.dxl.DxlExporter;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.misc.NotesConstants;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -71,10 +71,10 @@ final class WebServices {
     return Optional.empty();
   }
 
-  static Entry require(Database db, Kind kind, String name) throws KeepExceptionWrongDataRequest {
+  static Entry require(Database db, Kind kind, String name) throws KeepExceptionNotFound {
     String label = kind == Kind.PROVIDER ? "WebServiceProvider" : "WebServiceConsumer";
     return find(db, kind, name)
-        .orElseThrow(() -> new KeepExceptionWrongDataRequest(label + " not found: " + name));
+        .orElseThrow(() -> new KeepExceptionNotFound(label + " not found: " + name));
   }
 
   static String exportDxl(Database db, Document doc) throws Exception {

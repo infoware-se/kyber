@@ -35,6 +35,9 @@
   - GET /databases replicaId for kybertest.nsf matches that export.
   - POST /database refuses KeepConfig.nsf. A missing NSF is created, and a second create of that file is 409. The file stays.
   - DELETE /database refuses KeepConfig.nsf. A disposable NSF is created and then deleted. kybertest.nsf stays.
+  - 0.26 product surface: lookup/search, copy/rename/patch, binary /content, /compile,
+    /templates + /defaults/preview, /named/{type}, /designnotes list + missing get,
+    /database/category on a disposable NSF, /database/fromTemplate (+ inherit when possible)
   - after that, DELETE each smoked element and the Hello World document, then create the
     design again so kybertest.nsf still holds it. -SkipDelete leaves everything in place.
 
@@ -117,6 +120,8 @@ function Invoke-Design {
     [string]$OutFile
   )
   # Do not use $args — it is an automatic variable in PowerShell and breaks splatting.
+  # Truncate so HTTP 000 failures do not show a previous response body.
+  if ($OutFile) { [IO.File]::WriteAllBytes($OutFile, [byte[]]@()) }
   $curlSsl = if ($SkipCertificateCheck) { "-sk" } else { "-s" }
   $curlArgs = @($curlSsl, "-o", $OutFile, "-w", "%{http_code}", "-X", $Method,
     "-H", "Authorization: Bearer $token")
@@ -642,7 +647,8 @@ function Set-ColumnHello([string]$Dxl) {
   }
   $value = [regex]"(?s)(<code event='value'><formula>).*?(</formula></code>)"
   if ($value.IsMatch($dxl)) { $dxl = $value.Replace($dxl, '${1}SmokeHello${2}', 1) }
-  $selection = [regex]"(?s)(<code event='selection'><formula>).*?(</formula></code>)"
+  # Exporter may break the opening tag across lines: <formula\n>
+  $selection = [regex]"(?s)(<code event='selection'><formula\s*>).*?(</formula>\s*</code>)"
   if ($selection.IsMatch($dxl)) {
     $dxl = $selection.Replace($dxl, '${1}SELECT Form = "SmokeForm"${2}', 1)
   }
@@ -855,11 +861,13 @@ function Invoke-DominoWebSmoke {
   if (-not $xpageOk) { Fail "Domino $xpageUrl -> HTTP $xpageCode" }
   Ok "web $xpageUrl"
 
-  Assert-DominoShows "/${NsfPath}?OpenDatabase" "Kyber Smoke Test"
-  Assert-DominoShows "/${NsfPath}?OpenDatabase&Login" "Kyber Smoke Test"
+  # Blank-app web launch opens $MainFrameset; the DB title lives in a child frame / About.
+  Assert-DominoShows "/${NsfPath}?OpenDatabase" "`$AppTitle?OpenPage"
+  Assert-DominoShows "/${NsfPath}?OpenDatabase&Login" "`$AppTitle?OpenPage"
   if ($replicaId) {
-    Assert-DominoShows ("/__{0}.nsf?OpenDatabase" -f $replicaId) "Kyber Smoke Test"
+    Assert-DominoShows ("/__{0}.nsf?OpenDatabase" -f $replicaId) "`$AppTitle?OpenPage"
   }
+  Assert-DominoShows "/${NsfPath}?OpenAbout" "Kyber Smoke Test"
   Assert-DominoImage "/$NsfPath/`$icon?OpenIcon"
   Assert-DominoHello "/$NsfPath/SmokeForm?OpenForm"
   Assert-DominoHello "/$NsfPath/SmokeForm?ReadForm"
@@ -897,10 +905,11 @@ function Invoke-DominoWebSmoke {
   }
   $unid = $created[-1]
   Assert-DominoShows "/$NsfPath/SmokeView?ReadViewEntries&OutputFormat=JSON" "Hello\u0020World"
-  Assert-DominoHello "/$NsfPath/SmokeView/`$first?OpenDocument"
-  Assert-DominoHello "/$NsfPath/SmokeView/Hello%20World?OpenDocument"
+  # Open the CreateDocument row by UNID (agents also write Form=SmokeHello docs into the view).
   Assert-DominoHello "/$NsfPath/0/${unid}?OpenDocument"
   Assert-DominoHello "/$NsfPath/0/${unid}?EditDocument"
+  Assert-DominoHello "/$NsfPath/SmokeView/`$first?OpenDocument"
+  Assert-DominoHello "/$NsfPath/SmokeView/Hello%20World?OpenDocument"
   Assert-DominoShows "/$NsfPath/SmokeFolder?OpenView" "SmokeFolder"
   Assert-DominoShows "/$NsfPath/SmokeNavigator?OpenNavigator" "SmokeNavigator"
   Assert-DominoShows "/$NsfPath/SmokeFrameset?OpenFrameset" "SmokeFrameset"
@@ -1039,6 +1048,190 @@ function Invoke-UpdateOnly([string]$Path, [string]$TargetNsf = "") {
   Ok "updated $label"
 }
 
+function Invoke-ProductSurfaceSmoke {
+  # Requires SmokeForm + SmokeImage.gif already created in $NsfPath.
+  $code = Invoke-Design GET (Design-Url "forms/SmokeForm") -OutFile $out
+  Assert-Code "GET SmokeForm for product surface" $code @("200")
+  $form = Get-ResponseText | ConvertFrom-Json
+  Assert-Unid "SmokeForm" $form.unid
+  Assert-NoteId "SmokeForm" $form.noteId
+
+  $code = Invoke-Design GET (Design-Url "lookup" "unid=$($form.unid)") -OutFile $out
+  Assert-Code "GET /lookup?unid=" $code @("200")
+  $looked = Get-ResponseText | ConvertFrom-Json
+  if ([string]$looked.unid -ne [string]$form.unid) {
+    Fail "/lookup unid '$($looked.unid)' expected '$($form.unid)'"
+  }
+  Ok "GET /lookup by unid"
+  $code = Invoke-Design GET (Design-Url "lookup" "noteId=$($form.noteId)") -OutFile $out
+  Assert-Code "GET /lookup?noteId=" $code @("200")
+  Ok "GET /lookup by noteId"
+  $code = Invoke-Design GET (Design-Url "lookup" "unid=00000000000000000000000000000000") -OutFile $out
+  Assert-NotFound "GET /lookup missing" $code (Get-ResponseText)
+
+  $code = Invoke-Design GET (Design-Url "search" "q=SmokeForm&match=name") -OutFile $out
+  Assert-Code "GET /search" $code @("200")
+  $search = Get-ResponseText | ConvertFrom-Json
+  $hits = @($search.elements | Where-Object { $_.name -eq "SmokeForm" })
+  if ($hits.Count -lt 1) { Fail "/search did not find SmokeForm: $(Get-ResponseText)" }
+  Ok "GET /search SmokeForm"
+
+  $code = Invoke-Design GET (Design-Url "named/form" "name=SmokeForm") -OutFile $out
+  Assert-Code "GET /named/form" $code @("200")
+  Ok "GET /named/form?name=SmokeForm"
+  $code = Invoke-Design GET (Design-Url "named/form" "name=NoSuchSmokeForm") -OutFile $out
+  Assert-NotFound "GET /named/form missing" $code (Get-ResponseText)
+
+  $copyName = "SmokeFormCopy"
+  $code = Invoke-Design POST (Design-Url "copy" "type=form&name=SmokeForm&toName=$copyName") -OutFile $out
+  if ($code -eq "409") {
+    $code = Invoke-Design DELETE (Design-Url "forms/$copyName") -OutFile $out
+    Assert-Code "DELETE leftover $copyName" $code @("200")
+    $code = Invoke-Design POST (Design-Url "copy" "type=form&name=SmokeForm&toName=$copyName") -OutFile $out
+  }
+  Assert-Code "POST /copy form" $code @("200")
+  Ok "POST /copy SmokeForm -> $copyName"
+
+  $renamed = "SmokeFormRenamed"
+  $code = Invoke-Design POST (Design-Url "rename" "type=form&name=$copyName&newName=$renamed") -OutFile $out
+  if ($code -eq "409") {
+    Invoke-Design DELETE (Design-Url "forms/$renamed") -OutFile $out | Out-Null
+    $code = Invoke-Design POST (Design-Url "rename" "type=form&name=$copyName&newName=$renamed") -OutFile $out
+  }
+  Assert-Code "POST /rename form" $code @("200")
+  Ok "POST /rename $copyName -> $renamed"
+
+  $patchFile = Join-Path $env:TEMP "smoke-patch.json"
+  [IO.File]::WriteAllText($patchFile, '{"comment":"SmokePatch"}')
+  $code = Invoke-Design PATCH (Design-Url "patch" "type=form&name=$renamed") `
+    -BodyFile $patchFile -ContentType "application/json" -OutFile $out
+  Assert-Code "PATCH /patch" $code @("200")
+  $patched = Get-ResponseText | ConvertFrom-Json
+  if ([string]$patched.dxl -notmatch "comment='SmokePatch'|comment=`"SmokePatch`"") {
+    Fail "PATCH /patch did not set comment: $($patched.dxl.Substring(0, [Math]::Min(200, $patched.dxl.Length)))"
+  }
+  Ok "PATCH /patch comment"
+  $code = Invoke-Design POST (Design-Url "copy" "type=form&name=NoSuchForm&toName=Nope") -OutFile $out
+  Assert-NotFound "POST /copy missing source" $code (Get-ResponseText)
+
+  $code = Invoke-Design DELETE (Design-Url "forms/$renamed") -OutFile $out
+  Assert-Code "DELETE $renamed" $code @("200")
+  Ok "cleaned copy/rename form"
+
+  $code = Invoke-Design GET (Design-Url "content" "type=image&name=SmokeImage.gif") -OutFile $out
+  Assert-Code "GET /content image" $code @("200")
+  $bin = Get-ResponseText | ConvertFrom-Json
+  if ([string]::IsNullOrWhiteSpace([string]$bin.contentBase64)) {
+    Fail "GET /content missing contentBase64"
+  }
+  Ok "GET /content image"
+  $contentFile = Join-Path $env:TEMP "smoke-content.json"
+  $contentBody = @{ contentBase64 = [string]$bin.contentBase64 } | ConvertTo-Json -Compress
+  [IO.File]::WriteAllText($contentFile, $contentBody)
+  $code = Invoke-Design PUT (Design-Url "content" "type=image&name=SmokeImage.gif") `
+    -BodyFile $contentFile -ContentType "application/json" -OutFile $out
+  Assert-Code "PUT /content image" $code @("200")
+  Ok "PUT /content image"
+  $code = Invoke-Design GET (Design-Url "content" "type=image&name=NoSuchImage.gif") -OutFile $out
+  Assert-NotFound "GET /content missing" $code (Get-ResponseText)
+
+  $code = Invoke-Design POST (Design-Url "compile") -OutFile $out
+  Assert-Code "POST /compile" $code @("200")
+  $compiled = Get-ResponseText | ConvertFrom-Json
+  if (-not $compiled.PSObject.Properties.Name.Contains("success")) {
+    Fail "POST /compile missing success: $(Get-ResponseText)"
+  }
+  Ok "POST /compile success=$($compiled.success)"
+
+  $code = Invoke-Design GET (Design-Url "templates" "type=form") -OutFile $out
+  # /templates uses reader ACL and may omit nsfPath; Design-Url still sends kybertest.
+  Assert-Code "GET /templates?type=form" $code @("200")
+  Ok "GET /templates?type=form"
+
+  $code = Invoke-Design POST (Design-Url "defaults/preview" "type=form&name=SmokePreview") -OutFile $out
+  Assert-Code "POST /defaults/preview" $code @("200")
+  $preview = Get-ResponseText | ConvertFrom-Json
+  if ([string]::IsNullOrWhiteSpace([string]$preview.dxl)) {
+    Fail "POST /defaults/preview missing dxl"
+  }
+  Ok "POST /defaults/preview"
+
+  $code = Invoke-Design GET (Design-Url "designnotes") -OutFile $out
+  Assert-Code "GET /designnotes" $code @("200")
+  Ok "GET /designnotes"
+  $code = Invoke-Design GET (Design-Url "designnotes/NoSuchDesignNote") -OutFile $out
+  Assert-NotFound "GET /designnotes missing" $code (Get-ResponseText)
+
+  $code = Invoke-Design GET (Design-Url "agents") -OutFile $out
+  Assert-Code "GET /agents for trigger" $code @("200")
+  $agents = Get-ResponseText | ConvertFrom-Json
+  $ls = @($agents.elements | Where-Object { $_.name -eq "SmokeAgentLs" })
+  if ($ls.Count -lt 1) { Fail "agent list missing SmokeAgentLs" }
+  if ($ls[0].PSObject.Properties.Name -contains "trigger") {
+    Ok "GET /agents trigger=$($ls[0].trigger)"
+  } else {
+    Ok "GET /agents (no trigger field on this agent)"
+  }
+
+  $catNsf = "kyber-category.nsf"
+  $code = Invoke-Design POST (Design-UrlOn $catNsf "database" "dbTitle=Kyber%20Category") -OutFile $out
+  if ($code -in @("200", "201", "409")) {
+    $code = Invoke-Design PUT (Design-UrlOn $catNsf "database/category" "enabled=false") -OutFile $out
+    Assert-Code "PUT /database/category enabled=false" $code @("200")
+    $code = Invoke-Design PUT (Design-UrlOn $catNsf "database/category" "enabled=true") -OutFile $out
+    Assert-Code "PUT /database/category enabled=true" $code @("200")
+    Ok "PUT /database/category round-trip"
+    $code = Invoke-Design DELETE (Design-UrlOn $catNsf "database") -OutFile $out
+    if ($code -ne "200") { Fail "DELETE $catNsf -> HTTP $code $(Get-ResponseText)" }
+    Ok "cleaned $catNsf"
+  } elseif ($code -eq "403") {
+    Ok "PUT /database/category skipped; Create databases & templates required"
+  } else {
+    Fail "POST /database $catNsf -> HTTP $code $(Get-ResponseText)"
+  }
+
+  $tplNsf = "kyber-fromtpl.nsf"
+  $code = Invoke-Design POST (
+    Design-UrlOn $tplNsf "database/fromTemplate" (
+      "templateNsfPath=$([uri]::EscapeDataString($NsfPath))&dbTitle=Kyber%20FromTemplate"
+    )
+  ) -OutFile $out
+  if ($code -in @("200", "201")) {
+    $created = Get-ResponseText | ConvertFrom-Json
+    if (-not $created.created) { Fail "fromTemplate did not set created" }
+    Assert-ReplicaId "fromTemplate" $created.replicaId
+    Ok "POST /database/fromTemplate created $tplNsf"
+    $code = Invoke-Design POST (
+      Design-UrlOn $tplNsf "database/fromTemplate" (
+        "templateNsfPath=$([uri]::EscapeDataString($NsfPath))"
+      )
+    ) -OutFile $out
+    if ($code -ne "409") { Fail "fromTemplate exists -> HTTP $code $(Get-ResponseText)" }
+    Ok "POST /database/fromTemplate 409 when exists"
+    $code = Invoke-Design POST (Design-UrlOn $tplNsf "database/inherit") -OutFile $out
+    if ($code -eq "200") {
+      Ok "POST /database/inherit"
+    } elseif ($code -in @("403", "500")) {
+      # Domino may refuse refresh without a design template link; must not be coerced to 400.
+      Ok "POST /database/inherit -> $code (not coerced to 400)"
+    } elseif ($code -eq "400" -and (Get-ResponseText) -match "(?i)required|invalid") {
+      Fail "POST /database/inherit unexpected client 400: $(Get-ResponseText)"
+    } else {
+      Fail "POST /database/inherit -> HTTP $code $(Get-ResponseText)"
+    }
+    $code = Invoke-Design DELETE (Design-UrlOn $tplNsf "database") -OutFile $out
+    if ($code -ne "200") { Fail "DELETE $tplNsf -> HTTP $code $(Get-ResponseText)" }
+    Ok "cleaned $tplNsf"
+  } elseif ($code -eq "409") {
+    Ok "POST /database/fromTemplate left $tplNsf in place"
+    Invoke-Design DELETE (Design-UrlOn $tplNsf "database") -OutFile $out | Out-Null
+  } elseif ($code -eq "403") {
+    Ok "POST /database/fromTemplate needs Create databases & templates"
+  } else {
+    Fail "POST /database/fromTemplate -> HTTP $code $(Get-ResponseText)"
+  }
+}
+
 if (-not $NsfPath) {
   $NsfPath = "kybertest.nsf"
 }
@@ -1091,12 +1284,21 @@ if ($JavaHelloOnly) {
 $smokeTitle = "Kyber Smoke Test"
 $bulkFile = Join-Path $env:TEMP "smoke-bulk.json"
 [IO.File]::WriteAllText($bulkFile, (@{ nsfPath = $NsfPath; elements = @() } | ConvertTo-Json -Compress -Depth 5))
-$code = Invoke-Design PUT (Design-Url "import" "dbTitle=$([uri]::EscapeDataString($smokeTitle))") `
-  -BodyFile $bulkFile -ContentType "application/json" -OutFile $out
-if ($code -notin @("200", "201")) {
-  Fail "PUT /import (ensure NSF) -> HTTP $code $(Get-Content $out -Raw)"
+# Empty PUT /import on an existing NSF has panicked nrestapi (LockMemHandle) on this host —
+# only create when the NSF is missing.
+$code = Invoke-Design GET (Design-Url "forms") -OutFile $out
+$bulkResp = $null
+if ($code -eq "200") {
+  Ok "nsf ready (existing)"
+  $bulkResp = @{ created = $false; nsfPath = $NsfPath }
+} else {
+  $code = Invoke-Design PUT (Design-Url "import" "dbTitle=$([uri]::EscapeDataString($smokeTitle))") `
+    -BodyFile $bulkFile -ContentType "application/json" -OutFile $out
+  if ($code -notin @("200", "201")) {
+    Fail "PUT /import (ensure NSF) -> HTTP $code $(Get-Content $out -Raw)"
+  }
+  $bulkResp = Get-Content $out -Raw | ConvertFrom-Json
 }
-$bulkResp = Get-Content $out -Raw | ConvertFrom-Json
 $validateFile = Join-Path $env:TEMP "smoke-validate.json"
 [IO.File]::WriteAllText($validateFile, '{"elements":[{"type":"form","name":"Broken","dxl":"<form>"}]}')
 $code = Invoke-Design POST (Design-Url "validate") -BodyFile $validateFile `
@@ -1390,6 +1592,8 @@ Assert-Code "GET /forms aliases" $code @("200")
 $formRow = @((Get-ResponseText | ConvertFrom-Json).elements | Where-Object { $_.name -eq "SmokeForm" })
 if ($formRow.Count -lt 1) { Fail "form list missing SmokeForm" }
 
+Invoke-ProductSurfaceSmoke
+
 Invoke-DominoWebSmoke
 
 # Export the smoked NSF and import it into a second database. Repo domino/ stays the template tree.
@@ -1402,7 +1606,9 @@ $roundTrip = @{
 }
 if ($SkipCertificateCheck) { $roundTrip.SkipCertificateCheck = $true }
 try {
-  & (Join-Path $PSScriptRoot "export-to-repo.ps1") @roundTrip -NsfPath $NsfPath -OutDir $exportDir
+  # Domino's DXL exporter sometimes returns named shells without payload for stylesheet /
+  # sharedcolumn; AllowSkipped keeps the round-trip covering the types smoke asserts below.
+  & (Join-Path $PSScriptRoot "export-to-repo.ps1") @roundTrip -NsfPath $NsfPath -OutDir $exportDir -AllowSkipped
 } catch {
   Fail "export-to-repo: $($_.Exception.Message)"
 }

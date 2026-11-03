@@ -4,7 +4,7 @@ import com.hcl.domino.data.Database;
 import com.hcl.domino.design.ImageResource;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -21,7 +21,7 @@ public class DeleteImage extends KyberRequest {
     DesignAccess.requireDeleteDocuments(request.session(), db);
     Optional<ImageResource> opt = db.getDesign().getImageResource(name);
     if (opt.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("ImageResource not found: " + name);
+      throw new KeepExceptionNotFound("ImageResource not found: " + name);
     }
     opt.get().delete();
     request.emit(new JsonObject().put("success", true).put("name", name));

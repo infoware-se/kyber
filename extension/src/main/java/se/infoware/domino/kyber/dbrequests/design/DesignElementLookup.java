@@ -6,6 +6,7 @@ import com.hcl.domino.design.DatabaseScriptLibrary;
 import com.hcl.domino.design.DesignElement;
 import com.hcl.domino.design.UsingDocument;
 import com.hcl.domino.dxl.DxlExporter;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import java.util.Locale;
 import java.util.Optional;
@@ -188,7 +189,7 @@ final class DesignElementLookup {
     };
   }
 
-  /** Delete one named design note; 400-style when missing (caller may map). */
+  /** Delete one named design note; {@link KeepExceptionNotFound} when missing. */
   static void deleteNamed(Database db, String type, String name) throws Exception {
     String t = DesignBulkTypes.normalize(type);
     if (name == null || name.isBlank()) {
@@ -279,7 +280,7 @@ final class DesignElementLookup {
               throw new KeepExceptionWrongDataRequest("Unsupported type for delete: " + t);
         };
     if (!removed) {
-      throw new KeepExceptionWrongDataRequest(typeLabel(t) + " not found: " + n);
+      throw new KeepExceptionNotFound(typeLabel(t) + " not found: " + n);
     }
   }
 

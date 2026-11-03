@@ -5,7 +5,7 @@ import com.hcl.domino.design.Page;
 import com.hcl.domino.dxl.DxlExporter;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -22,7 +22,7 @@ public class GetPage extends KyberRequest {
 
     Optional<Page> pageOpt = db.getDesign().getPage(name);
     if (pageOpt.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("Page not found: " + name);
+      throw new KeepExceptionNotFound("Page not found: " + name);
     }
 
     Page page = pageOpt.get();

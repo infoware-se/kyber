@@ -14,7 +14,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
-| **Swagger tags** | `design-element` for typed CRUD, `design-handler` for `/export`, `/import`, and `/databases` |
+| **Swagger tags** | `design-element` for typed CRUD and helpers (`/lookup`, `/copy`, …), `design-handler` for `/export`, `/import`, `/database`, `/databases`, `/fromTemplate` |
 | **Template NSF** | `kyber.nsf` (`kyber.defaultNsf`) |
 | **Category** | `KyberEnabled`. A database without it responds 403 **Not Kyber enabled** |
 | **Reference** | [extension/README.md](extension/README.md) |
@@ -35,7 +35,7 @@ Every call acts only on a database whose catalog category is **KyberEnabled**. I
 
 A database without that category responds **403** with the message **Not Kyber enabled**. `GET /databases` leaves it out.
 
-`POST /database`, and a design import that creates a missing NSF, set the category on the new file. Those calls need the server privilege **Create databases & templates**. A blank field allows everyone. A name in the field may be a user, a server, or a group. Kyber gives the caller Manager on the new file and writes the category in the same step.
+`POST /database`, `POST /database/fromTemplate`, and a design import that creates a missing NSF, set the category on the new file. Those calls need the server privilege **Create databases & templates**. A blank field allows everyone. A name in the field may be a user, a server, or a group. Kyber gives the caller Manager on the new file and writes the category in the same step.
 
 `DELETE /database` removes an NSF whose category is **KyberEnabled**. That call needs **Manager** on the file. A database without the category responds **403** **Not Kyber enabled**. `KeepConfig.nsf` cannot be deleted.
 
@@ -159,7 +159,7 @@ Send your own design as DXL (`Content-Type: text/xml`). A full form is in the [m
 
 Per-type create needs an existing NSF. The design import, `PUT /api/kyber-v1/import?nsfPath=&dbTitle=`, creates a missing NSF and imports the design. `POST /database` creates a missing NSF without importing design. `GET /databases` lists the NotesDbDirectory file type this user can open. `fileType` defaults to `database` (1247). `more` is set when other databases of that type exist, and those paths are not returned. The target keeps its own replica id.
 
-A second create of the same name returns **409**. A missing element comes back as **404** or **400**, and the message says it was not found.
+A second create of the same name returns **409**. A missing element throws `KeepExceptionNotFound` (OpenAPI **404**). KEEP often maps that exception to HTTP **400**; the message still says it was not found.
 
 ## Access
 
@@ -170,7 +170,7 @@ The call runs as the signed-in user. On a database that already exists, the limi
 | Designer | List, get, create, update, and delete design |
 | Manager | Replace the ACL, and delete the NSF when its category is KyberEnabled. `-Default-` and `LocalDomainServers` must remain in the new ACL. A Manager includes the Designer rights above. |
 
-The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**. A blank field allows everyone, and a name in the field may be a user, a server, or a group. The import then creates the file, sets the category **KyberEnabled**, and imports the design. `POST /database` checks that same privilege and creates an empty NSF. `DELETE /database` needs Manager on an NSF whose category is KyberEnabled. `KeepConfig.nsf` cannot be deleted. The same import into a database that already exists uses the ACL table above. `GET /databases` needs Reader on the database that runs the call. `fileType` defaults to `database` (1247: NSF, NSG, or NSH). `template` (1248) is an NTF. `replica_candidate` (1245) is a database or template that is not disabled for replication. `template_candidate` (1246) is any database or template. A file is returned only when this user can open it. `more` is true when other databases of that type exist, and those paths are not returned.
+The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**. A blank field allows everyone, and a name in the field may be a user, a server, or a group. The import then creates the file, sets the category **KyberEnabled**, and imports the design. `POST /database` and `POST /database/fromTemplate` check that same privilege and create an NSF (empty, or from a template). `DELETE /database` needs Manager on an NSF whose category is KyberEnabled. `KeepConfig.nsf` cannot be deleted. The same import into a database that already exists uses the ACL table above. `GET /databases` needs Reader on the database that runs the call. `fileType` defaults to `database` (1247: NSF, NSG, or NSH). `template` (1248) is an NTF. `replica_candidate` (1245) is a database or template that is not disabled for replication. `template_candidate` (1246) is any database or template. A file is returned only when this user can open it. `more` is true when other databases of that type exist, and those paths are not returned.
 
 A Manager may create shared and personal folders, views, and agents. Domino keeps those rights on the Manager level and does not store them as separate checkboxes. Delete documents stays a stored flag at every level. Designer and below need the design checkboxes stored on the ACL entry.
 
@@ -191,6 +191,7 @@ Collections are plural. A get, update, or delete adds `/{name}`.
 | WebContent/WEB-INF | `xsp.properties` | `/xspproperties` |
 | Composite Applications | wiring properties, applications, components | `/wiringproperties` `/compositeapplications` `/compositecomponents` |
 | Application | properties, database icon (`$DBIcon`), ACL | `/applicationproperties` `/dbicon` `/acl` |
+| Residual | named notes with no Designer folder | `/designnotes` (bulk folder `_designnotes`) |
 
 Three types take `?kind=` on an empty create:
 
@@ -226,7 +227,7 @@ domino/<nsf path>-<replica id>/
 
 The folders follow Package Explorer. Each note is `<name>-<note id>.dxl`. `manifest.json` is the import index (`type`, path, name). [`tools/import-from-repo.ps1`](tools/import-from-repo.ps1) reads it. `-OutDir` is a repository root, and the NSF folder is created under `domino/` there. A later export replaces that one NSF folder. These trees stay on disk. This repository does not commit them.
 
-Named notes with no Designer folder land in `_designnotes` and are type `designnote`. That type is part of the bulk export. It has no list, get, or delete of its own.
+Named notes with no Designer folder are type `designnote`: typed CRUD on `/designnotes`, and the same notes in the bulk export under `_designnotes`.
 
 ## HCL DXL API
 

@@ -3,7 +3,7 @@ package se.infoware.domino.kyber.dbrequests.design;
 import com.hcl.domino.data.Database;
 import com.hcl.domino.data.Document;
 import com.hcl.domino.design.SharedActions;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -47,10 +47,10 @@ final class SharedActionsNotes {
         .findFirst();
   }
 
-  static SharedActions require(Database db, String name) throws KeepExceptionWrongDataRequest {
+  static SharedActions require(Database db, String name) throws KeepExceptionNotFound {
     return find(db, name)
         .orElseThrow(
-            () -> new KeepExceptionWrongDataRequest("SharedActions not found: " + name));
+            () -> new KeepExceptionNotFound("SharedActions not found: " + name));
   }
 
   /** Design name: {@code $TITLE} first segment, else {@code $$ScriptName}. */

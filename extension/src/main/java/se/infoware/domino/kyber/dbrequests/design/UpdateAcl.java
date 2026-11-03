@@ -19,6 +19,8 @@ public class UpdateAcl extends KyberRequest {
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
     String dxl = request.incoming.getString("dxl", "");
     DesignDxl.requireRootOnly(dxl, TYPE);
+    // Refuse drops before importAcl's template inject can mask them.
+    DesignDxl.requireProtectedAclEntries(dxl);
     ImportDesign.ensureEmptyDefaultsNsf(request.session(), DominoClient.Encryption.None);
 
     Database db = request.db();

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE frameset SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <frameset name='$ViewFrameset' alias='$ViewFrameset' xmlns='http://www.lotus.com/dxl'
- version='14.5' maintenanceversion='1.0' replicaid='C1258EA3004BF40C' hide='web'
+ version='14.5' maintenanceversion='1.0' replicaid='C1258EA3004BF40C'
  publicaccess='false' designerversion='8.5.3' language='en' rows='98% 0px'
  spacing='0px' borderwidth='0px' bordercolor='silver'>
 <noteinfo noteid='1b2' unid='C1258EA3004BF40C85258900005124FB' sequence='18'>

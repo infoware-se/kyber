@@ -4,7 +4,7 @@ import com.hcl.domino.data.Database;
 import com.hcl.domino.design.SharedColumn;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -21,7 +21,7 @@ public class DeleteSharedColumn extends KyberRequest {
     DesignAccess.requireDeleteDocuments(request.session(), db);
     Optional<SharedColumn> opt = db.getDesign().getSharedColumn(name);
     if (opt.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("SharedColumn not found: " + name);
+      throw new KeepExceptionNotFound("SharedColumn not found: " + name);
     }
     opt.get().delete();
     request.emit(new JsonObject().put("success", true).put("name", name));

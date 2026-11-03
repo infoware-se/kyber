@@ -4,7 +4,7 @@ import com.hcl.domino.data.Database;
 import com.hcl.domino.design.Navigator;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -21,7 +21,7 @@ public class DeleteNavigator extends KyberRequest {
     DesignAccess.requireDeleteDocuments(request.session(), db);
     Optional<? extends Navigator> opt = db.getDesign().getNavigator(name);
     if (opt.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("Navigator not found: " + name);
+      throw new KeepExceptionNotFound("Navigator not found: " + name);
     }
     opt.get().delete();
     request.emit(new JsonObject().put("success", true).put("name", name));

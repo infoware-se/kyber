@@ -22,7 +22,9 @@ class KindAdaptersTest {
     assertEquals(AgentKinds.IMPORTEDJAVA, AgentKinds.detect("<agent agenttype='java'/>"));
     assertEquals(AgentKinds.JAVA, AgentKinds.detect("<javaproject name='x'>"));
     assertEquals(AgentKinds.FORMULA, AgentKinds.detect("<simpleaction action='runformula'/>"));
+    assertEquals(AgentKinds.FORMULA, AgentKinds.detect("<agent agenttype='formula'/>"));
     assertEquals(AgentKinds.SIMPLEACTION, AgentKinds.detect("<simpleaction action='sendmail'/>"));
+    assertEquals(AgentKinds.SIMPLEACTION, AgentKinds.detect("<agent agenttype='simpleaction'/>"));
     assertEquals(AgentKinds.LOTUSSCRIPT, AgentKinds.detect("<lotusscript>Sub Init</lotusscript>"));
     assertNull(AgentKinds.detect("<agent name='x'/>"));
     assertThrows(KeepExceptionWrongDataRequest.class, () -> AgentKinds.normalize("cobol"));

@@ -43,6 +43,7 @@ public class CreateDatabaseFromTemplate extends KyberRequest {
       throw KeepException.status("Database already exists: " + target, ErrorClassification.CONFLICT);
     }
 
+    DesignAccess.requireCreateDatabase(session);
     DominoClient client = session.getClient();
     String[] dest = ImportDesign.serverAndPath(target);
     String[] src = ImportDesign.serverAndPath(template);

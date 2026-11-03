@@ -5,7 +5,7 @@ import com.hcl.domino.design.View;
 import com.hcl.domino.dxl.DxlExporter;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -22,7 +22,7 @@ public class GetView extends KyberRequest {
 
     Optional<View> viewOpt = db.getDesign().getView(name);
     if (viewOpt.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("View not found: " + name);
+      throw new KeepExceptionNotFound("View not found: " + name);
     }
 
     View view = viewOpt.get();

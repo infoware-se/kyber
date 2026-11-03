@@ -4,7 +4,7 @@ import com.hcl.domino.data.Database;
 import com.hcl.domino.design.Page;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -22,7 +22,7 @@ public class DeletePage extends KyberRequest {
 
     Optional<Page> page = db.getDesign().getPage(name);
     if (page.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("Page not found: " + name);
+      throw new KeepExceptionNotFound("Page not found: " + name);
     }
 
     page.get().delete();

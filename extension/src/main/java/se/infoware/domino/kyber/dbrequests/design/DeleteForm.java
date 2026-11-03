@@ -4,7 +4,7 @@ import com.hcl.domino.data.Database;
 import com.hcl.domino.design.Form;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -22,7 +22,7 @@ public class DeleteForm extends KyberRequest {
 
     Optional<Form> form = db.getDesign().getForm(name);
     if (form.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("Form not found: " + name);
+      throw new KeepExceptionNotFound("Form not found: " + name);
     }
 
     form.get().delete();

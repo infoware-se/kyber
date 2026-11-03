@@ -134,7 +134,7 @@ Kyber does not call `/api/dxl`. Infoware’s local wishlist for **Domino JNX** a
 
 | Need | Already in experimental `/api/dxl`? | Note |
 |--|--|--|
-| Missing element → HTTP **404** | Partial | HCL delete documents **404**; KEEP `KeepExceptionNotFound` often **400** for extensions |
+| Missing element → HTTP **404** | Partial | Kyber throws `KeepExceptionNotFound` (OpenAPI 404); KEEP often maps that exception to **400** for extensions. HCL delete documents **404** |
 | Protect `-Default-` and `LocalDomainServers` on ACL change | Yes | Cannot delete those entries. Kyber enforces the same on full ACL DXL replace |
 | Async import job and `designOption` / `documentsOption` | Yes | Kyber stays synchronous `PUT /import` |
 | Reader ACL for list/get/export/validate | Yes | Kyber requires Designer for design read and write |

@@ -5,6 +5,7 @@ import com.hcl.domino.design.Frameset;
 import com.hcl.domino.dxl.DxlExporter;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
@@ -28,7 +29,7 @@ public class GetFrameset extends KyberRequest {
           "Frameset not readable (unsupported/missing version): " + name);
     }
     if (framesetOpt.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("Frameset not found: " + name);
+      throw new KeepExceptionNotFound("Frameset not found: " + name);
     }
 
     Frameset frameset = framesetOpt.get();

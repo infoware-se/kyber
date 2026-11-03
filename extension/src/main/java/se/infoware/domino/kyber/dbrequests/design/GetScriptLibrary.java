@@ -5,7 +5,7 @@ import com.hcl.domino.design.ScriptLibrary;
 import com.hcl.domino.dxl.DxlExporter;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -21,7 +21,7 @@ public class GetScriptLibrary extends KyberRequest {
     Database db = request.db();
     Optional<ScriptLibrary> opt = db.getDesign().getScriptLibrary(name);
     if (opt.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("ScriptLibrary not found: " + name);
+      throw new KeepExceptionNotFound("ScriptLibrary not found: " + name);
     }
     ScriptLibrary el = opt.get();
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();

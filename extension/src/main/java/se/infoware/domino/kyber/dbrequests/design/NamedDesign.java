@@ -2,6 +2,7 @@ package se.infoware.domino.kyber.dbrequests.design;
 
 import com.hcl.domino.data.Database;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import io.vertx.core.json.JsonObject;
 
@@ -22,7 +23,7 @@ final class NamedDesign {
         DesignElementLookup.exportDxl(db, type, name)
             .orElseThrow(
                 () ->
-                    new KeepExceptionWrongDataRequest(
+                    new KeepExceptionNotFound(
                         DesignElementLookup.typeLabel(type) + " not found: " + name));
     request.emit(DesignPayload.note(name, dxl));
   }

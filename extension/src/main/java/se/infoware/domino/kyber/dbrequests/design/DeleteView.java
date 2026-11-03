@@ -4,7 +4,7 @@ import com.hcl.domino.data.Database;
 import com.hcl.domino.design.View;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -22,7 +22,7 @@ public class DeleteView extends KyberRequest {
 
     Optional<View> view = db.getDesign().getView(name);
     if (view.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("View not found: " + name);
+      throw new KeepExceptionNotFound("View not found: " + name);
     }
 
     view.get().delete();

@@ -6,7 +6,7 @@ import com.hcl.domino.design.DesignElement;
 import com.hcl.domino.dxl.DxlExporter;
 import com.hcl.domino.dxl.DxlImporter;
 import com.hcl.domino.keep.exceptions.KeepExceptionServer;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -32,11 +32,11 @@ final class ResidualDesign {
   }
 
   static BulkOnlyNotes.Entry require(Database db, String type, String name)
-      throws KeepExceptionWrongDataRequest {
+      throws KeepExceptionNotFound {
     return BulkOnlyNotes.find(db, type, name)
         .orElseThrow(
             () ->
-                new KeepExceptionWrongDataRequest(
+                new KeepExceptionNotFound(
                     type + " not found: " + (name == null ? "" : name)));
   }
 

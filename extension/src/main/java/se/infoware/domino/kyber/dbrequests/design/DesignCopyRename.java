@@ -3,6 +3,8 @@ package se.infoware.domino.kyber.dbrequests.design;
 import com.hcl.domino.data.Database;
 import com.hcl.domino.dxl.DxlImporter;
 import com.hcl.domino.keep.dbrequests.KeepJnxSession;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
+import com.hcl.domino.keep.exceptions.KeepExceptionServer;
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import io.vertx.core.json.JsonObject;
 
@@ -31,7 +33,7 @@ final class DesignCopyRename {
     String dxl =
         DesignElementLookup.exportDxl(sourceDb, t, from)
             .orElseThrow(
-                () -> new KeepExceptionWrongDataRequest(t + " not found: " + from));
+                () -> new KeepExceptionNotFound(t + " not found: " + from));
     String rootsHint = rootHints(t);
     String renamed = DesignDxl.withName(DesignDxl.forNewNote(dxl), dest, rootsHint.split(","));
     DesignCrud.conflictIfExists(targetDb, t, dest);
@@ -41,9 +43,7 @@ final class DesignCopyRename {
     String after =
         DesignElementLookup.exportDxl(targetDb, t, dest)
             .orElseThrow(
-                () ->
-                    new KeepExceptionWrongDataRequest(
-                        t + " missing after copy: " + dest));
+                () -> new KeepExceptionServer("%s missing after copy: %s", t, dest));
     JsonObject out =
         new JsonObject()
             .put("success", true)
@@ -75,7 +75,7 @@ final class DesignCopyRename {
     String dxl =
         DesignElementLookup.exportDxl(db, t, from)
             .orElseThrow(
-                () -> new KeepExceptionWrongDataRequest(t + " not found: " + from));
+                () -> new KeepExceptionNotFound(t + " not found: " + from));
     String beforeUnid = NoteIds.unidFromDxl(dxl);
     String rootsHint = rootHints(t);
     String renamed = DesignDxl.withName(dxl, dest, rootsHint.split(","));
@@ -86,9 +86,7 @@ final class DesignCopyRename {
     String after =
         DesignElementLookup.exportDxl(db, t, dest)
             .orElseThrow(
-                () ->
-                    new KeepExceptionWrongDataRequest(
-                        t + " missing after rename: " + dest));
+                () -> new KeepExceptionServer("%s missing after rename: %s", t, dest));
     String afterUnid = NoteIds.unidFromDxl(after);
     JsonObject out =
         new JsonObject()

@@ -2,7 +2,6 @@ package se.infoware.domino.kyber.dbrequests.design;
 
 import com.hcl.domino.data.Database;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -10,6 +9,8 @@ import io.vertx.core.json.JsonObject;
 /**
  * POST /database/inherit?nsfPath=&templateServer= — Domino design refresh from the linked template
  * ({@link Database#refreshDesign(String)}).
+ *
+ * <p>Domino / KEEP failures propagate with their own status. They are not coerced to HTTP 400.
  */
 @MinimumAcl(AclLevel.DESIGNER)
 public class InheritDesign extends KyberRequest {
@@ -25,12 +26,7 @@ public class InheritDesign extends KyberRequest {
       server = server.trim();
     }
     String before = db.getDesignTemplateName();
-    try {
-      db.refreshDesign(server);
-    } catch (Exception e) {
-      String message = e.getMessage() == null ? e.toString() : e.getMessage();
-      throw new KeepExceptionWrongDataRequest("Design refresh failed: " + message);
-    }
+    db.refreshDesign(server);
     request.emit(
         ReplicaIds.put(
             new JsonObject()

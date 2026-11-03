@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Kyber — Infoware REST API for design elements",
-    "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) or application/json whose dxl property is that DXL. The design comment is the comment attribute in the DXL. GET /export is the design export and PUT /import is the design import of all supported elements as DXL. The design import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database whose catalog category is KyberEnabled. POST /database creates a missing NSF after the server privilege Create databases & templates and sets the catalog category KyberEnabled. DELETE /database deletes an NSF that has catalog category KyberEnabled and needs Manager on that NSF. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist and those paths are not returned. The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists, has catalog category KyberEnabled, and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
+    "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) or application/json whose dxl property is that DXL. The design comment is the comment attribute in the DXL. GET /export is the design export and PUT /import is the design import of all supported elements as DXL. The design import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database whose catalog category is KyberEnabled. POST /database and POST /database/fromTemplate create a missing NSF after Create databases & templates and set KyberEnabled. DELETE /database deletes an NSF that has catalog category KyberEnabled and needs Manager on that NSF. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist and those paths are not returned. A missing design note raises KeepExceptionNotFound (documented as 404; KEEP often maps it to HTTP 400). The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists, has catalog category KyberEnabled, and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
     "version": "0.26.0"
   },
   "servers": [
@@ -13,11 +13,11 @@
   "tags": [
     {
       "name": "design-element",
-      "description": "Per-type and singleton design-element CRUD against an NSF (?nsfPath=) whose catalog category is KyberEnabled. Create/update bodies are raw DXL (text/xml) or the JSON object a get returns. Named collections support list/create on the collection path and get/update/delete on /{name}. Application Properties and the database icon are always present (GET/PUT only)."
+      "description": "Per-type and singleton design-element CRUD against an NSF (?nsfPath=) whose catalog category is KyberEnabled, plus helpers (/lookup, /search, /copy, /rename, /patch, /content, /compile, /templates, /defaults/preview, /database/inherit). Create/update bodies are raw DXL (text/xml) or the JSON object a get returns. Named collections support list/create on the collection path and get/update/delete on /{name}. Residual notes use /designnotes. Application Properties and the database icon are always present (GET/PUT only). A missing element raises KeepExceptionNotFound (documented as 404; KEEP often maps it to HTTP 400)."
     },
     {
       "name": "design-handler",
-      "description": "The design export and the design import. POST /database creates a missing NSF after Create databases & templates and sets the catalog category KyberEnabled. DELETE /database deletes an NSF that has catalog category KyberEnabled and needs Manager on that NSF. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist."
+      "description": "The design export and the design import. POST /database and POST /database/fromTemplate create a missing NSF after Create databases & templates and set KyberEnabled. DELETE /database deletes an NSF that has catalog category KyberEnabled and needs Manager on that NSF. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist."
     }
   ],
   "paths": {
@@ -85,6 +85,7 @@
           "200": { "description": "Copied", "content": { "application/json": { "schema": { "type": "object" } } } },
           "400": { "$ref": "#/components/responses/400BadRequest" },
           "403": { "$ref": "#/components/responses/403Forbidden" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
           "409": { "description": "Target name exists" },
           "500": { "$ref": "#/components/responses/500InternalServerError" }
         }
@@ -107,6 +108,7 @@
           "200": { "description": "Renamed", "content": { "application/json": { "schema": { "type": "object" } } } },
           "400": { "$ref": "#/components/responses/400BadRequest" },
           "403": { "$ref": "#/components/responses/403Forbidden" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
           "409": { "description": "New name exists" },
           "500": { "$ref": "#/components/responses/500InternalServerError" }
         }
@@ -142,6 +144,7 @@
           "200": { "description": "Patched", "content": { "application/json": { "schema": { "type": "object" } } } },
           "400": { "$ref": "#/components/responses/400BadRequest" },
           "403": { "$ref": "#/components/responses/403Forbidden" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
           "500": { "$ref": "#/components/responses/500InternalServerError" }
         }
       }
@@ -162,6 +165,7 @@
           "200": { "description": "Content", "content": { "application/json": { "schema": { "type": "object" } } } },
           "400": { "$ref": "#/components/responses/400BadRequest" },
           "403": { "$ref": "#/components/responses/403Forbidden" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
           "500": { "$ref": "#/components/responses/500InternalServerError" }
         }
       },
@@ -190,6 +194,7 @@
           "200": { "description": "Updated", "content": { "application/json": { "schema": { "type": "object" } } } },
           "400": { "$ref": "#/components/responses/400BadRequest" },
           "403": { "$ref": "#/components/responses/403Forbidden" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
           "500": { "$ref": "#/components/responses/500InternalServerError" }
         }
       }
@@ -242,6 +247,7 @@
         "tags": ["design-handler"],
         "operationId": "createDatabaseFromTemplate",
         "summary": "Create NSF from template",
+        "description": "Creates an NSF from an NTF/NSF template via Domino createDatabaseFromTemplate. Checks the server privilege Create databases & templates, sets catalog category KyberEnabled, and applies the product ACL. An existing target responds 409. KeepConfig.nsf cannot be created.",
         "x-keep-version": 1,
         "security": [{ "jwt": [] }],
         "responses": {
@@ -262,6 +268,7 @@
         "tags": ["design-element"],
         "operationId": "inheritDesign",
         "summary": "Refresh design from template",
+        "description": "Calls Database.refreshDesign for the NSF linked to a design template. templateServer may be omitted (local/current server). Domino and KEEP failures keep their own HTTP status; they are not coerced to 400.",
         "x-keep-version": 1,
         "security": [{ "jwt": [] }],
         "responses": {
@@ -360,6 +367,7 @@
           "200": { "description": "DXL", "content": { "application/json": { "schema": { "type": "object" } } } },
           "400": { "$ref": "#/components/responses/400BadRequest" },
           "403": { "$ref": "#/components/responses/403Forbidden" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
           "500": { "$ref": "#/components/responses/500InternalServerError" }
         }
       },
@@ -374,6 +382,7 @@
           "200": { "description": "Updated", "content": { "application/json": { "schema": { "type": "object" } } } },
           "400": { "$ref": "#/components/responses/400BadRequest" },
           "403": { "$ref": "#/components/responses/403Forbidden" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
           "500": { "$ref": "#/components/responses/500InternalServerError" }
         }
       },
@@ -387,6 +396,7 @@
           "200": { "description": "Deleted", "content": { "application/json": { "schema": { "type": "object" } } } },
           "400": { "$ref": "#/components/responses/400BadRequest" },
           "403": { "$ref": "#/components/responses/403Forbidden" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
           "500": { "$ref": "#/components/responses/500InternalServerError" }
         }
       }
@@ -1074,6 +1084,9 @@
           "403": {
             "$ref": "#/components/responses/403Forbidden"
           },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
           "500": {
             "$ref": "#/components/responses/500InternalServerError"
           }
@@ -1146,6 +1159,9 @@
           "403": {
             "$ref": "#/components/responses/403Forbidden"
           },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
           "500": {
             "$ref": "#/components/responses/500InternalServerError"
           }
@@ -1191,6 +1207,9 @@
           },
           "403": {
             "$ref": "#/components/responses/403Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
           },
           "500": {
             "$ref": "#/components/responses/500InternalServerError"

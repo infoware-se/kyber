@@ -86,11 +86,16 @@ final class AgentKinds {
     if (lower.contains("<lotusscript")) {
       return LOTUSSCRIPT;
     }
-    if (lower.contains("<formula") || lower.contains("action='runformula'")
-        || lower.contains("action=\"runformula\"")) {
+    if (lower.contains("<formula")
+        || lower.contains("action='runformula'")
+        || lower.contains("action=\"runformula\"")
+        || lower.contains("agenttype='formula'")
+        || lower.contains("agenttype=\"formula\"")) {
       return FORMULA;
     }
-    if (lower.contains("<simpleaction")) {
+    if (lower.contains("<simpleaction")
+        || lower.contains("agenttype='simpleaction'")
+        || lower.contains("agenttype=\"simpleaction\"")) {
       return SIMPLEACTION;
     }
     if (lower.contains("agenttype='java'") || lower.contains("agenttype=\"java\"")) {

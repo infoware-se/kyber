@@ -4,7 +4,7 @@ import com.hcl.domino.data.Database;
 import com.hcl.domino.design.Outline;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -22,7 +22,7 @@ public class DeleteOutline extends KyberRequest {
 
     Optional<Outline> outline = db.getDesign().getOutline(name);
     if (outline.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("Outline not found: " + name);
+      throw new KeepExceptionNotFound("Outline not found: " + name);
     }
 
     outline.get().delete();

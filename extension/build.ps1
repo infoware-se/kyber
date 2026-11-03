@@ -285,7 +285,8 @@ try {
         Write-Host "Copied to: $dest" -ForegroundColor Yellow
 
         Write-Host "Starting restapi via Notes COM..." -ForegroundColor Yellow
-        & $restartScript -LoadOnly
+        # Hold longer than first HTTP 200 — LockMemHandle panics often hit ~10–20s after Started.
+        & $restartScript -LoadOnly -StableWindowSec 30
         if ($LASTEXITCODE -ne 0) { throw "restart-restapi-com.ps1 -LoadOnly failed" }
     }
 }

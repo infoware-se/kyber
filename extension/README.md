@@ -55,21 +55,42 @@ Every call acts only on a database whose catalog category is **KyberEnabled**. I
 
 A database without that category responds **403** with the message **Not Kyber enabled**. `GET /databases` leaves it out.
 
-`POST /database`, and a design import that creates a missing NSF, set the category on the new file. Those calls need the server privilege **Create databases & templates**. A blank field allows everyone. A name in the field may be a user, a server, or a group. Kyber gives the caller Manager on the new file and writes the category in the same step.
+`POST /database`, `POST /database/fromTemplate`, and a design import that creates a missing NSF, set the category on the new file. Those calls need the server privilege **Create databases & templates**. A blank field allows everyone. A name in the field may be a user, a server, or a group. Kyber gives the caller Manager on the new file and writes the category in the same step.
 
 `DELETE /database` removes an NSF whose category is **KyberEnabled**. That call needs **Manager** on the file. A database without the category responds **403** **Not Kyber enabled**. `KeepConfig.nsf` cannot be deleted.
 
-## Design export and design import (`design-handler`)
+## Design export, import, and database (`design-handler`)
 
 | Method | Path | Purpose |
 |--------|------|---------|
 | GET | `/export?nsfPath=` | Design export of a database that already exists. `skipped` rows always have `type` and `message`; `name` when known |
-| PUT | `/import?nsfPath=&dbTitle=` | Design import. When the file is missing, checks Create databases & templates and creates the NSF |
+| PUT | `/import?nsfPath=&dbTitle=` | Design import. When the file is missing, checks Create databases & templates and creates the NSF. Response may include `compile` and a truncated `importerLog` |
 | POST | `/validate?nsfPath=` | Check that import document without writing. `valid` is false when an element would be rejected. Each error has `index`, `type`, `message`, and stable `code`. No importer log. The NSF must already exist |
 | POST | `/database?nsfPath=&dbTitle=` | Create database. Checks Create databases & templates and sets the category KyberEnabled. 409 if the file exists |
+| POST | `/database/fromTemplate?nsfPath=&templateNsfPath=&dbTitle=` | Create NSF from an NTF/NSF template. Same Create databases & templates check; sets KyberEnabled. 409 if the file exists |
 | PUT | `/database?nsfPath=&dbTitle=` | Set database title on an existing Kyber-enabled NSF without rewriting application-properties DXL |
+| PUT | `/database/category?nsfPath=&enabled=` | Set or clear the catalog category KyberEnabled |
 | DELETE | `/database?nsfPath=` | Delete database. Needs Manager and the category KyberEnabled. KeepConfig.nsf cannot be deleted |
 | GET | `/databases?fileType=` | List databases this user can open whose category is KyberEnabled. `fileType` is `database` (1247, default), `template` (1248), `replica_candidate` (1245), or `template_candidate` (1246). `more` is set when other databases of that type exist |
+
+## Design helpers (`design-element`)
+
+Cross-cutting routes in addition to per-type CRUD. A missing design note throws `KeepExceptionNotFound` (OpenAPI **404**; KEEP often maps that exception to HTTP **400** with a “not found” message).
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/lookup?nsfPath=&unid=` or `noteId=` | Resolve one design note by UNID or noteId (`includeDxl` optional) |
+| GET | `/search?nsfPath=&q=` | Search by name and/or DXL substring (`types`, `match`, `limit` optional) |
+| POST | `/copy?nsfPath=&type=&name=&toName=` | Copy a design element (optional `toNsfPath`). 409 if the target name exists |
+| POST | `/rename?nsfPath=&type=&name=&newName=` | Rename a design element. 409 if the new name exists |
+| PATCH | `/patch?nsfPath=&type=&name=` | Safe patch of `comment` and/or `alias` (JSON body) |
+| GET\|PUT | `/content?nsfPath=&type=&name=` | Binary payload as `contentBase64` for `image`, `fileresource`, `jar`, `dbicon` |
+| POST | `/compile?nsfPath=` | Recompile All LotusScript |
+| POST | `/database/inherit?nsfPath=&templateServer=` | Refresh design from the linked template (`Database.refreshDesign`). Domino/KEEP failures keep their own status — not coerced to 400 |
+| GET | `/templates?type=` | List starter template names for a type (`kind` / `nsfPath` optional) |
+| POST | `/defaults/preview?type=` | Preview the DXL an empty create would use |
+| * | `/designnotes` and `/designnotes/{name}` | Typed CRUD for residual named notes (also in bulk export under `_designnotes`) |
+
 Per-type CRUD stays under **`design-element`**.
 
 **Templates** live in `kyber.nsf`, or whichever NSF `kyber.defaultNsf` names. An empty create copies an element of that type; `?template=` selects by case-insensitive name, otherwise the first match, and `?kind=` when the type has kinds. When the template database has no such element and `template` is omitted, Kyber uses the JAR starter under `resources/defaults`. Update those JAR files from `kyber_jar.nsf` with `tools/kyber-jar-nsf.ps1 -Sync` only when you choose to (dev only).
@@ -136,7 +157,7 @@ Package Explorer also shows JRE System Library, Plug-in Dependencies, Referenced
 
 After PUT, the API compiles LotusScript, script libraries first. A note that reports "Error processing use list module" after a restore usually means that code was not compiled. Re-import, or run Designer **Recompile All LotusScript**. Some complex libraries can still report syntax errors after a DXL round trip. Open those in Designer if needed.
 
-**Bulk-only type** (no list/get/put/delete endpoints; only in `/export` and `/import`): `designnote` for a remaining named design note. The export folder is `_designnotes`. XPages project files (`.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties`, i18n `*.properties`) are `xpagesresource` on `/xpagesresources`. Percent-encode a slash in the path (`WEB-INF%2Ffaces-config.xml`). An empty create of `xpagesresource` copies the starter. `designnote` has no starter.
+**Residual named notes** (`designnote`): typed CRUD on `/designnotes`, and the same type in `/export` / `/import` under `_designnotes`. No JAR starter — create needs a DXL body. XPages project files (`.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties`, i18n `*.properties`) are `xpagesresource` on `/xpagesresources`. Percent-encode a slash in the path (`WEB-INF%2Ffaces-config.xml`). An empty create of `xpagesresource` copies the starter.
 
 **Blank NSF baseline** (reference DXL, not starters): [`resources/defaults/blank/`](src/main/resources/defaults/blank/) — `acl.dxl`, `applicationproperties.dxl`, `image-DBIcon.dxl`, `view-default.dxl`, plus `manifest.json` from a Domino blank database.
 
@@ -186,6 +207,7 @@ Sections follow Package Explorer. "In" = typed DXL CRUD; "Bulk" = `/export` and 
 | Composite Applications | Applications | `/compositeapplications` |
 | Composite Applications | Components | `/compositecomponents` |
 | AppProperties | ACL | `/acl` (singleton; also in bulk; export file `AppProperties/acl.dxl`) |
+| (residual) | Named note with no Package Explorer folder | `/designnotes` (also bulk folder `_designnotes`) |
 
 Singletons: most use `GET` / `POST` (create) / `PUT` (update) / `DELETE` on the collection path. Exceptions: **ACL** (GET/PUT, no DELETE); **Application Properties** and **`$DBIcon`** (GET/PUT only — always present with the NSF, no create/DELETE).
 
@@ -193,7 +215,6 @@ Singletons: most use `GET` / `POST` (create) / `PUT` (update) / `DELETE` on the 
 
 | What you see | What happens |
 |--------------|----------------|
-| Named note with no Package Explorer folder | Bulk type `designnote`, folder `_designnotes` |
 | Note with no name (`$FormulaClass` and similar) | Omitted |
 | Data (documents) | Omitted |
 | JRE System Library, Plug-in Dependencies, Referenced Libraries | Not stored as design notes. Pointers live in `.classpath` and `plugin.xml`. `META-INF/MANIFEST.MF` is an XPages project file, symbolic name `kyber_nsf`. |
@@ -207,7 +228,7 @@ On a database that already exists, the limit is that NSF's ACL.
 | Designer | list, get, create, update, delete of design (not the ACL) |
 | Manager | replace the ACL, and delete the NSF when its category is KyberEnabled. `-Default-` and `LocalDomainServers` must remain in the new ACL. A Manager includes the Designer rights above. |
 
-The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**. A blank field allows everyone, and a name in the field may be a user, a server, or a group. The import then creates the file, sets the category **KyberEnabled**, and imports the design. `POST /database` checks that same privilege and creates an empty NSF. `DELETE /database` needs Manager on an NSF whose category is KyberEnabled. The same import into a database that already exists uses the ACL table above. `GET /databases` uses the NotesDbDirectory file types. `fileType` defaults to `database` (1247). `more` is true when other databases of that type exist, and those paths are not returned.
+The design import (`PUT /import`) into a database that does not exist yet checks the server document privilege **Create databases & templates**. A blank field allows everyone, and a name in the field may be a user, a server, or a group. The import then creates the file, sets the category **KyberEnabled**, and imports the design. `POST /database` and `POST /database/fromTemplate` check that same privilege and create an NSF (empty, or from a template). `DELETE /database` needs Manager on an NSF whose category is KyberEnabled. The same import into a database that already exists uses the ACL table above. `GET /databases` uses the NotesDbDirectory file types. `fileType` defaults to `database` (1247). `more` is true when other databases of that type exist, and those paths are not returned.
 
 A Manager is treated as allowed to create shared and personal folders/views and LotusScript/Java agents, including private ones. Domino does not store those checkboxes on a Manager entry. Delete documents stays a stored flag at every level, including Manager. Designer and below still need the checkbox stored on the ACL entry. `KeepConfig.nsf` cannot be created or deleted.
 

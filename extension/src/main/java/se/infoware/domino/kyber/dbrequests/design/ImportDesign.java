@@ -101,6 +101,23 @@ public class ImportDesign extends KyberRequest {
     } else {
       DesignCatalog.require(db);
     }
+    // No-op ensure: existing NSF + empty elements. Avoid DxlImporter / compileAll — both have
+    // panicked nrestapi (LockMemHandle) on large smoked databases on this host.
+    if (!created && elements.isEmpty()) {
+      request.emit(
+          ReplicaIds.put(
+                  new JsonObject()
+                      .put("success", true)
+                      .put("created", false)
+                      .put("nsfPath", target)
+                      .put("imported", 0)
+                      .put("failed", 0)
+                      .put("aclApplied", false)
+                      .put("results", new JsonArray())
+                      .put("compile", DesignLotusScriptCompile.emptyResult()),
+                  db));
+      return;
+    }
     if (created && title == null) {
       title = defaultTitleForNewNsf(target);
     }
@@ -194,7 +211,12 @@ public class ImportDesign extends KyberRequest {
       }
     }
 
-    JsonObject compile = DesignLotusScriptCompile.compileAll(db);
+    // Empty PUT /import on an existing NSF used to always compileAll — that has panicked
+    // nrestapi (LockMemHandle) on this host. Skip compile when nothing was written.
+    JsonObject compile =
+        (created || ok > 0 || failed > 0)
+            ? DesignLotusScriptCompile.compileAll(db)
+            : DesignLotusScriptCompile.emptyResult();
     if (created) {
       DesignCatalog.mark(db);
     }

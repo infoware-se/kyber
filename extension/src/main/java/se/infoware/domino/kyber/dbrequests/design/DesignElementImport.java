@@ -13,6 +13,7 @@ import com.hcl.domino.design.UsingDocument;
 import com.hcl.domino.dxl.DxlImporter;
 import com.hcl.domino.keep.dbrequests.KeepJnxSession;
 import com.hcl.domino.keep.exceptions.KeepExceptionServer;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -61,7 +62,7 @@ final class DesignElementImport {
         }
       }
       if (deleted == 0) {
-        throw new KeepExceptionWrongDataRequest(t + " not found: " + name);
+        throw new KeepExceptionNotFound(t + " not found: " + name);
       }
     } else {
       throw new KeepExceptionWrongDataRequest("name is required to delete");

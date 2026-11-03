@@ -5,7 +5,7 @@ import com.hcl.domino.design.StyleSheet;
 import com.hcl.domino.dxl.DxlExporter;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -21,7 +21,7 @@ public class GetStyleSheet extends KyberRequest {
     Database db = request.db();
     Optional<StyleSheet> opt = db.getDesign().getStyleSheet(name);
     if (opt.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("StyleSheet not found: " + name);
+      throw new KeepExceptionNotFound("StyleSheet not found: " + name);
     }
     StyleSheet el = opt.get();
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();

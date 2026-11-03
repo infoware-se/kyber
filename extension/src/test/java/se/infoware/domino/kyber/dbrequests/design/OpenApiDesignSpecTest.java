@@ -58,15 +58,45 @@ class OpenApiDesignSpecTest {
     assertEquals(
         "copyDesign",
         root.getJsonObject("paths").getJsonObject("/copy").getJsonObject("post").getString("operationId"));
+    assertNotNull(
+        root.getJsonObject("paths")
+            .getJsonObject("/copy")
+            .getJsonObject("post")
+            .getJsonObject("responses")
+            .getJsonObject("404"));
     assertEquals(
         "renameDesign",
         root.getJsonObject("paths").getJsonObject("/rename").getJsonObject("post").getString("operationId"));
+    assertNotNull(
+        root.getJsonObject("paths")
+            .getJsonObject("/rename")
+            .getJsonObject("post")
+            .getJsonObject("responses")
+            .getJsonObject("404"));
     assertEquals(
         "patchDesign",
         root.getJsonObject("paths").getJsonObject("/patch").getJsonObject("patch").getString("operationId"));
+    assertNotNull(
+        root.getJsonObject("paths")
+            .getJsonObject("/patch")
+            .getJsonObject("patch")
+            .getJsonObject("responses")
+            .getJsonObject("404"));
     assertEquals(
         "getDesignContent",
         root.getJsonObject("paths").getJsonObject("/content").getJsonObject("get").getString("operationId"));
+    assertNotNull(
+        root.getJsonObject("paths")
+            .getJsonObject("/content")
+            .getJsonObject("get")
+            .getJsonObject("responses")
+            .getJsonObject("404"));
+    assertNotNull(
+        root.getJsonObject("paths")
+            .getJsonObject("/content")
+            .getJsonObject("put")
+            .getJsonObject("responses")
+            .getJsonObject("404"));
     assertEquals(
         "compileDesign",
         root.getJsonObject("paths").getJsonObject("/compile").getJsonObject("post").getString("operationId"));

@@ -5,7 +5,7 @@ import com.hcl.domino.design.DesignAgent;
 import com.hcl.domino.dxl.DxlExporter;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -21,7 +21,7 @@ public class GetAgent extends KyberRequest {
     Database db = request.db();
     Optional<DesignAgent> opt = db.getDesign().getAgent(name);
     if (opt.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("Agent not found: " + name);
+      throw new KeepExceptionNotFound("Agent not found: " + name);
     }
     DesignAgent el = opt.get();
     DxlExporter exporter = db.getParentDominoClient().createDxlExporter();

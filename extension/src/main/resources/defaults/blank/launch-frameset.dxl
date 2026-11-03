@@ -2,5 +2,6 @@
 <database xmlns='http://www.lotus.com/dxl' version='14.5'>
 <launchsettings>
 <noteslaunch whenopened='openframeset' frameset='$MainFrameset'/>
+<weblaunch whenopened='openframeset' frameset='$MainFrameset'/>
 </launchsettings>
 </database>

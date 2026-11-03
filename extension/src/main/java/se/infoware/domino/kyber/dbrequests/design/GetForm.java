@@ -5,7 +5,7 @@ import com.hcl.domino.design.Form;
 import com.hcl.domino.dxl.DxlExporter;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -22,7 +22,7 @@ public class GetForm extends KyberRequest {
 
     Optional<Form> formOpt = db.getDesign().getForm(name);
     if (formOpt.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("Form not found: " + name);
+      throw new KeepExceptionNotFound("Form not found: " + name);
     }
 
     Form form = formOpt.get();

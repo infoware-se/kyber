@@ -3,6 +3,7 @@ package se.infoware.domino.kyber.dbrequests.design;
 import com.hcl.domino.data.Database;
 import com.hcl.domino.dxl.DxlImporter;
 import com.hcl.domino.keep.dbrequests.KeepJnxSession;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import io.vertx.core.json.JsonObject;
 import java.util.Base64;
@@ -12,13 +13,17 @@ import java.util.regex.Pattern;
 
 /**
  * Read/write binary payloads for image, fileresource, jar, and dbicon as base64 JSON — avoids
- * assembling DXL wrappers by hand and never DOM-round-trips {@code $FileData}.
+ * assembling DXL wrappers by hand and never DOM-round-trips {@code $FileData} or image {@code
+ * <png>}/{@code <gif>}/{@code <jpeg>} bodies.
  */
 final class BinaryDesignResource {
 
   private static final Pattern FILEDATA =
       Pattern.compile(
           "(?is)(<item\\s+name=(['\"])\\$FileData\\2[^>]*>\\s*<rawitemdata[^>]*>)(.*?)(</rawitemdata>)");
+  /** Designer image resources store bytes in a typed child element, not {@code $FileData}. */
+  private static final Pattern IMAGE_BYTES =
+      Pattern.compile("(?is)<(png|gif|jpeg|jpg|bitmap)\\b[^>]*>(.*?)</\\1>");
   private static final Pattern FILENAMES =
       Pattern.compile("(?is)<item\\s+name=(['\"])\\$FileNames\\1[^>]*>\\s*<text>(.*?)</text>");
 
@@ -30,10 +35,10 @@ final class BinaryDesignResource {
     String dxl =
         DesignElementLookup.exportDxl(db, t, lookup)
             .orElseThrow(
-                () -> new KeepExceptionWrongDataRequest(t + " not found: " + lookup));
+                () -> new KeepExceptionNotFound(t + " not found: " + lookup));
     String b64 = extractFileData(dxl);
     if (b64 == null || b64.isBlank()) {
-      throw new KeepExceptionWrongDataRequest(t + " has no $FileData payload: " + lookup);
+      throw new KeepExceptionWrongDataRequest(t + " has no binary payload: " + lookup);
     }
     // Normalize whitespace from DXL wrapping
     b64 = b64.replaceAll("\\s+", "");
@@ -86,7 +91,7 @@ final class BinaryDesignResource {
     String dxl =
         DesignElementLookup.exportDxl(db, t, lookup)
             .orElseThrow(
-                () -> new KeepExceptionWrongDataRequest(t + " not found: " + lookup));
+                () -> new KeepExceptionNotFound(t + " not found: " + lookup));
     String updated = replaceFileData(dxl, b64);
     DxlImporter importer = session.getDxlImporter();
     JsonObject one =
@@ -124,15 +129,24 @@ final class BinaryDesignResource {
 
   static String extractFileData(String dxl) {
     Matcher m = FILEDATA.matcher(dxl);
-    return m.find() ? m.group(3) : null;
+    if (m.find()) {
+      return m.group(3);
+    }
+    Matcher img = IMAGE_BYTES.matcher(dxl);
+    return img.find() ? img.group(2) : null;
   }
 
   static String replaceFileData(String dxl, String base64) throws KeepExceptionWrongDataRequest {
     Matcher m = FILEDATA.matcher(dxl);
-    if (!m.find()) {
-      throw new KeepExceptionWrongDataRequest("DXL has no $FileData item to replace");
+    if (m.find()) {
+      return dxl.substring(0, m.start(3)) + base64 + dxl.substring(m.end(3));
     }
-    return dxl.substring(0, m.start(3)) + base64 + dxl.substring(m.end(3));
+    Matcher img = IMAGE_BYTES.matcher(dxl);
+    if (img.find()) {
+      return dxl.substring(0, img.start(2)) + base64 + dxl.substring(img.end(2));
+    }
+    throw new KeepExceptionWrongDataRequest(
+        "DXL has no $FileData or image byte element to replace");
   }
 
   private static String guessContentType(String name, String fileName) {

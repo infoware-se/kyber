@@ -5,7 +5,7 @@ import com.hcl.domino.design.Folder;
 import com.hcl.domino.dxl.DxlExporter;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -22,7 +22,7 @@ public class GetFolder extends KyberRequest {
 
     Optional<Folder> folderOpt = db.getDesign().getFolder(name);
     if (folderOpt.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("Folder not found: " + name);
+      throw new KeepExceptionNotFound("Folder not found: " + name);
     }
 
     Folder folder = folderOpt.get();

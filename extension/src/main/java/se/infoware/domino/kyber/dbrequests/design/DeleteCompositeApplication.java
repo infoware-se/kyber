@@ -4,7 +4,7 @@ import com.hcl.domino.data.Database;
 import com.hcl.domino.design.DesignElement;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -21,7 +21,7 @@ public class DeleteCompositeApplication extends KyberRequest {
     DesignAccess.requireDeleteDocuments(request.session(), db);
     Optional<? extends DesignElement> opt = db.getDesign().getCompositeApplication(name);
     if (opt.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("CompositeApplication not found: " + name);
+      throw new KeepExceptionNotFound("CompositeApplication not found: " + name);
     }
     opt.get().delete();
     request.emit(new JsonObject().put("success", true).put("name", name));

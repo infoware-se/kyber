@@ -4,7 +4,7 @@ import com.hcl.domino.data.Database;
 import com.hcl.domino.design.XPage;
 import com.hcl.domino.keep.dbrequests.AsyncDominoJNXJson;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
@@ -21,7 +21,7 @@ public class DeleteXPage extends KyberRequest {
     DesignAccess.requireDeleteDocuments(request.session(), db);
     Optional<XPage> opt = db.getDesign().getXPage(name);
     if (opt.isEmpty()) {
-      throw new KeepExceptionWrongDataRequest("XPage not found: " + name);
+      throw new KeepExceptionNotFound("XPage not found: " + name);
     }
     opt.get().delete();
     request.emit(new JsonObject().put("success", true).put("name", name));

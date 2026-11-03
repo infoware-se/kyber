@@ -33,12 +33,15 @@ final class BlankApplication {
 
   private BlankApplication() {}
 
-  /** Notes client opens {@code $MainFrameset} when the database is opened. */
+  /** Notes and web open {@code $MainFrameset} when the database is opened. */
   static String notesLaunchFramesetDxl() {
     return "<?xml version='1.0' encoding='utf-8'?>"
         + "<database xmlns='http://www.lotus.com/dxl' version='14.5'>"
         + "<launchsettings>"
         + "<noteslaunch whenopened='openframeset' frameset='"
+        + MAIN_FRAMESET
+        + "'/>"
+        + "<weblaunch whenopened='openframeset' frameset='"
         + MAIN_FRAMESET
         + "'/>"
         + "</launchsettings>"

@@ -6,7 +6,7 @@ import com.hcl.domino.data.DocumentClass;
 import com.hcl.domino.data.IDTable;
 import com.hcl.domino.design.DesignElement;
 import com.hcl.domino.dxl.DxlExporter;
-import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -66,10 +66,10 @@ final class CustomControls {
     return exact.isPresent() ? exact : xsp;
   }
 
-  static Entry require(Database db, String name) throws KeepExceptionWrongDataRequest {
+  static Entry require(Database db, String name) throws KeepExceptionNotFound {
     return find(db, name)
         .orElseThrow(
-            () -> new KeepExceptionWrongDataRequest("CustomControl not found: " + name));
+            () -> new KeepExceptionNotFound("CustomControl not found: " + name));
   }
 
   static String exportDxl(Database db, Document doc) throws Exception {

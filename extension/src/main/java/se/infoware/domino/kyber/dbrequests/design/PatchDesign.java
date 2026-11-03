@@ -3,6 +3,8 @@ package se.infoware.domino.kyber.dbrequests.design;
 import com.hcl.domino.data.Database;
 import com.hcl.domino.dxl.DxlImporter;
 import com.hcl.domino.keep.dbrequests.DbRequestParameters;
+import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
+import com.hcl.domino.keep.exceptions.KeepExceptionServer;
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
@@ -36,7 +38,7 @@ public class PatchDesign extends KyberRequest {
     DesignCrud.notFoundIfMissing(db, t, name);
     String dxl =
         DesignElementLookup.exportDxl(db, t, name)
-            .orElseThrow(() -> new KeepExceptionWrongDataRequest(t + " not found: " + name));
+            .orElseThrow(() -> new KeepExceptionNotFound(t + " not found: " + name));
     if (hasComment) {
       dxl = withComment(dxl, body.getString("comment"));
     }
@@ -48,7 +50,7 @@ public class PatchDesign extends KyberRequest {
         importer, db, t, dxl, request.session(), DxlDesignPatch.Mode.REPLACE, name);
     String after =
         DesignElementLookup.exportDxl(db, t, name)
-            .orElseThrow(() -> new KeepExceptionWrongDataRequest(t + " missing after patch: " + name));
+            .orElseThrow(() -> new KeepExceptionServer("%s missing after patch: %s", t, name));
     JsonObject out =
         new JsonObject().put("success", true).put("type", t).put("name", name).put("dxl", after);
     DesignPayload.enrich(out, after);

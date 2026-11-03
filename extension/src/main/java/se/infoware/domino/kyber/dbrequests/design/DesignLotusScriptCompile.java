@@ -32,6 +32,17 @@ final class DesignLotusScriptCompile {
 
   private DesignLotusScriptCompile() {}
 
+  /** Result shape for {@code PUT /import} when no design notes were written. */
+  static JsonObject emptyResult() {
+    return new JsonObject()
+        .put("compiledCount", 0)
+        .put("skippedCount", 0)
+        .put("errorCount", 0)
+        .put("compiled", new JsonArray())
+        .put("skipped", new JsonArray())
+        .put("errors", new JsonArray());
+  }
+
   static JsonObject compileAll(Database db) {
     JsonArray compiled = new JsonArray();
     JsonArray skipped = new JsonArray();
