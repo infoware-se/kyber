@@ -4,7 +4,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
-| **Version** | 0.26.1 |
+| **Version** | 0.26.2 |
 | **API** | `/api/kyber-v1` |
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
@@ -159,7 +159,7 @@ After PUT, the API compiles LotusScript, script libraries first. A note that rep
 
 **Residual named notes** (`designnote`): typed CRUD on `/designnotes`, and the same type in `/export` / `/import` under `_designnotes`. No JAR starter — create needs a DXL body. XPages project files (`.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties`, i18n `*.properties`) are `xpagesresource` on `/xpagesresources`. Percent-encode a slash in the path (`WEB-INF%2Ffaces-config.xml`). An empty create of `xpagesresource` copies the starter.
 
-**Blank NSF baseline** (reference DXL, not starters): [`resources/defaults/blank/`](src/main/resources/defaults/blank/) — `acl.dxl`, `applicationproperties.dxl`, `image-DBIcon.dxl`, `view-default.dxl`, plus `manifest.json` from a Domino blank database.
+**Blank NSF baseline** (reference DXL, not starters): [`resources/defaults/blank/`](src/main/resources/defaults/blank/) — `*_default.dxl` files (`view_default`, `outline_default`, framesets, pages, …) plus `manifest.json`. Separate from top-level starter DXL (`defaults/view.dxl`, …); those may differ.
 
 ## Coverage (Domino Designer)
 

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE view SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<view name='(untitled)' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
+<view name='All Documents' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'
  replicaid='C1258EA3004252DD' showinmenu='false' publicaccess='false' designerversion='8.5.3'
  default='true' unreadmarks='none' onopengoto='lastopened' onrefresh='displayindicator'
  headers='simple' opencollapsed='false' showresponsehierarchy='true' showmargin='true'

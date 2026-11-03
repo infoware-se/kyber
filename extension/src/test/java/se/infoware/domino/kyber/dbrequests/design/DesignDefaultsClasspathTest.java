@@ -123,8 +123,13 @@ class DesignDefaultsClasspathTest {
     String project = filePayload(readResource("/defaults/xpages-project/project.dxl"));
     String plugin = filePayload(readResource("/defaults/xpages-project/plugin-xml.dxl"));
     String activator = filePayload(readResource("/defaults/xpages-project/activator-class.dxl"));
-    String resource = filePayload(DesignDefaults.classpathDxl("xpagesresource").orElseThrow());
-    for (String payload : new String[] {project, plugin, activator, resource}) {
+    // Generic starter is an empty local/ file (importable); skeleton .project stays under xpages-project/.
+    String resourceDxl = DesignDefaults.classpathDxl("xpagesresource").orElseThrow();
+    assertTrue(resourceDxl.contains("local/Default-XPagesResource.txt"));
+    assertFalse(resourceDxl.contains("keepdesign"));
+    assertFalse(resourceDxl.contains("Dantooine"));
+    assertFalse(resourceDxl.contains("onInfoware"));
+    for (String payload : new String[] {project, plugin, activator}) {
       assertFalse(payload.contains("keepdesign"));
       assertFalse(payload.contains("Dantooine"));
       assertFalse(payload.contains("onInfoware"));

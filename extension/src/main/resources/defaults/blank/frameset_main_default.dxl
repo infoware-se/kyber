@@ -12,7 +12,7 @@
 <addedtofile><datetime>20261102T145955,20+01</datetime></addedtofile></noteinfo>
 <updatedby><name>CN=Domino Template Development/O=Domino</name></updatedby>
 <wassignedby><name>CN=Domino Template Development/O=Domino</name></wassignedby>
-<frameset rows='46px 1 18px' spacing='0px'>
+<frameset rows='56px 1 18px' spacing='0px'>
 <frame scrolling='never' marginwidth='3px'><namedelementlink type='page' name='$AppTitle'/></frame>
 <frame name='NotesNavigator' targetframe='NotesView' scrolling='never'><namedelementlink
  type='page' name='$OutlinePage'/></frame>

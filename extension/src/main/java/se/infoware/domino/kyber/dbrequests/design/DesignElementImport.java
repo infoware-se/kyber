@@ -105,7 +105,18 @@ final class DesignElementImport {
       DxlDesignPatch.Mode mode,
       String preferredName)
       throws Exception {
-    String t = DesignBulkTypes.normalize(type);
+    String t = type == null ? "" : type.trim().toLowerCase(java.util.Locale.ROOT);
+    if ("launchsettings".equals(t)) {
+      if (dxl == null || dxl.isBlank()) {
+        throw new KeepExceptionWrongDataRequest("dxl is required for type launchsettings");
+      }
+      if (session != null) {
+        DesignAccess.requireWritePrivileges(session, db, "applicationproperties", dxl);
+      }
+      DxlDesignPatch.importLaunchSettings(importer, dxl, db);
+      return new JsonObject().put("success", true).put("type", "launchsettings");
+    }
+    t = DesignBulkTypes.normalize(type);
     if (!DesignBulkTypes.isKnown(t) && !"dbicon".equals(t)) {
       throw new KeepExceptionWrongDataRequest("Unknown design element type: " + type);
     }

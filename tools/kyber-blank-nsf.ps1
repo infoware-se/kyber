@@ -24,6 +24,7 @@ param(
 )
 
 $NsfPath = "kyber_blank.nsf"
+$DbTitle = "Kyber Blank"
 $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path $PSScriptRoot -Parent
 
@@ -99,7 +100,7 @@ $RestUrl = $RestUrl.TrimEnd("/")
 
 $bearer = Get-BearerToken
 $headers = @{ Authorization = "Bearer $bearer" }
-$q = "nsfPath=$([uri]::EscapeDataString($NsfPath))&dbTitle=$([uri]::EscapeDataString($NsfPath))"
+$q = "nsfPath=$([uri]::EscapeDataString($NsfPath))&dbTitle=$([uri]::EscapeDataString($DbTitle))"
 
 if ($Recreate) {
   Write-Host "DELETE $NsfPath (recreate)"

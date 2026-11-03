@@ -64,8 +64,11 @@ public class CreateDatabase extends KyberRequest {
       }
       DxlImporter importer = session.getDxlImporter();
       ImportDesign.applyProductDbIcon(importer, db, session);
-      // Frameset / outline / default view — same chrome as curated kyber_blank.nsf (no XPages).
-      BlankApplication.ensure(session, db);
+      // kyber_jar.nsf stays plank — blank chrome is written later via PUT /import of defaults/blank.
+      // Other NSFs get the same chrome as curated kyber_blank.nsf (no XPages).
+      if (!ImportDesign.fileName(target).equalsIgnoreCase("kyber_jar.nsf")) {
+        BlankApplication.ensure(session, db);
+      }
     }
 
     Database createdDb = session.getDatabaseDomino(target);

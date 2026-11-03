@@ -1,73 +1,73 @@
 {
   "source": "kyber_blank.nsf",
-  "description": "Blank chrome DXL for empty POST /database. Frameset imports go through FramesetDxlFix so columns/rows survive Domino's $FrameSet rebuild. ACL and Kyber icon are applied separately; XPages project is ensured on first XPage/Java write, not here.",
+  "description": "Blank chrome DXL for empty POST /database. Files are type_default (blank shell, not JAR starters under defaults/*.dxl — those may differ). Frameset imports go through FramesetDxlFix. ACL and Kyber icon are applied separately; XPages project is ensured on first XPage/Java write, not here.",
   "captured": "2026-11-02",
   "elements": [
     {
       "type": "acl",
       "role": "databaseAclReference",
-      "file": "acl.dxl",
+      "file": "acl_default.dxl",
       "note": "Reference only — create uses DesignAcl.applicationAclEntries"
     },
     {
       "type": "applicationproperties",
       "role": "dbpropertiesReference",
-      "file": "applicationproperties.dxl",
+      "file": "applicationproperties_default.dxl",
       "note": "Reference only"
     },
     {
       "type": "image",
       "role": "dbiconReference",
       "name": "$DBIcon",
-      "file": "image-DBIcon.dxl",
+      "file": "image_dbicon_default.dxl",
       "note": "Reference only — create uses defaults/kyber-dbicon.dxl"
     },
     {
       "type": "view",
-      "role": "defaultUntitledView",
-      "name": "(untitled)",
-      "file": "view-default.dxl"
+      "role": "defaultView",
+      "name": "All Documents",
+      "file": "view_default.dxl"
     },
     {
       "type": "outline",
       "role": "appOutline",
       "name": "$AppOutline",
-      "file": "outline-AppOutline.dxl"
+      "file": "outline_default.dxl"
     },
     {
       "type": "page",
       "role": "appTitle",
       "name": "$AppTitle",
-      "file": "page-AppTitle.dxl"
+      "file": "page_apptitle_default.dxl"
     },
     {
       "type": "page",
       "role": "dbLocTitle",
       "name": "$DBLocTitle",
-      "file": "page-DBLocTitle.dxl"
+      "file": "page_dbloc_default.dxl"
     },
     {
       "type": "page",
       "role": "outlinePage",
       "name": "$OutlinePage",
-      "file": "page-OutlinePage.dxl"
+      "file": "page_outline_default.dxl"
     },
     {
       "type": "frameset",
       "role": "viewFrameset",
       "name": "$ViewFrameset",
-      "file": "frameset-ViewFrameset.dxl"
+      "file": "frameset_view_default.dxl"
     },
     {
       "type": "frameset",
       "role": "mainFrameset",
       "name": "$MainFrameset",
-      "file": "frameset-MainFrameset.dxl"
+      "file": "frameset_main_default.dxl"
     },
     {
       "type": "launchsettings",
       "role": "notesLaunchFrameset",
-      "file": "launch-frameset.dxl",
+      "file": "launch_default.dxl",
       "note": "Applied via DxlDesignPatch.importLaunchSettings after shell notes"
     }
   ]

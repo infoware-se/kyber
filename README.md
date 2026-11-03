@@ -10,7 +10,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.26.1 |
+| **Version** | 0.26.2 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
@@ -83,18 +83,18 @@ An empty create copies an element of that type from `kyber.nsf` and names it wit
 
 Kyber creates `kyber.nsf` on the first design write when the file is missing. The new file has a title, an ACL, and About and Using text that describes the database. It holds no templates until you add them. While that About and Using text is still the text Kyber wrote, those two documents are usage text and are not templates. The database icon is the tile for `kyber.nsf` and is not a template either. Replace an element in `kyber.nsf` and the next empty create uses the replacement.
 
-**JAR starters (dev only).** Runtime never opens `kyber_jar.nsf`. Edit starters there in Designer when you want. Sync into `extension/src/main/resources/defaults` only on the occasions you choose to extend or replace the embedded JAR defaults, then rebuild the JAR:
+**JAR starters (dev only).** Runtime never opens `kyber_jar.nsf`. That NSF holds one starter note per top-level `defaults/*.dxl` (not `blank/`, not tied to `kyber_blank.nsf`). Edit there in Designer, then sync into the JAR and rebuild:
 
 ```powershell
-.\tools\kyber-jar-nsf.ps1 -Seed -SkipCertificateCheck   # rare: load current JAR DXL into kyber_jar.nsf
-.\tools\kyber-jar-nsf.ps1 -Sync -SkipCertificateCheck   # when you want those notes in the JAR
+.\tools\kyber-jar-nsf.ps1 -Seed -Recreate -SkipCertificateCheck   # load JAR starters into kyber_jar.nsf
+.\tools\kyber-jar-nsf.ps1 -Sync -SkipCertificateCheck             # write those notes back into defaults/*.dxl
 ```
 
-**Empty-create reference (dev only).** `kyber_blank.nsf` is created with the same `POST /database` path as any new Kyber NSF — open it in Designer to see what that yields (icon, category, launch of `$MainFrameset`, frameset/outline/pages/untitled view from classpath blank DXL; XPages skeleton is ensured later on first XPage / Java write):
+**Empty-create reference (dev only, finished baseline).** `kyber_blank.nsf` shows what `POST /database` yields (chrome from `defaults/blank/*_default.dxl`). It is separate from JAR starters:
 
 ```powershell
 .\tools\kyber-blank-nsf.ps1 -SkipCertificateCheck
-.\tools\kyber-blank-nsf.ps1 -Recreate -SkipCertificateCheck   # delete and create again
+.\tools\kyber-blank-nsf.ps1 -Recreate -SkipCertificateCheck
 ```
 
 ## Install
@@ -205,7 +205,7 @@ About, Using, the database script, and Xsp Properties are one note per database:
 
 `POST /xpages`, and creating an agent, script library, or Java source, creates the XPages project files when they are missing: `plugin.xml`, `META-INF/MANIFEST.MF` (`Bundle-SymbolicName: kyber_nsf`), `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, and `xsp.properties`. Designer writes `Local/plugin/Activator.java` when the project is opened. JRE System Library, Plug-in Dependencies, Referenced Libraries, and Data are views Designer builds. They are not design notes. `.classpath` and `plugin.xml` carry the JRE and plug-in references. Jars stored in the NSF are under `/jars`.
 
-The blank-NSF baseline under [`extension/src/main/resources/defaults/blank/`](extension/src/main/resources/defaults/blank/) holds the DXL empty create uses (untitled view, outline, pages, framesets, launch) plus reference ACL/props/icon files and `manifest.json`. A sync uses the baseline so those notes are not treated as application design to remove. They are not the templates in `kyber.nsf`.
+The blank-NSF baseline under [`extension/src/main/resources/defaults/blank/`](extension/src/main/resources/defaults/blank/) holds the DXL empty create uses (`All Documents` default view, outline, pages, framesets, launch) plus reference ACL/props/icon files and `manifest.json`. A sync uses the baseline so those notes are not treated as application design to remove. They are not the templates in `kyber.nsf`.
 
 Endpoint tables for each collection are in [extension/README.md](extension/README.md).
 
@@ -249,6 +249,13 @@ Put new design capability here. Put agent tool selection, allowlist, write switc
 ## Improvements
 
 Kyber is the design API on DRAPI. It uses Domino JNX for design work. Infoware product work for agents and MCP adapters belongs here. A local wishlist for **DRAPI and Domino JNX** (API and docs) stays under `ignore/` and is not published with the repo. Aldhani's MCP tool selection and refuse policies stay in that product — Kyber ships complete design routes; MCP products choose their subset.
+
+**Shipped in 0.26.2**
+
+1. Blank empty-create chrome uses `defaults/blank/*_default.dxl` (`All Documents` view, 56px title row, titled **Kyber Blank**).
+2. Domino’s empty-`$TITLE` view stub is removed after create so Designer does not show a duplicate untitled view.
+3. `kyber_jar.nsf` is starters-only (no blank chrome); `-Seed`/`-Sync` rewrite top-level `defaults/*.dxl` for JAR defaults.
+4. `xpagesresource` starter is a valid empty `local/…` note (importable); Eclipse `.project` stays under `xpages-project/`.
 
 **Shipped in 0.26.1**
 

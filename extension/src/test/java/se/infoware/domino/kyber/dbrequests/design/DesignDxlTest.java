@@ -242,7 +242,7 @@ class DesignDxlTest {
   void aclReplaceKeepsDefaultAndLocalDomainServers() throws Exception {
     String blank =
         java.nio.file.Files.readString(
-            java.nio.file.Path.of("src/main/resources/defaults/blank/acl.dxl"));
+            java.nio.file.Path.of("src/main/resources/defaults/blank/acl_default.dxl"));
     DesignDxl.requireProtectedAclEntries(blank);
     DesignDxl.requireProtectedAclEntries(
         """

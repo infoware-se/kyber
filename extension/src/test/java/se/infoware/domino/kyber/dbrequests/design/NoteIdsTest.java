@@ -20,7 +20,7 @@ class NoteIdsTest {
   void fromDxlReadsTheNoteinfoAttribute() throws Exception {
     String icon =
         new String(
-            getClass().getResourceAsStream("/defaults/blank/image-DBIcon.dxl").readAllBytes(),
+            getClass().getResourceAsStream("/defaults/blank/image_dbicon_default.dxl").readAllBytes(),
             StandardCharsets.UTF_8);
     assertEquals("13a", NoteIds.fromDxl(icon));
     assertNull(NoteIds.fromDxl("<form name='Hello'/>"));

@@ -1,19 +1,21 @@
 ﻿<#
 .SYNOPSIS
-  Occasional promote of kyber_jar.nsf starters into the Kyber JAR (/defaults/*.dxl).
+  Dev NSF for JAR element defaults. Runtime never opens kyber_jar.nsf.
 
-  kyber_jar.nsf is a development NSF only — not used at runtime. Work in Designer as
-  needed; run -Sync only when you intentionally want to extend or replace the embedded
-  JAR defaults. Runtime empty create still resolves kyber.nsf then classpath /defaults.
+  Holds one starter note per top-level defaults/*.dxl (not blank/, not kyber_blank.nsf).
+  Edit in Designer, then -Sync into the JAR. Empty-create chrome stays in defaults/blank/
+  and kyber_blank.nsf only.
 
 .PARAMETER Seed
-  One-time (or rare) bootstrap: create kyber_jar.nsf when missing and import current
-  top-level defaults/*.dxl (skips kyber-dbicon.dxl, blank/, xpages-project/). Same-name
-  notes are replaced. Not required on every change — only to (re)load JAR files into the NSF.
+  Import current top-level defaults/*.dxl into kyber_jar.nsf (skips kyber-dbicon.dxl,
+  blank/, xpages-project/). Creates the NSF via import if missing.
+
+.PARAMETER Recreate
+  With -Seed: DELETE kyber_jar.nsf first, then seed again.
 
 .PARAMETER Sync
-  Write design from kyber_jar.nsf into extension/src/main/resources/defaults. Run when
-  you choose to update the JAR starters. Matches each defaults file by type and name=.
+  Export design from kyber_jar.nsf into extension/src/main/resources/defaults/*.dxl.
+  Matches each starter file by type and name=. Does not touch blank/.
 
 .PARAMETER RestUrl
   Domino REST base URL. Default: DOMINO_REST_API_DATA_URL from env / .env
@@ -26,6 +28,7 @@
 #>
 param(
   [switch]$Seed,
+  [switch]$Recreate,
   [switch]$Sync,
   [string]$RestUrl = "",
   [string]$DefaultsDir = "",
@@ -33,8 +36,9 @@ param(
   [switch]$SkipCertificateCheck
 )
 
-# Fixed filename — this NSF is only for developing JAR /defaults starters.
+# Fixed filename — JAR starter defaults only (not blank chrome).
 $NsfPath = "kyber_jar.nsf"
+$DbTitle = "Kyber JAR"
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path $PSScriptRoot -Parent
@@ -43,6 +47,9 @@ if (-not $DefaultsDir) {
 }
 if (-not $Seed -and -not $Sync) {
   throw "Pass -Seed and/or -Sync"
+}
+if ($Recreate -and -not $Seed) {
+  throw "-Recreate requires -Seed"
 }
 
 function Get-EnvFileValue([string]$Path, [string]$Key) {
@@ -107,8 +114,22 @@ function Get-BearerToken {
 }
 
 function Get-DxlRootName([string]$Dxl) {
-  if ($Dxl -match "(?i)\bname\s*=\s*'([^']+)'") { return $Matches[1] }
-  if ($Dxl -match '(?i)\bname\s*=\s*"([^"]+)"') { return $Matches[1] }
+  # Prefer root-element name= (form/view/…), never <item name=…>.
+  if ($Dxl -match "(?is)<(?!item\b)[A-Za-z][\w.-]*\b[^>]*\bname\s*=\s*'([^']+)'") {
+    return $Matches[1]
+  }
+  if ($Dxl -match '(?is)<(?!item\b)[A-Za-z][\w.-]*\b[^>]*\bname\s*=\s*"([^"]+)"') {
+    return $Matches[1]
+  }
+  # note-form exports: <item name='$TITLE'><text>…</text>  (single-quoted patterns — $TITLE must stay literal)
+  if ($Dxl -match '(?is)<item\s+[^>]*\bname\s*=\s*''\$TITLE''[^>]*>\s*<text>([^<]*)</text>') {
+    $t = $Matches[1].Trim()
+    if ($t) { return $t }
+  }
+  if ($Dxl -match '(?is)<item\s+[^>]*\bname\s*=\s*"\$TITLE"[^>]*>\s*<text>([^<]*)</text>') {
+    $t = $Matches[1].Trim()
+    if ($t) { return $t }
+  }
   return $null
 }
 
@@ -153,8 +174,40 @@ if (-not (Test-Path -LiteralPath $DefaultsDir)) {
 
 $bearer = Get-BearerToken
 $headers = @{ Authorization = "Bearer $bearer" }
+$q = "nsfPath=$([uri]::EscapeDataString($NsfPath))&dbTitle=$([uri]::EscapeDataString($DbTitle))"
+
+function Remove-KyberJarNsf {
+  Write-Host "DELETE $NsfPath"
+  $deleted = $false
+  foreach ($try in 1..8) {
+    try {
+      Invoke-Drapi -Method DELETE -Uri "$RestUrl/api/kyber-v1/database?$q" -Headers $headers | Out-Null
+      $deleted = $true
+      break
+    } catch {
+      $detail = $_.ErrorDetails.Message
+      if (-not $detail) { $detail = $_.Exception.Message }
+      if ($detail -match 'in use|0x229') {
+        Write-Host "DELETE try ${try}: database in use — close Designer/clients, retrying…"
+        Start-Sleep -Seconds 3
+        continue
+      }
+      if ($detail -match '404|NotFound|not found|does not exist') {
+        $deleted = $true
+        break
+      }
+      throw
+    }
+  }
+  if (-not $deleted) {
+    throw "Could not delete $NsfPath (still in use). Close it in Designer and retry."
+  }
+}
 
 if ($Seed) {
+  if ($Recreate) {
+    Remove-KyberJarNsf
+  }
   $files = @(Get-StarterFiles $DefaultsDir)
   if ($files.Count -lt 1) { throw "No starter DXL under $DefaultsDir" }
   $elements = @()
@@ -166,24 +219,15 @@ if ($Seed) {
     if ($name) { $row.name = $name }
     $elements += $row
   }
-  # Eclipse UTF-8 project encoding (same note XPagesProject.ensure applies on first XPage/Java).
-  $prefs = Join-Path $DefaultsDir "xpages-project\resources-prefs.dxl"
-  if (Test-Path -LiteralPath $prefs) {
-    $elements += @{
-      type = "xpagesresource"
-      dxl = [IO.File]::ReadAllText($prefs)
-      name = ".settings/org.eclipse.core.resources.prefs"
-    }
-  }
   $body = @{ elements = $elements } | ConvertTo-Json -Depth 8 -Compress
-  $q = "nsfPath=$([uri]::EscapeDataString($NsfPath))&dbTitle=$([uri]::EscapeDataString('kyber_jar.nsf'))"
   $uri = "$RestUrl/api/kyber-v1/import?$q"
-  Write-Host "SEED PUT /import → $NsfPath ($($elements.Count) starters from $DefaultsDir)"
+  Write-Host "SEED PUT /import → $NsfPath ($($elements.Count) starters from $DefaultsDir; not blank/)"
   $result = Invoke-Drapi -Method PUT -Uri $uri -Headers ($headers + @{ "Content-Type" = "application/json; charset=utf-8" }) `
     -Body $body -ContentType "application/json; charset=utf-8"
   $failed = 0
   if ($null -ne $result.failed) { $failed = [int]$result.failed }
-  Write-Host ("seeded imported={0} failed={1} created={2}" -f $result.imported, $failed, $result.created)
+  Write-Host ("seeded imported={0} failed={1} created={2} dbTitle={3}" -f `
+    $result.imported, $failed, $result.created, $result.dbTitle)
   if ($result.success -eq $false -or $failed -gt 0) {
     foreach ($row in @($result.results)) {
       if ($row.success -eq $false) {
@@ -192,7 +236,7 @@ if ($Seed) {
     }
     throw "Seed incomplete: failed=$failed"
   }
-  Write-Host "Open $NsfPath in Designer. Run -Sync only when you want those changes in the JAR defaults."
+  Write-Host "Open $NsfPath in Designer. Run -Sync to write starters back into the JAR defaults."
 }
 
 if ($Sync) {

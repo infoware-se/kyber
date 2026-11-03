@@ -92,7 +92,9 @@ public class ImportDesign extends KyberRequest {
     Database db = openTargetForWrite(session, target, requiredWriteLevel(elements));
     if (created) {
       DesignCatalog.mark(db);
-      if (!isDefaultNsfPath(target)) {
+      // Auto-chrome only when the create has no design payload. A non-empty import (e.g. blank/
+      // DXL into kyber_jar.nsf) supplies the shell explicitly — do not double-apply it.
+      if (!isDefaultNsfPath(target) && elements.isEmpty()) {
         BlankApplication.ensure(session, db);
       }
       if (XPagesProject.requiredForElements(elements)) {
@@ -187,6 +189,10 @@ public class ImportDesign extends KyberRequest {
     if (hasAcl && !resultsContainSuccessfulAcl(results)) {
       throw new KeepExceptionWrongDataRequest(
           "ACL was present in the import payload but was not applied successfully");
+    }
+
+    if (created) {
+      BlankApplication.removeEmptyTitledViews(db, new JsonArray(), new JsonArray());
     }
 
     if (shouldApplyDefaultDbIcon(created, target, elements)) {
@@ -365,6 +371,12 @@ public class ImportDesign extends KyberRequest {
     if (fileName(nsfPath).equalsIgnoreCase("kybertest.nsf")) {
       return "Kyber Smoke Test";
     }
+    if (fileName(nsfPath).equalsIgnoreCase("kyber_blank.nsf")) {
+      return "Kyber Blank";
+    }
+    if (fileName(nsfPath).equalsIgnoreCase("kyber_jar.nsf")) {
+      return "Kyber JAR";
+    }
     return null;
   }
 
@@ -373,7 +385,7 @@ public class ImportDesign extends KyberRequest {
     return fileName(nsfPath).equalsIgnoreCase(fileName(DesignDefaults.defaultNsfPath()));
   }
 
-  private static String fileName(String nsfPath) {
+  static String fileName(String nsfPath) {
     String path = nsfPath == null ? "" : nsfPath.trim().replace('\\', '/');
     int bang = path.lastIndexOf("!!");
     if (bang >= 0) {
