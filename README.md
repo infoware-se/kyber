@@ -233,6 +233,19 @@ Named notes with no Designer folder are type `designnote`: typed CRUD on `/desig
 
 Domino REST API 1.1.8 adds an experimental DXL API under `/api/dxl`. Kyber does not call it. Kyber stays a KEEP extension under `/api/kyber-v1`. HCL's API is off until `keepconfig.d` enables it, and HCL does not support it for production. It covers 16 classic design types and returns one `<database>` DXL. The differences from Kyber, including access, import, and the icon note, are in [docs/hcl-dxl-api-and-kyber.md](docs/hcl-dxl-api-and-kyber.md).
 
+## Boundary with Aldhani
+
+Kyber updates design inside the NSF. [Aldhani](https://github.com/infoware-se/aldhani) is the MCP server that agents call; it translates MCP into Kyber and does not write DXL itself.
+
+| | Kyber | Aldhani |
+|--|--|--|
+| Speaks | `/api/kyber-v1` on DRAPI | MCP `POST /mcp` on Domino HTTP |
+| Mutates NSF design | Yes (CRUD, export/import, validate, compile, content, inherit, …) | Only by calling Kyber as `kyberUser` |
+| Surface | Full design API | Subset of tools + allowlist + `allowWrite` |
+| Policy refusals | None for capable Manager clients | May refuse database delete, full import, ACL replace |
+
+Put new design capability here. Put agent tool selection, allowlist, write switches, and MCP UX in Aldhani. See also [Aldhani's Boundary with Kyber](https://github.com/infoware-se/aldhani#boundary-with-kyber).
+
 ## Improvements
 
 Kyber is the design API on DRAPI. It uses Domino JNX for design work. Infoware product work for agents and MCP adapters belongs here. A local wishlist for **DRAPI and Domino JNX** (API and docs) stays under `ignore/` and is not published with the repo. Aldhani's MCP tool selection and refuse policies stay in that product — Kyber ships complete design routes; MCP products choose their subset.
