@@ -10,7 +10,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.26.4 |
+| **Version** | 0.26.5 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
@@ -249,6 +249,10 @@ Put new design capability here. Put agent tool selection, allowlist, write switc
 ## Improvements
 
 Kyber is the design API on DRAPI. It uses Domino JNX for design work. Infoware product work for agents and MCP adapters belongs here. A local wishlist for **DRAPI and Domino JNX** (API and docs) stays under `ignore/` and is not published with the repo. Aldhani's MCP tool selection and refuse policies stay in that product — Kyber ships complete design routes; MCP products choose their subset.
+
+**Shipped in 0.26.5**
+
+1. Track `defaults/xpages-project/activator-java.dxl` so clean clones and release JARs include the `Local/plugin/Activator.java` starter.
 
 **Shipped in 0.26.4**
 

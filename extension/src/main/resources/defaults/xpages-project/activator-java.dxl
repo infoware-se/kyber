@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE note SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0'>
+<item name='$Flags'><text>~C4g</text></item>
+<item name='$TITLE'><text>Local/plugin/Activator.java</text></item>
+<item name='$MimeType'><text>text/x-java-source</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='$FileSize' sign='true'><number>647</number></item>
+<item name='$FileData' sign='true'>
+<rawitemdata type='1'>
+YQAYAAAAAACHAgAAAQAAAAAAAAAAAAAAYACZAgAAhwIAAAAAAAAAAAAAcGFja2FnZSBwbHVnaW47
+DQoNCmltcG9ydCBvcmcuZWNsaXBzZS51aS5wbHVnaW4uQWJzdHJhY3RVSVBsdWdpbjsNCmltcG9y
+dCBvcmcub3NnaS5mcmFtZXdvcmsuQnVuZGxlQ29udGV4dDsNCg0KLyoqDQogKiBUaGUgYWN0aXZh
+dG9yIGNsYXNzIGNvbnRyb2xzIHRoZSBwbHVnLWluIGxpZmUgY3ljbGUuDQogKi8NCnB1YmxpYyBj
+bGFzcyBBY3RpdmF0b3IgZXh0ZW5kcyBBYnN0cmFjdFVJUGx1Z2luIHsNCg0KCXB1YmxpYyBzdGF0
+aWMgZmluYWwgU3RyaW5nIFBMVUdJTl9JRCA9ICJreWJlcl9uc2YiOyAvLy1OTFMtMSQNCg0KCXBy
+aXZhdGUgc3RhdGljIEFjdGl2YXRvciBwbHVnaW47DQoNCglwdWJsaWMgQWN0aXZhdG9yKCkgew0K
+CX0NCg0KCXB1YmxpYyB2b2lkIHN0YXJ0KEJ1bmRsZUNvbnRleHQgY29udGV4dCkgdGhyb3dzIEV4
+Y2VwdGlvbiB7DQoJCXN1cGVyLnN0YXJ0KGNvbnRleHQpOw0KCQlwbHVnaW4gPSB0aGlzOw0KCX0N
+Cg0KCXB1YmxpYyB2b2lkIHN0b3AoQnVuZGxlQ29udGV4dCBjb250ZXh0KSB0aHJvd3MgRXhjZXB0
+aW9uIHsNCgkJcGx1Z2luID0gbnVsbDsNCgkJc3VwZXIuc3RvcChjb250ZXh0KTsNCgl9DQoNCglw
+dWJsaWMgc3RhdGljIEFjdGl2YXRvciBnZXREZWZhdWx0KCkgew0KCQlyZXR1cm4gcGx1Z2luOw0K
+CX0NCn0=
+</rawitemdata></item>
+<item name='$FileNames' sign='true'><text>Local/plugin/Activator.java</text></item>
+</note>
