@@ -140,7 +140,8 @@ final class DesignSummary {
     return out;
   }
 
-  private static JsonObject scheduleOf(String dxl) {
+  /** Package-visible for {@link DesignSchedules} and unit tests. */
+  static JsonObject scheduleOf(String dxl) {
     if (dxl == null || dxl.isBlank()) {
       return null;
     }

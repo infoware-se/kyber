@@ -1253,6 +1253,24 @@ function Invoke-ProductSurfaceSmoke {
     Ok "GET /agents (no trigger field on this agent)"
   }
 
+  $code = Invoke-Design GET (Design-Url "schedules") -OutFile $out
+  Assert-Code "GET /schedules" $code @("200")
+  $sched = Get-ResponseText | ConvertFrom-Json
+  if ($null -eq $sched.agents) { Fail "GET /schedules missing agents[]: $(Get-ResponseText)" }
+  $schedLs = @($sched.agents | Where-Object { $_.name -eq "SmokeAgentLs" })
+  if ($schedLs.Count -lt 1) { Fail "GET /schedules missing SmokeAgentLs: $(Get-ResponseText)" }
+  Ok "GET /schedules count=$($sched.count) SmokeAgentLs trigger=$($schedLs[0].trigger)"
+  $code = Invoke-Design GET (Design-Url "schedules" "trigger=manual") -OutFile $out
+  Assert-Code "GET /schedules?trigger=manual" $code @("200")
+  $manualOnly = Get-ResponseText | ConvertFrom-Json
+  $badTrigger = @($manualOnly.agents | Where-Object {
+    $_.PSObject.Properties.Name -contains "trigger" -and [string]$_.trigger -ne "manual"
+  })
+  if ($badTrigger.Count -gt 0) {
+    Fail "GET /schedules?trigger=manual returned non-manual: $($badTrigger[0].name)=$($badTrigger[0].trigger)"
+  }
+  Ok "GET /schedules?trigger=manual count=$($manualOnly.count)"
+
   $catNsf = "kyber-category.nsf"
   $code = Invoke-Design POST (Design-UrlOn $catNsf "database" "dbTitle=Kyber%20Category") -OutFile $out
   if ($code -in @("200", "201", "409")) {

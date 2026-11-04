@@ -10,11 +10,11 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.26.10 |
+| **Version** | 0.26.11 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
-| **Swagger tags** | `design-element` for typed CRUD and helpers (`/lookup`, `/fields`, `/columns`, `/summary`, `/diff`, `/copy`, …), `design-handler` for `/export`, `/import`, `/database`, `/databases`, `/fromTemplate` |
+| **Swagger tags** | `design-element` for typed CRUD and helpers (`/lookup`, `/fields`, `/columns`, `/summary`, `/diff`, `/schedules`, `/copy`, …), `design-handler` for `/export`, `/import`, `/database`, `/databases`, `/fromTemplate` |
 | **Template NSF** | `kyber.nsf` (`kyber.defaultNsf`) |
 | **Category** | `KyberEnabled`. A database without it responds 403 **Not Kyber enabled** |
 | **Reference** | [extension/README.md](extension/README.md) |
@@ -270,6 +270,10 @@ Kyber’s pre-release API smoke (`tools/smoke-kyber-api.ps1`) is not Yavin’s p
 
 Kyber is the design API on DRAPI (Domino JNX). Ship complete design routes here; [Aldhani](https://github.com/infoware-se/aldhani) wraps a subset behind MCP policy, and [Yavin](https://github.com/infoware-se/yavin) deploys which build runs on a host. A local wishlist for **DRAPI and Domino JNX** (API and docs) stays under `ignore/` and is not published with the repo.
 
+**Shipped in 0.26.11**
+
+1. `GET /schedules` — NSF-wide agent trigger/schedule inventory (`trigger=`, `scheduledOnly=` filters); no full DXL.
+
 **Shipped in 0.26.10**
 
 1. `GET|POST /diff` — compare two live notes (`type`/`name`/`toName`) or a note to proposed DXL; structured field/column/comment ops plus DXL line hunks (volatile attrs stripped).
@@ -339,12 +343,11 @@ Also shipped earlier. Bulk DXL round-trip + typed CRUD (applet/dataconnection, a
 
 **Next (high value for agents / Aldhani)**
 
-Aldhani wraps Kyber; it will not parse DXL locally for these. Ship the routes here first. **Fields** / **Columns** (0.26.8), **Summary** (0.26.9), and **Diff** (0.26.10) shipped.
+Aldhani wraps Kyber; it will not parse DXL locally for these. Ship the routes here first. **Fields** / **Columns** (0.26.8), **Summary** (0.26.9), **Diff** (0.26.10), and **Schedules** (0.26.11) shipped.
 
 **Next (medium)**
 
-1. Agent schedule inventory across an NSF (`list` already carries `trigger` per agent; a cross-collection schedule view would still help).
-2. One-element create-or-replace import (not full `PUT /import`) when a client has a single DXL note.
+1. One-element create-or-replace import (not full `PUT /import`) when a client has a single DXL note.
 
 Out of scope for Kyber. Application documents, DQL, running agents as a general automation API, server console, admin directory changes, Aldhani MCP policy, and Yavin host deploy / post-deploy smoke.
 

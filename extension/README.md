@@ -4,7 +4,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
-| **Version** | 0.26.10 |
+| **Version** | 0.26.11 |
 | **API** | `/api/kyber-v1` |
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
@@ -85,6 +85,7 @@ Cross-cutting routes in addition to per-type CRUD. A missing design note throws 
 | GET | `/columns?nsfPath=&type=view\|folder&name=` | Column title/formula/flags inventory without full DXL |
 | GET | `/summary?nsfPath=&type=&name=` or `unid=`/`noteId=` | Compact inventory (aliases, trigger, counts); `includeDxl` optional |
 | GET\|POST | `/diff?nsfPath=` | Compare two notes (`type`/`name`/`toName`) or note vs proposed DXL (POST body); field/column/comment + line hunks |
+| GET | `/schedules?nsfPath=` | NSF-wide agent trigger/schedule inventory (`trigger=`, `scheduledOnly=` optional) |
 | POST | `/copy?nsfPath=&type=&name=&toName=` | Copy a design element (optional `toNsfPath`). 409 if the target name exists |
 | POST | `/rename?nsfPath=&type=&name=&newName=` | Rename a design element. 409 if the new name exists |
 | PATCH | `/patch?nsfPath=&type=&name=` | Safe patch of `comment` and/or `alias` (JSON body) |
