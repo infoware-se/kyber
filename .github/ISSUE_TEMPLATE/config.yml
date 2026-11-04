@@ -5,4 +5,7 @@ contact_links:
     about: Report a vulnerability privately. Do not open a public issue.
   - name: Aldhani (MCP server)
     url: https://github.com/infoware-se/aldhani/issues
-    about: MCP-tool issues belong in the Aldhani repository.
+    about: MCP-tool, allowlist, and write-policy issues belong in the Aldhani repository.
+  - name: Yavin (deploy / ops)
+    url: https://github.com/infoware-se/yavin/issues
+    about: Host pins, install, restart, and post-deploy smoke belong in the Yavin repository.

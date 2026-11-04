@@ -7,21 +7,28 @@ on:
     branches: [main]
 
 # Full jar build needs HCL DRAPI keep-* JARs on a Domino host.
-# This job checks release metadata; CodeQL covers static analysis.
+# verify = metadata; unit = optional self-hosted when vars.KYBER_SELF_HOSTED_UNIT=true.
+# CodeQL covers static analysis. Smoke stays in tools/release-gate.ps1 (Kyber lab host).
+# This workflow does not call Aldhani or Yavin.
 
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Version tables and OpenAPI match pom
+      - name: Version sync (pom / READMEs / OpenAPI)
+        shell: pwsh
+        run: ./tools/check-version-sync.ps1
+
+  unit:
+    if: ${{ vars.KYBER_SELF_HOSTED_UNIT == 'true' }}
+    runs-on: [self-hosted, Windows, kyber]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Unit tests (DRAPI_HOME on runner)
+        shell: pwsh
         run: |
-          set -euo pipefail
-          pom=$(sed -n 's/.*<version>\([^<]*\)<\/version>.*/\1/p' extension/pom.xml | head -1)
-          echo "pom=$pom"
-          test -n "$pom"
-          grep -F "**Version** | $pom" README.md
-          grep -F "**Version** | $pom" extension/README.md
-          grep -E "\"version\"[[:space:]]*:[[:space:]]*\"$pom\"" extension/src/main/resources/openapi/openapi.kyber.json
-          test -f LICENSE
-          test -f SECURITY.md
+          if (-not $env:DRAPI_HOME) {
+            throw "Self-hosted runner must set DRAPI_HOME to the Domino REST install"
+          }
+          ./tools/run-unit-tests.ps1

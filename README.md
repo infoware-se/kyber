@@ -10,7 +10,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.26.6 |
+| **Version** | 0.26.7 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
@@ -22,6 +22,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 | **DXL round-trip fixes** | [Catalog + how to add fixes](docs/dxl-roundtrip-fixes.md) |
 | **Source** | https://github.com/infoware-se/kyber |
 | **MCP** | [Aldhani](https://github.com/infoware-se/aldhani) |
+| **Deploy** | [Yavin](https://github.com/infoware-se/yavin) |
 | **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | **Security** | [SECURITY.md](SECURITY.md) |
 
@@ -242,22 +243,38 @@ Named notes with no Designer folder are type `designnote`: typed CRUD on `/desig
 
 Domino REST API 1.1.8 adds an experimental DXL API under `/api/dxl`. Kyber does not call it. Kyber stays a KEEP extension under `/api/kyber-v1`. HCL's API is off until `keepconfig.d` enables it, and HCL does not support it for production. It covers 16 classic design types and returns one `<database>` DXL. The differences from Kyber, including access, import, and the icon note, are in [docs/hcl-dxl-api-and-kyber.md](docs/hcl-dxl-api-and-kyber.md).
 
-## Boundary with Aldhani
+## Boundary with Aldhani and Yavin
 
-Kyber updates design inside the NSF. [Aldhani](https://github.com/infoware-se/aldhani) is the MCP server that agents call; it translates MCP into Kyber and does not write DXL itself.
+Kyber is one of three Infoware Domino products. The detailed family map lives in [Yavin](https://github.com/infoware-se/yavin); this table is the short form for contributors here.
 
-| | Kyber | Aldhani |
-|--|--|--|
-| Speaks | `/api/kyber-v1` on DRAPI | MCP `POST /mcp` on Domino HTTP |
-| Mutates NSF design | Yes (CRUD, export/import, validate, compile, content, inherit, …) | Only by calling Kyber as `kyberUser` |
-| Surface | Full design API | Subset of tools + allowlist + `allowWrite` |
-| Policy refusals | None for capable Manager clients | May refuse database delete, full import, ACL replace |
+| | Kyber | Aldhani | Yavin |
+|--|--|--|--|
+| Role | Design API on DRAPI | MCP server for agents | Deploy / ops |
+| Speaks | `/api/kyber-v1` | MCP `POST /mcp` on Domino HTTP | Domino console / Notes COM / file copy |
+| Mutates NSF design | Yes (CRUD, export/import, validate, compile, content, inherit, …) | No — only by calling Kyber as `kyberUser` | No |
+| NSF gate | Catalog category `KyberEnabled` + Domino ACL | `allowedNsf` (and optional `writeNsf`) before Kyber | Host reachable; no NSF category logic |
+| Surface | Full design API | Subset of tools + allowlist + `allowWrite` | Host profiles, version pins, quit/load |
+| Policy / refusals | None for capable Manager clients | May refuse database delete, full import, ACL replace | N/A (does not call design APIs) |
 
-Put new design capability here. Put agent tool selection, allowlist, write switches, and MCP UX in Aldhani. See also [Aldhani's Boundary with Kyber](https://github.com/infoware-se/aldhani#boundary-with-kyber).
+**Where new work goes**
+
+| Kind of change | Belongs in |
+|--|--|
+| Design route, DXL round-trip, blank NSF chrome, JAR element defaults | **Kyber** (this repo) |
+| MCP tool, allowlist / `writeNsf`, `allowWrite`, refuse policy, agent UX | **[Aldhani](https://github.com/infoware-se/aldhani)** |
+| Host inventory, version pins, promote lab→prod, restart restapi/http, post-deploy “what’s loaded?” smoke | **[Yavin](https://github.com/infoware-se/yavin)** |
+
+Kyber’s pre-release API smoke (`tools/smoke-kyber-api.ps1`) is not Yavin’s post-deploy smoke. See also [Aldhani’s Boundary with Kyber](https://github.com/infoware-se/aldhani#boundary-with-kyber).
 
 ## Improvements
 
-Kyber is the design API on DRAPI. It uses Domino JNX for design work. Infoware product work for agents and MCP adapters belongs here. A local wishlist for **DRAPI and Domino JNX** (API and docs) stays under `ignore/` and is not published with the repo. Aldhani's MCP tool selection and refuse policies stay in that product — Kyber ships complete design routes; MCP products choose their subset.
+Kyber is the design API on DRAPI (Domino JNX). Ship complete design routes here; [Aldhani](https://github.com/infoware-se/aldhani) wraps a subset behind MCP policy, and [Yavin](https://github.com/infoware-se/yavin) deploys which build runs on a host. A local wishlist for **DRAPI and Domino JNX** (API and docs) stays under `ignore/` and is not published with the repo.
+
+**Shipped in 0.26.7**
+
+1. Family boundary docs: Kyber | Aldhani | Yavin (where new work goes; smoke vs post-deploy).
+2. `tools/check-version-sync.ps1` + `tools/release-gate.ps1` (unit/package + Extended API smoke; Kyber-only).
+3. CI optional self-hosted `unit` when `KYBER_SELF_HOSTED_UNIT=true`.
 
 **Shipped in 0.26.6**
 
@@ -321,7 +338,7 @@ Aldhani wraps Kyber; it will not parse DXL locally for these. Ship the routes he
 1. Agent schedule inventory across an NSF (`list` already carries `trigger` per agent; a cross-collection schedule view would still help).
 2. One-element create-or-replace import (not full `PUT /import`) when a client has a single DXL note.
 
-Out of scope for Kyber. Application documents, DQL, running agents as a general automation API, server console, admin directory changes, and Aldhani MCP policy.
+Out of scope for Kyber. Application documents, DQL, running agents as a general automation API, server console, admin directory changes, Aldhani MCP policy, and Yavin host deploy / post-deploy smoke.
 
 
 ## Security

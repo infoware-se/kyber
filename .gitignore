@@ -6,6 +6,9 @@ extension/lib/
 extension/IBM_TECHNICAL_SUPPORT/
 extension/*.dll
 
+# Local release-gate JAR copies (upload via gh release; do not commit)
+/infoware-kyber-*.jar
+
 # Design exports stay on disk. They are not part of the repo.
 /domino/
 tmp*/
