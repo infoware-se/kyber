@@ -3,7 +3,7 @@
   "info": {
     "title": "Kyber — Infoware REST API for design elements",
     "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) or application/json whose dxl property is that DXL. The design comment is the comment attribute in the DXL. GET /export is the design export and PUT /import is the design import of all supported elements as DXL. The design import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database whose catalog category is KyberEnabled. POST /database and POST /database/fromTemplate create a missing NSF after Create databases & templates and set KyberEnabled. DELETE /database deletes an NSF that has catalog category KyberEnabled and needs Manager on that NSF. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist and those paths are not returned. A missing design note raises KeepExceptionNotFound (documented as 404; KEEP often maps it to HTTP 400). The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists, has catalog category KyberEnabled, and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
-    "version": "0.26.9"
+    "version": "0.26.10"
   },
   "servers": [
     {
@@ -13,7 +13,7 @@
   "tags": [
     {
       "name": "design-element",
-      "description": "Per-type and singleton design-element CRUD against an NSF (?nsfPath=) whose catalog category is KyberEnabled, plus helpers (/lookup, /search, /copy, /rename, /patch, /content, /fields, /columns, /summary, /compile, /templates, /defaults/preview, /database/inherit). Create/update bodies are raw DXL (text/xml) or the JSON object a get returns. Named collections support list/create on the collection path and get/update/delete on /{name}. Residual notes use /designnotes. Application Properties and the database icon are always present (GET/PUT only). A missing element raises KeepExceptionNotFound (documented as 404; KEEP often maps it to HTTP 400)."
+      "description": "Per-type and singleton design-element CRUD against an NSF (?nsfPath=) whose catalog category is KyberEnabled, plus helpers (/lookup, /search, /copy, /rename, /patch, /content, /fields, /columns, /summary, /diff, /compile, /templates, /defaults/preview, /database/inherit). Create/update bodies are raw DXL (text/xml) or the JSON object a get returns. Named collections support list/create on the collection path and get/update/delete on /{name}. Residual notes use /designnotes. Application Properties and the database icon are always present (GET/PUT only). A missing element raises KeepExceptionNotFound (documented as 404; KEEP often maps it to HTTP 400)."
     },
     {
       "name": "design-handler",
@@ -342,6 +342,97 @@
                     "columnCount": { "type": "integer" },
                     "forms": { "type": "array", "items": { "type": "string" } },
                     "dxl": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      }
+    },
+    "/diff": {
+      "summary": "Compare two design notes and/or proposed DXL",
+      "parameters": [
+        { "name": "nsfPath", "in": "query", "required": true, "schema": { "type": "string" } },
+        { "name": "type", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Left note type (GET; also flat POST left)" },
+        { "name": "name", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Left note name (GET)" },
+        { "name": "toName", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Right note name (GET or flat POST)" },
+        { "name": "toType", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Right note type when different from type" }
+      ],
+      "get": {
+        "tags": ["design-element"],
+        "operationId": "getDesignDiff",
+        "summary": "Diff two live design notes in the NSF",
+        "description": "Requires type+name+toName (toType optional). Returns identical, structured field/column/comment changes when types match, and DXL line hunks (volatile attrs stripped). Missing note raises KeepExceptionNotFound (404; KEEP often maps to 400).",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "responses": {
+          "200": {
+            "description": "Diff result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "identical": { "type": "boolean" },
+                    "changeCount": { "type": "integer" },
+                    "left": { "type": "object" },
+                    "right": { "type": "object" },
+                    "changes": { "type": "array", "items": { "type": "object" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "404": { "$ref": "#/components/responses/404NotFound" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      },
+      "post": {
+        "tags": ["design-element"],
+        "operationId": "diffDesign",
+        "summary": "Diff live notes and/or proposed DXL",
+        "description": "JSON body: nested left/right each with type+name or dxl; or flat type+name with dxl (proposed right) or toName. Same response shape as GET. Missing note raises KeepExceptionNotFound (404; KEEP often maps to 400).",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string" },
+                  "name": { "type": "string" },
+                  "toName": { "type": "string" },
+                  "toType": { "type": "string" },
+                  "dxl": { "type": "string" },
+                  "left": { "type": "object" },
+                  "right": { "type": "object" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Diff result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "identical": { "type": "boolean" },
+                    "changeCount": { "type": "integer" },
+                    "left": { "type": "object" },
+                    "right": { "type": "object" },
+                    "changes": { "type": "array", "items": { "type": "object" } }
                   }
                 }
               }

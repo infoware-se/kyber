@@ -10,11 +10,11 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.26.9 |
+| **Version** | 0.26.10 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
-| **Swagger tags** | `design-element` for typed CRUD and helpers (`/lookup`, `/fields`, `/columns`, `/summary`, `/copy`, …), `design-handler` for `/export`, `/import`, `/database`, `/databases`, `/fromTemplate` |
+| **Swagger tags** | `design-element` for typed CRUD and helpers (`/lookup`, `/fields`, `/columns`, `/summary`, `/diff`, `/copy`, …), `design-handler` for `/export`, `/import`, `/database`, `/databases`, `/fromTemplate` |
 | **Template NSF** | `kyber.nsf` (`kyber.defaultNsf`) |
 | **Category** | `KyberEnabled`. A database without it responds 403 **Not Kyber enabled** |
 | **Reference** | [extension/README.md](extension/README.md) |
@@ -270,6 +270,10 @@ Kyber’s pre-release API smoke (`tools/smoke-kyber-api.ps1`) is not Yavin’s p
 
 Kyber is the design API on DRAPI (Domino JNX). Ship complete design routes here; [Aldhani](https://github.com/infoware-se/aldhani) wraps a subset behind MCP policy, and [Yavin](https://github.com/infoware-se/yavin) deploys which build runs on a host. A local wishlist for **DRAPI and Domino JNX** (API and docs) stays under `ignore/` and is not published with the repo.
 
+**Shipped in 0.26.10**
+
+1. `GET|POST /diff` — compare two live notes (`type`/`name`/`toName`) or a note to proposed DXL; structured field/column/comment ops plus DXL line hunks (volatile attrs stripped).
+
 **Shipped in 0.26.9**
 
 1. `GET /summary?type=&name=` (or `unid` / `noteId`) — aliases, kind, comment, agent trigger/schedule, field/column counts, view forms; DXL omitted unless `includeDxl=true`.
@@ -335,9 +339,7 @@ Also shipped earlier. Bulk DXL round-trip + typed CRUD (applet/dataconnection, a
 
 **Next (high value for agents / Aldhani)**
 
-Aldhani wraps Kyber; it will not parse DXL locally for these. Ship the routes here first. **Fields** / **Columns** (0.26.8) and **Summary** (0.26.9) shipped.
-
-1. **Diff** — `GET` or `POST /diff` comparing live design to proposed DXL, or two notes (same or allowlisted NSF). Return structured hunks / field-level changes without requiring the client to hold full DXL bodies.
+Aldhani wraps Kyber; it will not parse DXL locally for these. Ship the routes here first. **Fields** / **Columns** (0.26.8), **Summary** (0.26.9), and **Diff** (0.26.10) shipped.
 
 **Next (medium)**
 

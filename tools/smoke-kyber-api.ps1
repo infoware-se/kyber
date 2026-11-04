@@ -1125,6 +1125,37 @@ function Invoke-ProductSurfaceSmoke {
   $code = Invoke-Design GET (Design-Url "summary" "type=form&name=NoSuchSmokeSummaryForm") -OutFile $out
   Assert-NotFound "GET /summary missing" $code (Get-ResponseText)
 
+  $code = Invoke-Design GET (Design-Url "diff" "type=form&name=SmokeForm&toName=SmokeForm") -OutFile $out
+  Assert-Code "GET /diff same form" $code @("200")
+  $sameDiff = Get-ResponseText | ConvertFrom-Json
+  if ($sameDiff.identical -ne $true) {
+    Fail "GET /diff same note should be identical: $(Get-ResponseText)"
+  }
+  Ok "GET /diff identical SmokeForm"
+  $code = Invoke-Design GET (Design-Url "diff" "type=form&name=SmokeForm&toType=view&toName=SmokeView") -OutFile $out
+  Assert-Code "GET /diff form vs view" $code @("200")
+  $crossDiff = Get-ResponseText | ConvertFrom-Json
+  if ($crossDiff.identical -eq $true) {
+    Fail "GET /diff form vs view should differ: $(Get-ResponseText)"
+  }
+  if ([int]$crossDiff.changeCount -lt 1) {
+    Fail "GET /diff form vs view expected changes: $(Get-ResponseText)"
+  }
+  Ok "GET /diff form vs view changeCount=$($crossDiff.changeCount)"
+  $diffBody = Join-Path $env:TEMP "smoke-diff.json"
+  [IO.File]::WriteAllText(
+    $diffBody,
+    (@{ type = "form"; name = "SmokeForm"; dxl = "<form name='SmokeForm' comment='DiffProposed'></form>" } | ConvertTo-Json -Compress))
+  $code = Invoke-Design POST (Design-Url "diff") -BodyFile $diffBody -ContentType "application/json" -OutFile $out
+  Assert-Code "POST /diff note vs dxl" $code @("200")
+  $postDiff = Get-ResponseText | ConvertFrom-Json
+  if ($postDiff.identical -eq $true) {
+    Fail "POST /diff proposed DXL should differ: $(Get-ResponseText)"
+  }
+  Ok "POST /diff note vs proposed DXL changeCount=$($postDiff.changeCount)"
+  $code = Invoke-Design GET (Design-Url "diff" "type=form&name=NoSuchSmokeDiffForm&toName=SmokeForm") -OutFile $out
+  Assert-NotFound "GET /diff missing" $code (Get-ResponseText)
+
   $code = Invoke-Design GET (Design-Url "named/form" "name=SmokeForm") -OutFile $out
   Assert-Code "GET /named/form" $code @("200")
   Ok "GET /named/form?name=SmokeForm"
