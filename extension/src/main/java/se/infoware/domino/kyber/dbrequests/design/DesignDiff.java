@@ -35,13 +35,13 @@ final class DesignDiff {
     return compare(left, right);
   }
 
-  /** KEEP may nest JSON under {@code body}. */
+  /** KEEP may nest JSON under {@code body}; text/xml leaves a Buffer — ignore non-JSON. */
   static JsonObject unwrapBody(JsonObject incoming) {
     if (incoming == null) {
       return new JsonObject();
     }
-    JsonObject body = incoming.getJsonObject("body");
-    if (body == null) {
+    Object raw = incoming.getValue("body");
+    if (!(raw instanceof JsonObject body)) {
       return incoming;
     }
     JsonObject merged = incoming.copy();

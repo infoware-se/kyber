@@ -195,8 +195,9 @@ final class DesignUpsert {
     if (incoming == null) {
       return new JsonObject();
     }
-    JsonObject body = incoming.getJsonObject("body");
-    if (body == null) {
+    // KEEP may nest a JSON object under body; text/xml leaves a Buffer there — ignore non-JSON.
+    Object raw = incoming.getValue("body");
+    if (!(raw instanceof JsonObject body)) {
       return incoming;
     }
     JsonObject merged = incoming.copy();
