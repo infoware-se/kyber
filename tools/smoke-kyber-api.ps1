@@ -1102,6 +1102,29 @@ function Invoke-ProductSurfaceSmoke {
   $code = Invoke-Design GET (Design-Url "columns" "type=view&name=NoSuchSmokeColumnsView") -OutFile $out
   Assert-NotFound "GET /columns missing" $code (Get-ResponseText)
 
+  $code = Invoke-Design GET (Design-Url "summary" "type=form&name=SmokeForm") -OutFile $out
+  Assert-Code "GET /summary form" $code @("200")
+  $sum = Get-ResponseText | ConvertFrom-Json
+  if ([string]$sum.type -ne "form" -or [string]$sum.name -ne "SmokeForm") {
+    Fail "GET /summary form unexpected: $(Get-ResponseText)"
+  }
+  if ($sum.PSObject.Properties.Name -contains "dxl") {
+    Fail "GET /summary must omit dxl by default"
+  }
+  Ok "GET /summary form"
+  $code = Invoke-Design GET (Design-Url "summary" "unid=$($form.unid)") -OutFile $out
+  Assert-Code "GET /summary by unid" $code @("200")
+  Ok "GET /summary by unid"
+  $code = Invoke-Design GET (Design-Url "summary" "type=agent&name=SmokeAgentLs") -OutFile $out
+  Assert-Code "GET /summary agent" $code @("200")
+  $agentSum = Get-ResponseText | ConvertFrom-Json
+  if ([string]::IsNullOrWhiteSpace([string]$agentSum.trigger)) {
+    Fail "GET /summary agent missing trigger: $(Get-ResponseText)"
+  }
+  Ok "GET /summary agent trigger=$($agentSum.trigger)"
+  $code = Invoke-Design GET (Design-Url "summary" "type=form&name=NoSuchSmokeSummaryForm") -OutFile $out
+  Assert-NotFound "GET /summary missing" $code (Get-ResponseText)
+
   $code = Invoke-Design GET (Design-Url "named/form" "name=SmokeForm") -OutFile $out
   Assert-Code "GET /named/form" $code @("200")
   Ok "GET /named/form?name=SmokeForm"
