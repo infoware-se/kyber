@@ -14,8 +14,12 @@
   - LotusScript, formula, simple-action and Java agents are run
   - The LotusScript agent calls SmokeLibLs. The Java agent calls SmokeLibJava.text().
     Class and file names match the design element names Designer compiles.
-    Each run must save Hello World
+    Each run must save Hello World (FIELD on the SmokeHello document)
   - Formula and simple-action agents save Hello World on the same document
+  - After a Java create: exactly one plugin.xml and one .classpath; .classpath must not
+    list Designer's temp Local/ source folder; plugin.xml must omit class=plugin.Activator.
+  - With -Extended: deliberate Local/ pollution is healed on the next Java create
+    (xpagesProject.repaired). Use that for nightly / pre-release; keep default smoke must-pass.
   - Domino URL commands open the database, form, page, about, using, view, folder,
     navigator, frameset, icon, image, file, stylesheet, agents, web service and XPage
   - ?CreateDocument, ?OpenDocument, ?EditDocument and ?DeleteDocument on Hello World
@@ -60,13 +64,18 @@
 
 .PARAMETER JavaHelloOnly
   Rewrite and run only SmokeLibJava and SmokeAgentJava, then stop.
+
+.PARAMETER Extended
+  Also run slower / healing probes (Local/ classpath pollution → ensure repair).
+  Intended for nightly or pre-release; default smoke stays must-pass without this.
 #>
 param(
   [string]$NsfPath = "",
   [string]$EnvFile = "",
   [switch]$SkipCertificateCheck,
   [switch]$SkipDelete,
-  [switch]$JavaHelloOnly
+  [switch]$JavaHelloOnly,
+  [switch]$Extended
 )
 
 $ErrorActionPreference = "Stop"
@@ -1575,6 +1584,9 @@ Assert-Code "GET /xpagesresources" $code @("200")
 if ((Get-ResponseText) -notmatch [regex]::Escape("WEB-INF/faces-config.xml")) {
   Fail "xpagesresources missing faces-config: $(Get-ResponseText)"
 }
+if ((Get-ResponseText) -notmatch [regex]::Escape("Local/plugin/Activator.java")) {
+  Fail "xpagesresources missing Local/plugin/Activator.java after Java create: $(Get-ResponseText)"
+}
 $faces = "xpagesresources/" + [uri]::EscapeDataString("WEB-INF/faces-config.xml")
 $code = Invoke-Design GET (Design-Url $faces) -OutFile $out
 Assert-Code "GET faces-config" $code @("200")
@@ -1582,6 +1594,198 @@ $face = Get-ResponseText | ConvertFrom-Json
 if ([string]$face.fileName -notmatch "faces-config") { Fail "faces-config fileName '$($face.fileName)'" }
 if ([string]$face.dxl -notmatch "faces-config") { Fail "faces-config dxl missing" }
 Ok "faces-config fileName=$($face.fileName)"
+
+function Get-XpagesFilePayload([string]$Dxl) {
+  if ($Dxl -notmatch '(?s)<rawitemdata[^>]*>\s*([A-Za-z0-9+/=\s]+)\s*</rawitemdata>') {
+    return $null
+  }
+  $raw = [Convert]::FromBase64String(($Matches[1] -replace '\s', ''))
+  if ($raw.Length -le 42) { return '' }
+  return [Text.Encoding]::UTF8.GetString($raw, 42, $raw.Length - 42)
+}
+
+function Assert-XpagesProjectHealth {
+  $code = Invoke-Design GET (Design-Url "xpagesresources") -OutFile $out
+  Assert-Code "GET /xpagesresources (health)" $code @("200")
+  $list = Get-ResponseText | ConvertFrom-Json
+  $names = @($list.elements | ForEach-Object {
+    if ($_.name) { [string]$_.name } elseif ($_.fileName) { [string]$_.fileName } else { "" }
+  })
+  $needEnsure = $false
+  foreach ($title in @(".classpath", "plugin.xml")) {
+    if (@($names | Where-Object { $_ -eq $title }).Count -lt 1) { $needEnsure = $true }
+  }
+  # Existing smoked NSFs may predate the full skeleton; "kept existing" Java agents skip ensure.
+  if ($needEnsure) {
+    $probe = "SmokeXPagesEnsure"
+    Invoke-Design DELETE (Design-Url "agents/$probe") -OutFile $out | Out-Null
+    $code = Invoke-Design POST (Design-Url "agents" "kind=java&name=$([uri]::EscapeDataString($probe))") `
+      -BodyFile $empty -ContentType "text/xml" -OutFile $out
+    Assert-Code "POST agents/$probe (ensure skeleton)" $code @("200", "201")
+    Invoke-Design DELETE (Design-Url "agents/$probe") -OutFile $out | Out-Null
+    $code = Invoke-Design GET (Design-Url "xpagesresources") -OutFile $out
+    Assert-Code "GET /xpagesresources after ensure" $code @("200")
+    $list = Get-ResponseText | ConvertFrom-Json
+    $names = @($list.elements | ForEach-Object {
+      if ($_.name) { [string]$_.name } elseif ($_.fileName) { [string]$_.fileName } else { "" }
+    })
+  }
+  foreach ($title in @(".classpath", "plugin.xml")) {
+    $n = @($names | Where-Object { $_ -eq $title }).Count
+    if ($n -ne 1) { Fail "expected exactly one xpagesresource '$title', found $n (names=$($names -join ','))" }
+  }
+
+  $activatorPath = "xpagesresources/" + [uri]::EscapeDataString("Local/plugin/Activator.java")
+  $code = Invoke-Design GET (Design-Url $activatorPath) -OutFile $out
+  Assert-Code "GET Local/plugin/Activator.java" $code @("200")
+  $activator = Get-ResponseText | ConvertFrom-Json
+  $activatorDxl = [string]$activator.dxl
+  if ($activatorDxl -notmatch [regex]::Escape("Local/plugin/Activator.java")) {
+    Fail "Activator.java DXL missing Local/plugin/Activator.java title"
+  }
+  if ($activatorDxl -match '(?is)\$FlagsExt') {
+    Fail "Local/plugin/Activator.java must not have `$FlagsExt (WebContent marker)"
+  }
+  $activatorSrc = Get-XpagesFilePayload $activatorDxl
+  if ([string]::IsNullOrWhiteSpace($activatorSrc) -or $activatorSrc -notmatch 'kyber_nsf') {
+    Fail "Activator.java source missing kyber_nsf PLUGIN_ID"
+  }
+
+  $cpPath = "xpagesresources/" + [uri]::EscapeDataString(".classpath")
+  $code = Invoke-Design GET (Design-Url $cpPath) -OutFile $out
+  Assert-Code "GET .classpath" $code @("200")
+  $cp = Get-ResponseText | ConvertFrom-Json
+  $cpText = Get-XpagesFilePayload ([string]$cp.dxl)
+  if ([string]::IsNullOrWhiteSpace($cpText)) { Fail ".classpath `$FileData missing or empty" }
+  if ($cpText -match 'path="Local') {
+    Fail ".classpath must not list Designer's temp Local/ source folder: $cpText"
+  }
+
+  $pluginPath = "xpagesresources/" + [uri]::EscapeDataString("plugin.xml")
+  $code = Invoke-Design GET (Design-Url $pluginPath) -OutFile $out
+  Assert-Code "GET plugin.xml" $code @("200")
+  $pluginObj = Get-ResponseText | ConvertFrom-Json
+  $pluginText = Get-XpagesFilePayload ([string]$pluginObj.dxl)
+  if ($pluginText -match 'class="plugin.Activator"') {
+    Fail "plugin.xml must omit class=plugin.Activator (forces missing Local/): $pluginText"
+  }
+  if ($pluginText -notmatch 'id="kyber_nsf"') {
+    Fail "plugin.xml missing id=kyber_nsf: $pluginText"
+  }
+  Ok "XPages project health (Activator, unique plugin/.classpath, no Local/)"
+}
+
+function Set-XpagesFilePayloadInDxl([string]$Dxl, [string]$NewText) {
+  if ($Dxl -notmatch '(?s)(<rawitemdata[^>]*>\s*)([A-Za-z0-9+/=\s]+)(\s*</rawitemdata>)') {
+    return $null
+  }
+  $raw = [Convert]::FromBase64String(($Matches[2] -replace '\s', ''))
+  if ($raw.Length -le 42) { return $null }
+  $body = [Text.Encoding]::UTF8.GetBytes($NewText)
+  $oldSize = $raw.Length - 42
+  $next = New-Object byte[] (42 + $body.Length)
+  [Array]::Copy($raw, 0, $next, 0, 42)
+  [Array]::Copy($body, 0, $next, 42, $body.Length)
+  $writeLe = {
+    param([byte[]]$b, [int]$o, [int]$v)
+    [Array]::Copy([BitConverter]::GetBytes([int]$v), 0, $b, $o, 4)
+  }
+  $readLe = {
+    param([byte[]]$b, [int]$o)
+    return [int]($b[$o] -bor ($b[$o + 1] -shl 8) -bor ($b[$o + 2] -shl 16) -bor ($b[$o + 3] -shl 24))
+  }
+  & $writeLe $next 8 $body.Length
+  $off26 = & $readLe $raw 26
+  if ($off26 -eq ($oldSize + 18)) { & $writeLe $next 26 ($body.Length + 18) }
+  elseif ($off26 -eq $oldSize) { & $writeLe $next 26 $body.Length }
+  if ((& $readLe $raw 28) -eq $oldSize) { & $writeLe $next 28 $body.Length }
+  if ((& $readLe $raw 30) -eq $oldSize) { & $writeLe $next 30 $body.Length }
+  $b64 = [Convert]::ToBase64String($next)
+  $wrapped = ($b64 -replace '(.{64})', "`$1`n").Trim()
+  $outDxl = [regex]::Replace($Dxl, "(?s)(<item name=['\`"]\`$FileSize['\`"][^>]*>\s*<number>)\d+(</number>)", "`${1}$($body.Length)`${2}")
+  return [regex]::Replace($outDxl, "(?s)(<rawitemdata[^>]*>)\s*[A-Za-z0-9+/=\s]+(\s*</rawitemdata>)", "`${1}`n$wrapped`n`${2}")
+}
+
+function Assert-XpagesProjectHeal {
+  $cpPath = "xpagesresources/" + [uri]::EscapeDataString(".classpath")
+  $code = Invoke-Design GET (Design-Url $cpPath) -OutFile $out
+  Assert-Code "GET .classpath before pollute" $code @("200")
+  $cp = Get-ResponseText | ConvertFrom-Json
+  $clean = Get-XpagesFilePayload ([string]$cp.dxl)
+  if ([string]::IsNullOrWhiteSpace($clean)) { Fail ".classpath payload empty before pollute" }
+  # Same-length only: restore the Local/ source line into the space-padded hole left by the skeleton.
+  $localLine = "  <classpathentry kind=`"src`" path=`"Local/`"/>`n"
+  $localLineCr = "  <classpathentry kind=`"src`" path=`"Local/`"/>`r`n"
+  $hole = ' ' * $localLine.Length
+  $holeCr = ' ' * $localLineCr.Length
+  $pollutedText = $null
+  if ($clean.Contains($hole)) {
+    $pollutedText = $clean.Replace($hole, $localLine)
+  } elseif ($clean.Contains($holeCr)) {
+    $pollutedText = $clean.Replace($holeCr, $localLineCr)
+  } else {
+    Fail "cannot same-length pollute .classpath (no Local/ hole); payload=$clean"
+  }
+  $badDxl = Set-XpagesFilePayloadInDxl ([string]$cp.dxl) $pollutedText
+  if (-not $badDxl) { Fail "could not rewrite .classpath payload for heal probe" }
+  # Set-XpagesFilePayloadInDxl may still resize CDFILE; prefer byte-identical header when lengths match.
+  if ($pollutedText.Length -eq $clean.Length -and [string]$cp.dxl -match '(?s)(<rawitemdata[^>]*>\s*)([A-Za-z0-9+/=\s]+)(\s*</rawitemdata>)') {
+    $raw = [Convert]::FromBase64String(($Matches[2] -replace '\s', ''))
+    $nb = [Text.Encoding]::UTF8.GetBytes($pollutedText)
+    if ($nb.Length -eq ($raw.Length - 42)) {
+      $next = New-Object byte[] $raw.Length
+      [Array]::Copy($raw, 0, $next, 0, 42)
+      [Array]::Copy($nb, 0, $next, 42, $nb.Length)
+      $b64 = [Convert]::ToBase64String($next)
+      $wrapped = ($b64 -replace '(.{64})', "`$1`n").Trim()
+      $badDxl = [regex]::Replace([string]$cp.dxl, "(?s)(<rawitemdata[^>]*>)\s*[A-Za-z0-9+/=\s]+(\s*</rawitemdata>)", "`${1}`n$wrapped`n`${2}")
+    }
+  }
+  $badFile = Join-Path $env:TEMP "smoke-classpath-pollute.dxl"
+  [IO.File]::WriteAllText($badFile, $badDxl)
+  $code = Invoke-Design PUT (Design-Url $cpPath) -BodyFile $badFile -ContentType "text/xml" -OutFile $out
+  Assert-Code "PUT polluted .classpath" $code @("200")
+  $code = Invoke-Design GET (Design-Url $cpPath) -OutFile $out
+  Assert-Code "GET polluted .classpath" $code @("200")
+  $afterPut = Get-XpagesFilePayload ([string]((Get-ResponseText | ConvertFrom-Json).dxl))
+  if ($afterPut -notmatch 'path="Local') {
+    Fail "pollute probe did not stick Local/ into .classpath: $afterPut"
+  }
+
+  # Next Java create runs XPagesProject.ensure → healClasspath.
+  $healName = "SmokeXPagesHeal"
+  $code = Invoke-Design DELETE (Design-Url "agents/$healName") -OutFile $out
+  # 200 or 404 both fine
+  $code = Invoke-Design POST (Design-Url "agents" "kind=java&name=$([uri]::EscapeDataString($healName))") `
+    -BodyFile $empty -ContentType "text/xml" -OutFile $out
+  Assert-Code "POST agents/$healName (heal trigger)" $code @("200", "201")
+  $created = Get-ResponseText | ConvertFrom-Json
+  $repaired = @()
+  if ($created.xpagesProject -and $created.xpagesProject.repaired) {
+    $repaired = @($created.xpagesProject.repaired)
+  }
+  if ($repaired -notcontains ".classpath") {
+    Fail "Java create did not report xpagesProject.repaired=.classpath (install Kyber with ensure heal?): $($created | ConvertTo-Json -Compress -Depth 6)"
+  }
+
+  $code = Invoke-Design GET (Design-Url $cpPath) -OutFile $out
+  Assert-Code "GET .classpath after heal" $code @("200")
+  $healed = Get-XpagesFilePayload ([string]((Get-ResponseText | ConvertFrom-Json).dxl))
+  if ($healed -match 'path="Local') {
+    Fail ".classpath still lists Local/ after heal: $healed"
+  }
+
+  $code = Invoke-Design DELETE (Design-Url "agents/$healName") -OutFile $out
+  Assert-Code "DELETE agents/$healName" $code @("200")
+  Ok "XPages .classpath Local/ pollution healed on Java create"
+}
+
+Assert-XpagesProjectHealth
+if ($Extended) {
+  Assert-XpagesProjectHeal
+} else {
+  Ok "skipped XPages heal probe (pass -Extended for nightly)"
+}
 
 Assert-DxlContains "agents/SmokeAgentLs" "Use `"SmokeLibLs`""
 Assert-DxlContains "webcontent/SmokeWeb.txt" ""

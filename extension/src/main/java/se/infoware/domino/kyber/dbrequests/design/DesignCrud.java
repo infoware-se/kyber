@@ -9,6 +9,8 @@ import com.hcl.domino.keep.exceptions.KeepException;
 import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import io.vertx.core.json.JsonObject;
+import java.util.logging.Logger;
+import se.infoware.domino.kyber.KyberLog;
 
 /**
  * Shared create / update orchestration for design CRUD endpoints.
@@ -16,6 +18,8 @@ import io.vertx.core.json.JsonObject;
  * <p>Create: 409 if exists. Update: 404 if missing. Both return exported {@code dxl} when possible.
  */
 final class DesignCrud {
+
+  private static final Logger LOG = KyberLog.of(DesignCrud.class);
 
   private DesignCrud() {}
 
@@ -144,6 +148,17 @@ final class DesignCrud {
       out.put("signWarning", imported.getString("signWarning"));
     }
     DesignPayload.enrich(out, exported);
+    KyberLog.info(
+        LOG,
+        opLabel(mode)
+            + " named type="
+            + t
+            + " name="
+            + name
+            + " source="
+            + source
+            + " nsf="
+            + KyberLog.nsf(db));
     request.emit(out);
   }
 
@@ -246,6 +261,19 @@ final class DesignCrud {
       out.put("signWarning", imported.getString("signWarning"));
     }
     DesignPayload.enrich(out, exported);
+    KyberLog.info(
+        LOG,
+        opLabel(mode)
+            + " kinded type="
+            + t
+            + " kind="
+            + kind
+            + " name="
+            + name
+            + " source="
+            + source
+            + " nsf="
+            + KyberLog.nsf(db));
     request.emit(out);
   }
 
@@ -337,7 +365,26 @@ final class DesignCrud {
       out.put("signWarning", imported.getString("signWarning"));
     }
     DesignPayload.enrich(out, exported);
+    KyberLog.info(
+        LOG,
+        opLabel(mode)
+            + " singleton type="
+            + t
+            + " source="
+            + source
+            + " nsf="
+            + KyberLog.nsf(db));
     request.emit(out);
+  }
+
+  private static String opLabel(DxlDesignPatch.Mode mode) {
+    if (mode == DxlDesignPatch.Mode.CREATE) {
+      return "create";
+    }
+    if (mode == DxlDesignPatch.Mode.REPLACE) {
+      return "update";
+    }
+    return mode == null ? "write" : mode.name().toLowerCase();
   }
 
   private static String rewriteName(String type, String dxl, String name, String... dxlRoots)

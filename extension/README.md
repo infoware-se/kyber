@@ -4,7 +4,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
-| **Version** | 0.26.2 |
+| **Version** | 0.26.3 |
 | **API** | `/api/kyber-v1` |
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
@@ -492,7 +492,7 @@ Optional `WEB-INF/xsp.properties` (not always present on classic NSF).
 
 ### XPages
 
-Named type (many per NSF) — same CRUD shape as forms/pages, not a singleton. Creating an XPage, agent, script library, or Java source also creates the project files that are missing: `plugin.xml`, `META-INF/MANIFEST.MF`, `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, and `xsp.properties`.
+Named type (many per NSF) — same CRUD shape as forms/pages, not a singleton. Creating an XPage, Java agent, imported-Java agent, Java script library, or Java source also creates the project files that are missing: `plugin.xml`, `META-INF/MANIFEST.MF`, `.project`, `Local/plugin/Activator.java`, `.classpath` (JRE + plug-in containers only — not Designer's temp `Local/` source folder), `build.properties`, `faces-config`, compiled Activator when importable, and `xsp.properties`.
 
 | Method | Path |
 |--------|------|
@@ -535,8 +535,9 @@ Unit tests (JUnit 5, no Domino) live under `extension/src/test/java`. Covered: D
 ```powershell
 cd extension
 .\build.ps1   # runs mvn package (includes tests)
-# or:
-mvn test
+..\tools\run-unit-tests.ps1              # unit only
+..\tools\smoke-kyber-api.ps1             # must-pass live smoke
+..\tools\smoke-kyber-api.ps1 -Extended   # + Local/ heal (nightly / pre-release)
 ```
 
 Live smoke against DRAPI. `tools/smoke-kyber-api.ps1` creates `kybertest.nsf` and runs list/create/get/put/delete for every typed CRUD collection (including agent, script-library and Java-source kinds), plus singleton create/update and get/put for application properties, the database icon and the ACL. Each created element is written again with `Hello World` and read back. LotusScript, formula and simple-action agents are then run, and each run writes `Hello World` onto a document. The LotusScript agent calls `SmokeLibLs`. Deleted elements are created again so the NSF stays populated. Domino URL commands then open the database, form, page, about document, using document, view, folder, navigator, frameset, icon, image, file, stylesheet, agents, web service and XPage. `?CreateDocument` saves a document that the view, `?OpenDocument` and `?EditDocument` show as `Hello World`, and `?DeleteDocument` removes it. The run exports `kybertest.nsf` and imports that tree into `kybersmoke-import.nsf`. The imported design keeps the target database's replica id:

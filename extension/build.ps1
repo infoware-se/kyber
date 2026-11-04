@@ -39,10 +39,13 @@ function Resolve-Mvn {
     if (Test-Path $ToolsMaven) {
         return $ToolsMaven
     }
-    # Reuse sibling deploy repo Maven if present
-    $siblingMaven = Join-Path (Split-Path $RepoRoot -Parent) "drapi-iws-deploy\.tools\apache-maven-3.9.9\bin\mvn.cmd"
-    if (Test-Path $siblingMaven) {
-        return $siblingMaven
+    # Reuse sibling repo Maven bootstraps if present
+    $parent = Split-Path $RepoRoot -Parent
+    foreach ($sib in @("drapi-iws-deploy", "domino-deploy", "domino-design")) {
+        $siblingMaven = Join-Path $parent "$sib\.tools\apache-maven-3.9.9\bin\mvn.cmd"
+        if (Test-Path $siblingMaven) {
+            return $siblingMaven
+        }
     }
     return $null
 }

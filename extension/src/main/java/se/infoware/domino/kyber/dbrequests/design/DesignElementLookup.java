@@ -10,9 +10,13 @@ import com.hcl.domino.keep.exceptions.KeepExceptionNotFound;
 import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.logging.Logger;
+import se.infoware.domino.kyber.KyberLog;
 
 /** Existence checks and DXL export for design CRUD create/update modes. */
 final class DesignElementLookup {
+
+  private static final Logger LOG = KyberLog.of(DesignElementLookup.class);
 
   static final String DBICON_NAME = "$DBIcon";
 
@@ -282,6 +286,7 @@ final class DesignElementLookup {
     if (!removed) {
       throw new KeepExceptionNotFound(typeLabel(t) + " not found: " + n);
     }
+    KyberLog.info(LOG, "delete type=" + t + " name=" + n + " nsf=" + KyberLog.nsf(db));
   }
 
   private static boolean deleteOpt(Optional<? extends DesignElement> opt) throws Exception {

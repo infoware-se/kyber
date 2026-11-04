@@ -3,7 +3,6 @@ package se.infoware.domino.kyber.dbrequests.design;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
 class NoteIdsTest {
@@ -17,12 +16,13 @@ class NoteIdsTest {
   }
 
   @Test
-  void fromDxlReadsTheNoteinfoAttribute() throws Exception {
-    String icon =
-        new String(
-            getClass().getResourceAsStream("/defaults/blank/image_dbicon_default.dxl").readAllBytes(),
-            StandardCharsets.UTF_8);
-    assertEquals("13a", NoteIds.fromDxl(icon));
+  void fromDxlReadsTheNoteinfoAttribute() {
+    // Blank classpath DXL is stripped of noteinfo for create-if-absent imports; parse a live-shaped snippet.
+    String withNoteinfo =
+        "<imageresource name='$DBIcon'>"
+            + "<noteinfo noteid='13a' unid='ABC' sequence='1'></noteinfo>"
+            + "</imageresource>";
+    assertEquals("13a", NoteIds.fromDxl(withNoteinfo));
     assertNull(NoteIds.fromDxl("<form name='Hello'/>"));
   }
 }

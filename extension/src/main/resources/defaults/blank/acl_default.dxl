@@ -1,21 +1,21 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE acl SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
-<acl adminserver='CN=Domino/O=Infoware' maxinternetaccess='editor'>
+<acl xmlns='http://www.lotus.com/dxl' version='14.5' maintenanceversion='1.0' maxinternetaccess='editor'>
 <aclentry name='-Default-' default='true' level='noaccess' readpublicdocs='false'
  writepublicdocs='false'/>
 <aclentry name='OtherDomainServers' type='servergroup' level='noaccess' readpublicdocs='false'
  writepublicdocs='false'/>
-<aclentry name='CN=Domino/O=Infoware' type='server' level='manager' deletedocs='true'
- noreplicate='false'/>
+<aclentry name='CN=Domino Administrator/O=onInfoware' type='person' level='manager'
+ deletedocs='true' noreplicate='false'/>
+<aclentry name='Anonymous' level='noaccess' readpublicdocs='false' writepublicdocs='false'/>
 <aclentry name='LocalDomainAdmins' type='persongroup' level='manager' deletedocs='true'
  noreplicate='false'/>
 <aclentry name='LocalDomainServers' type='servergroup' level='manager' deletedocs='true'
  noreplicate='false'/>
-<logentry>2026/07/29 01:02:10 PM Designer/Infoware updated LocalDomainAdmins</logentry>
-<logentry>2026/07/29 01:02:07 PM Designer/Infoware added LocalDomainAdmins</logentry>
-<logentry>2026/07/29 01:02:07 PM Designer/Infoware deleted Designer/Infoware</logentry>
-<logentry>2026/07/29 01:01:37 PM Designer/Infoware added OtherDomainServers</logentry>
-<logentry>2026/07/29 01:01:37 PM Designer/Infoware added LocalDomainServers</logentry>
-<logentry>2026/07/29 01:01:37 PM Designer/Infoware added Domino/Infoware</logentry>
-<logentry>2026/07/29 01:01:37 PM Designer/Infoware added Designer/Infoware</logentry>
-<logentry>2026/07/29 01:01:37 PM Designer/Infoware updated -Default-</logentry></acl>
+<logentry>2026/11/03 01:06:23 PM Dantooine/onInfoware added LocalDomainAdmins</logentry>
+<logentry>2026/11/03 01:06:23 PM Dantooine/onInfoware updated Domino Administrator/onInfoware</logentry>
+<logentry>2026/11/03 01:06:23 PM Dantooine/onInfoware added Anonymous</logentry>
+<logentry>2026/11/03 01:06:23 PM Dantooine/onInfoware added LocalDomainServers</logentry>
+<logentry>2026/11/03 01:06:23 PM Dantooine/onInfoware added Domino Administrator/onInfoware</logentry>
+<logentry>2026/11/03 01:06:23 PM Dantooine/onInfoware added OtherDomainServers</logentry>
+<logentry>2026/11/03 01:06:23 PM Dantooine/onInfoware updated -Default-</logentry></acl>

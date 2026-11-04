@@ -15,6 +15,8 @@ import io.vertx.core.json.JsonObject;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.logging.Logger;
+import se.infoware.domino.kyber.KyberLog;
 
 /**
  * Design import. PUT /import?nsfPath=&dbTitle=
@@ -49,6 +51,8 @@ import java.util.Set;
  */
 @MinimumAcl(AclLevel.READER)
 public class ImportDesign extends KyberRequest {
+
+  private static final Logger LOG = KyberLog.of(ImportDesign.class);
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
@@ -176,6 +180,15 @@ public class ImportDesign extends KyberRequest {
           row.put("name", el.getString("name"));
         }
         results.add(row);
+        KyberLog.warn(
+            LOG,
+            "import element failed nsf="
+                + target
+                + " type="
+                + type
+                + (el.getString("name") == null ? "" : " name=" + el.getString("name"))
+                + " "
+                + message);
         // ACL in payload must be applied; stop so we do not leave a half-imported ACL state unclear
         if (isAcl) {
           break;
@@ -245,6 +258,29 @@ public class ImportDesign extends KyberRequest {
     }
     if (created && title != null) {
       out.put("dbTitle", title);
+    }
+    if (failed == 0) {
+      KyberLog.info(
+          LOG,
+          "import ok nsf="
+              + target
+              + " created="
+              + created
+              + " imported="
+              + ok
+              + " elements="
+              + elements.size());
+    } else {
+      KyberLog.warn(
+          LOG,
+          "import partial nsf="
+              + target
+              + " created="
+              + created
+              + " imported="
+              + ok
+              + " failed="
+              + failed);
     }
     request.emit(out);
   }

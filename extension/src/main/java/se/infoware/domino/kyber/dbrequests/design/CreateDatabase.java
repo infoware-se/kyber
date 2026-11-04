@@ -12,6 +12,8 @@ import com.hcl.domino.keep.exceptions.KeepExceptionWrongDataRequest;
 import com.hcl.domino.keep.security.acl.MinimumAcl;
 import com.hcl.domino.security.AclLevel;
 import io.vertx.core.json.JsonObject;
+import java.util.logging.Logger;
+import se.infoware.domino.kyber.KyberLog;
 
 /**
  * Create one NSF. POST /database?nsfPath=&amp;dbTitle=
@@ -23,6 +25,8 @@ import io.vertx.core.json.JsonObject;
  */
 @MinimumAcl(AclLevel.READER)
 public class CreateDatabase extends KyberRequest {
+
+  private static final Logger LOG = KyberLog.of(CreateDatabase.class);
 
   @Override
   public void process(DbRequestParameters<JsonObject> request) throws Exception {
@@ -80,6 +84,13 @@ public class CreateDatabase extends KyberRequest {
     if (title != null) {
       out.put("dbTitle", title);
     }
+    KyberLog.info(
+        LOG,
+        "database create nsf="
+            + target
+            + (title == null ? "" : " title=" + title)
+            + " replicaId="
+            + out.getString("replicaId", ""));
     request.emit(out);
   }
 

@@ -110,6 +110,7 @@ class DesignDefaultsClasspathTest {
       "build-properties.dxl",
       "faces-config.dxl",
       "activator-class.dxl",
+      "activator-java.dxl",
       "xsp-properties.dxl"
     };
     for (String file : files) {
@@ -123,22 +124,34 @@ class DesignDefaultsClasspathTest {
     String project = filePayload(readResource("/defaults/xpages-project/project.dxl"));
     String plugin = filePayload(readResource("/defaults/xpages-project/plugin-xml.dxl"));
     String activator = filePayload(readResource("/defaults/xpages-project/activator-class.dxl"));
+    String activatorJavaDxl = readResource("/defaults/xpages-project/activator-java.dxl");
+    assertTrue(activatorJavaDxl.contains("Local/plugin/Activator.java"));
+    assertFalse(activatorJavaDxl.contains("$FlagsExt"), "Local/ must not be WebContent-flagged");
+    String activatorJava = filePayload(activatorJavaDxl);
+    assertTrue(activatorJava.contains("PLUGIN_ID = \"kyber_nsf\""));
     // Generic starter is an empty local/ file (importable); skeleton .project stays under xpages-project/.
     String resourceDxl = DesignDefaults.classpathDxl("xpagesresource").orElseThrow();
     assertTrue(resourceDxl.contains("local/Default-XPagesResource.txt"));
     assertFalse(resourceDxl.contains("keepdesign"));
     assertFalse(resourceDxl.contains("Dantooine"));
     assertFalse(resourceDxl.contains("onInfoware"));
-    for (String payload : new String[] {project, plugin, activator}) {
+    for (String payload : new String[] {project, plugin, activator, activatorJava}) {
       assertFalse(payload.contains("keepdesign"));
       assertFalse(payload.contains("Dantooine"));
       assertFalse(payload.contains("onInfoware"));
     }
-    assertTrue(project.contains("<name>kyber.nsf</name>"));
+    // Same-length CDFILE edits may pad the Eclipse project name with spaces.
+    assertTrue(project.matches("(?s).*<name>kyber\\.nsf\\s*</name>.*"));
     assertTrue(plugin.contains("id=\"kyber_nsf\""));
     assertTrue(activator.contains("kyber_nsf"));
+    assertFalse(project.contains("kyber_blank"));
     String manifest = filePayload(readResource("/defaults/xpages-project/manifest-mf.dxl"));
     assertTrue(manifest.contains("Bundle-SymbolicName: kyber_nsf;singleton:=true"));
+    String classpath = filePayload(readResource("/defaults/xpages-project/classpath.dxl"));
+    // Local/ is Designer's XPages scratch folder (not ODP-persisted). Listing it in
+    // .classpath makes Designer report "missing required source folder: Local".
+    assertFalse(classpath.contains("path=\"Local") || classpath.contains("path='Local"));
+    assertFalse(plugin.contains("class=\"plugin.Activator\""));
   }
 
   private static String readResource(String path) throws Exception {

@@ -1,7 +1,7 @@
 {
   "source": "kyber_blank.nsf",
-  "description": "Blank chrome DXL for empty POST /database. Files are type_default (blank shell, not JAR starters under defaults/*.dxl — those may differ). Frameset imports go through FramesetDxlFix. ACL and Kyber icon are applied separately; XPages project is ensured on first XPage/Java write, not here.",
-  "captured": "2026-11-02",
+  "description": "Blank chrome DXL for empty POST /database. Files are type_default (blank shell, not JAR starters under defaults/*.dxl — those may differ). Frameset imports go through FramesetDxlFix. ACL and Kyber icon are applied separately. Eclipse UTF-8 encoding prefs (.settings/…) are applied on empty create from xpages-project/resources-prefs.dxl so Designer does not warn; the full XPages project is still ensured on first XPage/Java write.",
+  "captured": "2026-11-04",
   "elements": [
     {
       "type": "acl",

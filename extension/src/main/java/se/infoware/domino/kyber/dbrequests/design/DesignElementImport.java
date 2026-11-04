@@ -22,6 +22,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.logging.Logger;
+import se.infoware.domino.kyber.KyberLog;
 
 /**
  * Import of one design element, and delete of one bulk note.
@@ -31,6 +33,8 @@ import java.util.Optional;
  * {@link DesignElementExport}.
  */
 final class DesignElementImport {
+
+  private static final Logger LOG = KyberLog.of(DesignElementImport.class);
 
   private DesignElementImport() {}
 
@@ -67,6 +71,9 @@ final class DesignElementImport {
     } else {
       throw new KeepExceptionWrongDataRequest("name is required to delete");
     }
+    KyberLog.info(
+        LOG,
+        "delete type=" + t + " name=" + name + " count=" + deleted + " nsf=" + KyberLog.nsf(db));
     return new JsonObject()
         .put("success", true)
         .put("type", t)
@@ -508,7 +515,26 @@ final class DesignElementImport {
     }
     if (trace.signWarning != null && !trace.signWarning.isBlank()) {
       result.put("signWarning", trace.signWarning);
+      KyberLog.warn(
+          LOG,
+          "import signWarning type="
+              + t
+              + " name="
+              + name
+              + " nsf="
+              + KyberLog.nsf(db)
+              + " "
+              + trace.signWarning);
     }
+    KyberLog.fine(
+        LOG,
+        "import ok type="
+            + t
+            + (name == null ? "" : " name=" + name)
+            + " mode="
+            + mode
+            + " nsf="
+            + KyberLog.nsf(db));
     return result;
   }
 

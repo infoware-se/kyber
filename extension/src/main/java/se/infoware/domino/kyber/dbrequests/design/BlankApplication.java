@@ -19,7 +19,8 @@ import java.util.List;
  * Richer Domino blank application chrome from classpath {@code defaults/blank/}: default view,
  * {@code $AppOutline}, framesets, title/outline pages, and Notes launch of {@code $MainFrameset}.
  * Design imports go through {@link DxlImportFixes} (frameset column/row repair, etc.). ACL, Kyber
- * icon, and XPages project are handled elsewhere.
+ * icon, and the full XPages project are handled elsewhere. Eclipse UTF-8 encoding prefs are applied
+ * here so Designer does not warn {@code Project has no explicit encoding set} on an empty NSF.
  *
  * <p>{@code createDatabase} leaves a view note with empty {@code $TITLE} that Designer shows as
  * {@code (untitled)}. Kyber then imports the curated {@code All Documents} default view.
@@ -31,6 +32,10 @@ final class BlankApplication {
   private static final String RESOURCE_DIR = "/defaults/blank/";
   private static final String MAIN_FRAMESET = "$MainFrameset";
   private static final String DEFAULT_VIEW = "All Documents";
+  /** Same note {@link XPagesProject} installs first — encoding only, not the full OSGi skeleton. */
+  private static final String ENCODING_PREFS = ".settings/org.eclipse.core.resources.prefs";
+  private static final String ENCODING_PREFS_RESOURCE =
+      "/defaults/xpages-project/resources-prefs.dxl";
 
   /** classpath file → design type → lookup name */
   private static final String[][] SHELL = {
@@ -106,12 +111,47 @@ final class BlankApplication {
     }
 
     removeEmptyTitledViews(db, created, failed);
+    ensureEncodingPrefs(importer, db, session, created, skipped, failed);
 
     return new JsonObject()
         .put("ensured", true)
         .put("created", created)
         .put("skipped", skipped)
         .put("failed", failed);
+  }
+
+  /**
+   * Designer treats every NSF as an Eclipse project and warns when encoding prefs are missing.
+   * Import create-if-absent; soft-fail so blank chrome still succeeds if DXL import rejects the
+   * note on a given Domino build.
+   */
+  private static void ensureEncodingPrefs(
+      DxlImporter importer,
+      Database db,
+      KeepJnxSession session,
+      JsonArray created,
+      JsonArray skipped,
+      JsonArray failed) {
+    try {
+      if (BulkOnlyNotes.find(db, "xpagesresource", ENCODING_PREFS).isPresent()) {
+        skipped.add(ENCODING_PREFS);
+        return;
+      }
+      String dxl = DesignDxl.forNewNote(loadClasspath(ENCODING_PREFS_RESOURCE));
+      DesignElementImport.importOne(
+          importer, db, "xpagesresource", dxl, session, DxlDesignPatch.Mode.UPSERT);
+      if (BulkOnlyNotes.find(db, "xpagesresource", ENCODING_PREFS).isPresent()) {
+        created.add(ENCODING_PREFS);
+      } else {
+        failed.add(
+            new JsonObject()
+                .put("name", ENCODING_PREFS)
+                .put("message", "missing after import"));
+      }
+    } catch (Exception e) {
+      String message = e.getMessage() == null ? e.toString() : e.getMessage();
+      failed.add(new JsonObject().put("name", ENCODING_PREFS).put("message", message));
+    }
   }
 
   /**
@@ -173,7 +213,10 @@ final class BlankApplication {
   }
 
   private static String load(String resourceFile) throws KeepExceptionWrongDataRequest {
-    String path = RESOURCE_DIR + resourceFile;
+    return loadClasspath(RESOURCE_DIR + resourceFile);
+  }
+
+  private static String loadClasspath(String path) throws KeepExceptionWrongDataRequest {
     try (InputStream in = BlankApplication.class.getResourceAsStream(path)) {
       if (in == null) {
         throw new KeepExceptionWrongDataRequest("Missing classpath resource: " + path);

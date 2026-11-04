@@ -14,7 +14,17 @@ $env:DRAPI_HOME = "C:\Domino\restapi"
 .\build.ps1 -InstallToDrapi
 ```
 
+**Tests (layered):**
+
+| Layer | Command | When |
+| --- | --- | --- |
+| Unit | `.\tools\run-unit-tests.ps1` | Every change (no Domino) |
+| Must-pass smoke | `.\tools\smoke-kyber-api.ps1` | Before merge / after install |
+| Extended smoke | `.\tools\smoke-kyber-api.ps1 -Extended` | Nightly / pre-release (heal probes) |
+
 Unit tests run without a live Domino server. Live smoke needs DRAPI and a Kyber-enabled NSF.
+
+**Logging:** Kyber uses `java.util.logging` under `se.infoware.domino.kyber` (see `KyberLog`). INFO covers create/update/delete/import/ensure/compile; WARNING covers soft failures and repairs. Enable FINE on that logger for per-element import detail. Filter Domino/KEEP console on that name.
 
 ## Pull requests
 

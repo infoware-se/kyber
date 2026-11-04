@@ -10,7 +10,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.26.2 |
+| **Version** | 0.26.3 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
@@ -203,7 +203,7 @@ Three types take `?kind=` on an empty create:
 
 About, Using, the database script, and Xsp Properties are one note per database: the calls sit on the collection path, with no `/{name}`. Application properties, the database icon, and the ACL are get and put on that same shape. `$DBIcon` is `/dbicon`. A put of that image also updates the workspace icon note, and the launch settings on that note stay. `GET /images` does not list it. A WebContent name under `WEB-INF` is rejected. Those notes are `/xpagesresources`, except `xsp.properties`, which is `/xspproperties`.
 
-`POST /xpages`, and creating an agent, script library, or Java source, creates the XPages project files when they are missing: `plugin.xml`, `META-INF/MANIFEST.MF` (`Bundle-SymbolicName: kyber_nsf`), `.project`, `.classpath`, `build.properties`, `faces-config`, Activator, and `xsp.properties`. Designer writes `Local/plugin/Activator.java` when the project is opened. JRE System Library, Plug-in Dependencies, Referenced Libraries, and Data are views Designer builds. They are not design notes. `.classpath` and `plugin.xml` carry the JRE and plug-in references. Jars stored in the NSF are under `/jars`.
+`POST /xpages`, and creating a Java agent, imported-Java agent, Java script library, Java source, or XPage, creates the XPages project files when they are missing: `plugin.xml`, `META-INF/MANIFEST.MF` (`Bundle-SymbolicName: kyber_nsf`), `.project`, `Local/plugin/Activator.java`, `.classpath` (JRE + plug-in containers only — not Designer's temp `Local/` source folder), `build.properties`, `faces-config`, compiled Activator class when importable, and `xsp.properties`. JRE System Library, Plug-in Dependencies, Referenced Libraries, and Data are views Designer builds. They are not design notes. `.classpath` and `plugin.xml` carry the JRE and plug-in references. Jars stored in the NSF are under `/jars`.
 
 The blank-NSF baseline under [`extension/src/main/resources/defaults/blank/`](extension/src/main/resources/defaults/blank/) holds the DXL empty create uses (`All Documents` default view, outline, pages, framesets, launch) plus reference ACL/props/icon files and `manifest.json`. A sync uses the baseline so those notes are not treated as application design to remove. They are not the templates in `kyber.nsf`.
 
@@ -249,6 +249,13 @@ Put new design capability here. Put agent tool selection, allowlist, write switc
 ## Improvements
 
 Kyber is the design API on DRAPI. It uses Domino JNX for design work. Infoware product work for agents and MCP adapters belongs here. A local wishlist for **DRAPI and Domino JNX** (API and docs) stays under `ignore/` and is not published with the repo. Aldhani's MCP tool selection and refuse policies stay in that product — Kyber ships complete design routes; MCP products choose their subset.
+
+**Shipped in 0.26.3**
+
+1. XPages skeleton `.classpath` omits Designer’s temp `Local/` source folder; `plugin.xml` omits `class=plugin.Activator` (avoids missing Local build-path errors).
+2. `XPagesProject.ensure` dedupes and heals polluted `.classpath` / `plugin.xml`; create responses include `xpagesProject.repaired`.
+3. Shared `KyberLog` (JUL under `se.infoware.domino.kyber`) for create/update/delete/import/ensure/compile.
+4. Test layers: `tools/run-unit-tests.ps1`, must-pass smoke, `-Extended` heal probe.
 
 **Shipped in 0.26.2**
 

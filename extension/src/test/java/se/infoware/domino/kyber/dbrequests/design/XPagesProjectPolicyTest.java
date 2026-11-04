@@ -26,6 +26,22 @@ class XPagesProjectPolicyTest {
   }
 
   @Test
+  void detectsDesignerLocalPollution() {
+    assertTrue(
+        XPagesProject.classpathPayloadNeedsRepair(
+            "<classpathentry kind=\"src\" path=\"Local\"/>"));
+    assertTrue(
+        XPagesProject.classpathPayloadNeedsRepair(
+            "<classpathentry kind=\"src\" path=\"Local/\"/>"));
+    assertFalse(
+        XPagesProject.classpathPayloadNeedsRepair(
+            "<classpathentry kind=\"con\" path=\"org.eclipse.jdt.launching.JRE_CONTAINER\"/>"));
+    assertTrue(
+        XPagesProject.pluginXmlPayloadNeedsRepair("<plugin class=\"plugin.Activator\" id=\"x\">"));
+    assertFalse(XPagesProject.pluginXmlPayloadNeedsRepair("<plugin id=\"kyber_nsf\">"));
+  }
+
+  @Test
   void requiredForElementsLooksAtPayload() {
     assertFalse(XPagesProject.requiredForElements(new JsonArray()));
     assertFalse(

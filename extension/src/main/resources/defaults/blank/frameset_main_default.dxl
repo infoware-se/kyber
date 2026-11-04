@@ -1,18 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE frameset SYSTEM 'xmlschemas/domino_14_5_1.dtd'>
 <frameset name='$MainFrameset' alias='$MainFrameset' xmlns='http://www.lotus.com/dxl'
- version='14.5' maintenanceversion='1.0' replicaid='C1258EA3004BF40C'
- publicaccess='false' designerversion='8.5.3' language='en' columns='239px 1'
- spacing='0px' borderwidth='1px' bordercolor='black'>
-<noteinfo noteid='1ae' unid='C1258EA3004BF40C85258900005124FA' sequence='20'>
-<created><datetime>20221120T094618,82-05</datetime></created>
-<modified><datetime>20261102T145955,21+01</datetime></modified>
-<revised><datetime>20240823T112641,13+00</datetime></revised>
-<lastaccessed><datetime>20261102T145955,20+01</datetime></lastaccessed>
-<addedtofile><datetime>20261102T145955,20+01</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Domino Template Development/O=Domino</name></updatedby>
-<wassignedby><name>CN=Domino Template Development/O=Domino</name></wassignedby>
-<frameset rows='56px 1 18px' spacing='0px'>
+ version='14.5' maintenanceversion='1.0' publicaccess='false'
+ designerversion='8.5.3' language='en' columns='239px 1' spacing='0px' borderwidth='1px'
+ bordercolor='silver'>
+<frameset rows='52px 1 18px' spacing='0px'>
 <frame scrolling='never' marginwidth='3px'><namedelementlink type='page' name='$AppTitle'/></frame>
 <frame name='NotesNavigator' targetframe='NotesView' scrolling='never'><namedelementlink
  type='page' name='$OutlinePage'/></frame>
@@ -20,7 +12,7 @@
 <frameset rows='1 0%' spacing='0px'>
 <frame><namedelementlink type='frameset' name='$ViewFrameset'/></frame>
 <frame name='NotesPreview'/></frameset>
+<item name='$$ScriptName' summary='false' sign='true'><text>$MainFrameset|$MainFrameset</text></item>
 <item name='$CompAppName' sign='true'><text/></item>
 <item name='$CompAppPageName' sign='true'><text>[rep_id]_6525841500055109</text></item>
-<item name='$DesignerBuild' sign='true'><text>Build V1400FP1_04082024</text></item></frameset>
-
+<item name='$DesignerBuild'><text>Build V1451FP1_06262026</text></item></frameset>
