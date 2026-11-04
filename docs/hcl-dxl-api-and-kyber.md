@@ -108,16 +108,6 @@ A role on an ACL entry has to exist already, or the put is **400**. `-Default-` 
 
 Kyber replaces the ACL as one DXL document on `PUT /acl`, and that call needs Manager. The same two entries must remain. A payload that omits either of them is **400**, and the ACL is left unchanged. Kyber's `/dbicon` remains the `$DBIcon` image resource, and a put of it also updates the workspace icon note.
 
-## Parked Kyber work (docs only)
-
-Remaining gaps vs experimental `/api/dxl` stay here — Infoware does not use GitHub issues for this backlog (same as Aldhani):
-
-- JSON outline entries, frameset layout, and DB launch/title helpers (DXL CRUD stays)
-- Async import jobs with `designOption` / `documentsOption` (keep sync `PUT /import`)
-- Icon note (`0xFFFF0010`) with `propsRestored`, beside `$DBIcon`
-
-ACL **entry** CRUD stays on **`/api/admin-v1/acl/*`** — Kyber keeps full-DXL `GET`/`PUT /acl` only.
-
 ## What each API keeps to itself
 
 HCL's DXL API has an import job with the importer's options, and the importer log in the response. Its dry run runs the importer. It also has the JSON for a frameset, an outline, launch settings, and a single ACL entry.
