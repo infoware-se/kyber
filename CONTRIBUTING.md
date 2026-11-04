@@ -32,7 +32,7 @@ Unit tests run without a live Domino server. Live smoke needs DRAPI and a Kyber-
 
 1. Keep the change focused.
 2. Run `.\build.ps1` in `extension` when you can.
-3. Keep `extension/pom.xml` version and the README version table in sync.
+3. Keep `extension/pom.xml` version in sync with the version tables in `README.md` and `extension/README.md`, and with `info.version` in `openapi/openapi.kyber.json` (CI `verify` checks all four).
 4. After merge, tag `vX.Y.Z`, write release notes, and attach `infoware-kyber-X.Y.Z.jar` built on a machine with `DRAPI_HOME` (release JAR upload is still manual; CI only verifies metadata).
 
 ## Related

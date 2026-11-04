@@ -10,7 +10,7 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.26.5 |
+| **Version** | 0.26.6 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
@@ -161,6 +161,15 @@ Per-type create needs an existing NSF. The design import, `PUT /api/kyber-v1/imp
 
 A second create of the same name returns **409**. A missing element throws `KeepExceptionNotFound` (OpenAPI **404**). KEEP often maps that exception to HTTP **400**; the message still says it was not found.
 
+## Known limits
+
+These are host/platform boundaries Kyber cannot remove:
+
+| Limit | What clients should do |
+|--|--|
+| **DXL = Designer DTD** | Round-trip only what `xmlschemas/domino_*.dtd` defines. Gaps that Domino still stores get a targeted fix in [`DxlImportFixes`](docs/dxl-roundtrip-fixes.md) — not a second DXL dialect. |
+| **Missing note → HTTP 400** | Kyber raises `KeepExceptionNotFound` (spec **404**). KEEP often maps that exception to **400** with a “not found” message. Treat **404** or **400 + not-found text** as missing. Live smoke accepts both. |
+
 ## Access
 
 The call runs as the signed-in user. On a database that already exists, the limit is that NSF's ACL. Listing or reading a design element needs Designer, the same level as creating or changing one.
@@ -249,6 +258,11 @@ Put new design capability here. Put agent tool selection, allowlist, write switc
 ## Improvements
 
 Kyber is the design API on DRAPI. It uses Domino JNX for design work. Infoware product work for agents and MCP adapters belongs here. A local wishlist for **DRAPI and Domino JNX** (API and docs) stays under `ignore/` and is not published with the repo. Aldhani's MCP tool selection and refuse policies stay in that product — Kyber ships complete design routes; MCP products choose their subset.
+
+**Shipped in 0.26.6**
+
+1. CI `verify` checks pom version against root README, extension README, and OpenAPI `info.version`.
+2. README **Known limits** (Designer DTD round-trip; KEEP maps missing notes to HTTP 400); OpenAPI `404NotFound` spells out the KEEP mapping.
 
 **Shipped in 0.26.5**
 

@@ -14,10 +14,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: README and pom versions match
+      - name: Version tables and OpenAPI match pom
         run: |
+          set -euo pipefail
           pom=$(sed -n 's/.*<version>\([^<]*\)<\/version>.*/\1/p' extension/pom.xml | head -1)
           echo "pom=$pom"
+          test -n "$pom"
           grep -F "**Version** | $pom" README.md
+          grep -F "**Version** | $pom" extension/README.md
+          grep -E "\"version\"[[:space:]]*:[[:space:]]*\"$pom\"" extension/src/main/resources/openapi/openapi.kyber.json
           test -f LICENSE
           test -f SECURITY.md
