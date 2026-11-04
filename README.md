@@ -10,11 +10,11 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.26.7 |
+| **Version** | 0.26.8 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
-| **Swagger tags** | `design-element` for typed CRUD and helpers (`/lookup`, `/copy`, …), `design-handler` for `/export`, `/import`, `/database`, `/databases`, `/fromTemplate` |
+| **Swagger tags** | `design-element` for typed CRUD and helpers (`/lookup`, `/fields`, `/columns`, `/copy`, …), `design-handler` for `/export`, `/import`, `/database`, `/databases`, `/fromTemplate` |
 | **Template NSF** | `kyber.nsf` (`kyber.defaultNsf`) |
 | **Category** | `KyberEnabled`. A database without it responds 403 **Not Kyber enabled** |
 | **Reference** | [extension/README.md](extension/README.md) |
@@ -270,6 +270,11 @@ Kyber’s pre-release API smoke (`tools/smoke-kyber-api.ps1`) is not Yavin’s p
 
 Kyber is the design API on DRAPI (Domino JNX). Ship complete design routes here; [Aldhani](https://github.com/infoware-se/aldhani) wraps a subset behind MCP policy, and [Yavin](https://github.com/infoware-se/yavin) deploys which build runs on a host. A local wishlist for **DRAPI and Domino JNX** (API and docs) stays under `ignore/` and is not published with the repo.
 
+**Shipped in 0.26.8**
+
+1. `GET /fields?type=form|subform&name=` — field name/type/kind inventory without full DXL.
+2. `GET /columns?type=view|folder&name=` — column title/formula/flags inventory without full DXL.
+
 **Shipped in 0.26.7**
 
 1. Family boundary docs: Kyber | Aldhani | Yavin (where new work goes; smoke vs post-deploy).
@@ -326,12 +331,10 @@ Also shipped earlier. Bulk DXL round-trip + typed CRUD (applet/dataconnection, a
 
 **Next (high value for agents / Aldhani)**
 
-Aldhani wraps Kyber; it will not parse DXL locally for these. Ship the routes here first.
+Aldhani wraps Kyber; it will not parse DXL locally for these. Ship the routes here first. **Fields** and **Columns** shipped in 0.26.8.
 
 1. **Diff** — `GET` or `POST /diff` comparing live design to proposed DXL, or two notes (same or allowlisted NSF). Return structured hunks / field-level changes without requiring the client to hold full DXL bodies.
-2. **Fields** — `GET /fields?nsfPath=&type=form|subform&name=` listing field names, types, and flags from a form/subform without returning the full DXL.
-3. **Columns** — `GET /columns?nsfPath=&type=view|folder&name=` listing column titles, formulas, and sort/hide flags from a view or folder without full DXL.
-4. **Summary** — `GET /summary?nsfPath=&type=&name=` (or by `unid` / `noteId`) returning aliases, forms used, agent schedule/trigger, and other inventory metadata agents invent from `get` + DXL loops today.
+2. **Summary** — `GET /summary?nsfPath=&type=&name=` (or by `unid` / `noteId`) returning aliases, forms used, agent schedule/trigger, and other inventory metadata agents invent from `get` + DXL loops today.
 
 **Next (medium)**
 

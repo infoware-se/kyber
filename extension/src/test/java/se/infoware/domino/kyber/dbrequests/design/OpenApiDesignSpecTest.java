@@ -56,6 +56,24 @@ class OpenApiDesignSpecTest {
         "searchDesign",
         root.getJsonObject("paths").getJsonObject("/search").getJsonObject("get").getString("operationId"));
     assertEquals(
+        "listFields",
+        root.getJsonObject("paths").getJsonObject("/fields").getJsonObject("get").getString("operationId"));
+    assertNotNull(
+        root.getJsonObject("paths")
+            .getJsonObject("/fields")
+            .getJsonObject("get")
+            .getJsonObject("responses")
+            .getJsonObject("404"));
+    assertEquals(
+        "listColumns",
+        root.getJsonObject("paths").getJsonObject("/columns").getJsonObject("get").getString("operationId"));
+    assertNotNull(
+        root.getJsonObject("paths")
+            .getJsonObject("/columns")
+            .getJsonObject("get")
+            .getJsonObject("responses")
+            .getJsonObject("404"));
+    assertEquals(
         "copyDesign",
         root.getJsonObject("paths").getJsonObject("/copy").getJsonObject("post").getString("operationId"));
     assertNotNull(

@@ -1085,6 +1085,23 @@ function Invoke-ProductSurfaceSmoke {
   if ($hits.Count -lt 1) { Fail "/search did not find SmokeForm: $(Get-ResponseText)" }
   Ok "GET /search SmokeForm"
 
+  $code = Invoke-Design GET (Design-Url "fields" "type=form&name=SmokeForm") -OutFile $out
+  Assert-Code "GET /fields form" $code @("200")
+  $fieldInv = Get-ResponseText | ConvertFrom-Json
+  if ($null -eq $fieldInv.fields) { Fail "GET /fields missing fields[]: $(Get-ResponseText)" }
+  Ok "GET /fields form count=$($fieldInv.count)"
+  $code = Invoke-Design GET (Design-Url "fields" "type=form&name=NoSuchSmokeFieldsForm") -OutFile $out
+  Assert-NotFound "GET /fields missing" $code (Get-ResponseText)
+
+  $code = Invoke-Design GET (Design-Url "columns" "type=view&name=SmokeView") -OutFile $out
+  Assert-Code "GET /columns view" $code @("200")
+  $colInv = Get-ResponseText | ConvertFrom-Json
+  if ($null -eq $colInv.columns) { Fail "GET /columns missing columns[]: $(Get-ResponseText)" }
+  if ([int]$colInv.count -lt 1) { Fail "GET /columns expected at least one column: $(Get-ResponseText)" }
+  Ok "GET /columns view count=$($colInv.count) title=$($colInv.columns[0].title)"
+  $code = Invoke-Design GET (Design-Url "columns" "type=view&name=NoSuchSmokeColumnsView") -OutFile $out
+  Assert-NotFound "GET /columns missing" $code (Get-ResponseText)
+
   $code = Invoke-Design GET (Design-Url "named/form" "name=SmokeForm") -OutFile $out
   Assert-Code "GET /named/form" $code @("200")
   Ok "GET /named/form?name=SmokeForm"

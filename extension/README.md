@@ -4,7 +4,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
-| **Version** | 0.26.7 |
+| **Version** | 0.26.8 |
 | **API** | `/api/kyber-v1` |
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
@@ -81,6 +81,8 @@ Cross-cutting routes in addition to per-type CRUD. A missing design note throws 
 |--------|------|---------|
 | GET | `/lookup?nsfPath=&unid=` or `noteId=` | Resolve one design note by UNID or noteId (`includeDxl` optional) |
 | GET | `/search?nsfPath=&q=` | Search by name and/or DXL substring (`types`, `match`, `limit` optional) |
+| GET | `/fields?nsfPath=&type=form\|subform&name=` | Field name/type/kind inventory without full DXL |
+| GET | `/columns?nsfPath=&type=view\|folder&name=` | Column title/formula/flags inventory without full DXL |
 | POST | `/copy?nsfPath=&type=&name=&toName=` | Copy a design element (optional `toNsfPath`). 409 if the target name exists |
 | POST | `/rename?nsfPath=&type=&name=&newName=` | Rename a design element. 409 if the new name exists |
 | PATCH | `/patch?nsfPath=&type=&name=` | Safe patch of `comment` and/or `alias` (JSON body) |
