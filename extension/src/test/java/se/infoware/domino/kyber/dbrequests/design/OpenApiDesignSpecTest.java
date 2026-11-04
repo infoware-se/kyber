@@ -101,6 +101,12 @@ class OpenApiDesignSpecTest {
             .getJsonObject("get")
             .getString("operationId"));
     assertEquals(
+        "upsertDesign",
+        root.getJsonObject("paths")
+            .getJsonObject("/upsert")
+            .getJsonObject("put")
+            .getString("operationId"));
+    assertEquals(
         "copyDesign",
         root.getJsonObject("paths").getJsonObject("/copy").getJsonObject("post").getString("operationId"));
     assertNotNull(

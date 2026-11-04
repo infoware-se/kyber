@@ -1271,6 +1271,36 @@ function Invoke-ProductSurfaceSmoke {
   }
   Ok "GET /schedules?trigger=manual count=$($manualOnly.count)"
 
+  $upsertName = "SmokeUpsertForm"
+  Invoke-Design DELETE (Design-Url "forms/$upsertName") -OutFile $out | Out-Null
+  $upsertDxl = "<form name='$upsertName' comment='UpsertCreate'><body><richtext/></body></form>"
+  $upsertFile = Join-Path $env:TEMP "smoke-upsert.xml"
+  [IO.File]::WriteAllText($upsertFile, $upsertDxl)
+  $code = Invoke-Design PUT (Design-Url "upsert" "type=form&name=$upsertName") `
+    -BodyFile $upsertFile -ContentType "text/xml" -OutFile $out
+  Assert-Code "PUT /upsert create" $code @("200")
+  $up1 = Get-ResponseText | ConvertFrom-Json
+  if ($up1.created -ne $true) { Fail "PUT /upsert create expected created=true: $(Get-ResponseText)" }
+  if ([string]$up1.name -ne $upsertName) { Fail "PUT /upsert create name: $(Get-ResponseText)" }
+  Ok "PUT /upsert create $upsertName"
+  $upsertDxl2 = "<form name='$upsertName' comment='UpsertReplace'><body><richtext/></body></form>"
+  [IO.File]::WriteAllText($upsertFile, $upsertDxl2)
+  $code = Invoke-Design PUT (Design-Url "upsert" "type=form&name=$upsertName") `
+    -BodyFile $upsertFile -ContentType "text/xml" -OutFile $out
+  Assert-Code "PUT /upsert replace" $code @("200")
+  $up2 = Get-ResponseText | ConvertFrom-Json
+  if ($up2.created -eq $true) { Fail "PUT /upsert replace expected created=false: $(Get-ResponseText)" }
+  if ([string]$up2.dxl -notmatch "comment='UpsertReplace'|comment=`"UpsertReplace`"") {
+    Fail "PUT /upsert replace missing comment: $($up2.dxl.Substring(0, [Math]::Min(200, $up2.dxl.Length)))"
+  }
+  if ($up1.unid -and $up2.unid -and [string]$up1.unid -ne [string]$up2.unid) {
+    Fail "PUT /upsert should preserve unid $($up1.unid) vs $($up2.unid)"
+  }
+  Ok "PUT /upsert replace unid=$($up2.unid)"
+  $code = Invoke-Design DELETE (Design-Url "forms/$upsertName") -OutFile $out
+  Assert-Code "DELETE $upsertName" $code @("200")
+  Ok "cleaned upsert form"
+
   $catNsf = "kyber-category.nsf"
   $code = Invoke-Design POST (Design-UrlOn $catNsf "database" "dbTitle=Kyber%20Category") -OutFile $out
   if ($code -in @("200", "201", "409")) {

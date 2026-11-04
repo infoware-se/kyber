@@ -10,11 +10,11 @@ Kyber runs as a JAR inside HCL Domino REST API (KEEP / DRAPI). It is an Infoware
 
 | | |
 |--|--|
-| **Version** | 0.26.11 |
+| **Version** | 0.26.12 |
 | **API** | `/api/kyber-v1` |
 | **JAR** | `infoware-kyber.jar` |
 | **Catalog** | OpenAPI version id `kyber` (the Admin UI card) |
-| **Swagger tags** | `design-element` for typed CRUD and helpers (`/lookup`, `/fields`, `/columns`, `/summary`, `/diff`, `/schedules`, `/copy`, …), `design-handler` for `/export`, `/import`, `/database`, `/databases`, `/fromTemplate` |
+| **Swagger tags** | `design-element` for typed CRUD and helpers (`/lookup`, `/fields`, `/columns`, `/summary`, `/diff`, `/schedules`, `/upsert`, `/copy`, …), `design-handler` for `/export`, `/import`, `/database`, `/databases`, `/fromTemplate` |
 | **Template NSF** | `kyber.nsf` (`kyber.defaultNsf`) |
 | **Category** | `KyberEnabled`. A database without it responds 403 **Not Kyber enabled** |
 | **Reference** | [extension/README.md](extension/README.md) |
@@ -270,6 +270,10 @@ Kyber’s pre-release API smoke (`tools/smoke-kyber-api.ps1`) is not Yavin’s p
 
 Kyber is the design API on DRAPI (Domino JNX). Ship complete design routes here; [Aldhani](https://github.com/infoware-se/aldhani) wraps a subset behind MCP policy, and [Yavin](https://github.com/infoware-se/yavin) deploys which build runs on a host. A local wishlist for **DRAPI and Domino JNX** (API and docs) stays under `ignore/` and is not published with the repo.
 
+**Shipped in 0.26.12**
+
+1. `PUT /upsert` — one-element create-or-replace from DXL on an existing NSF (preserves UNID on replace; no bulk import / no `compileAll`).
+
 **Shipped in 0.26.11**
 
 1. `GET /schedules` — NSF-wide agent trigger/schedule inventory (`trigger=`, `scheduledOnly=` filters); no full DXL.
@@ -343,11 +347,7 @@ Also shipped earlier. Bulk DXL round-trip + typed CRUD (applet/dataconnection, a
 
 **Next (high value for agents / Aldhani)**
 
-Aldhani wraps Kyber; it will not parse DXL locally for these. Ship the routes here first. **Fields** / **Columns** (0.26.8), **Summary** (0.26.9), **Diff** (0.26.10), and **Schedules** (0.26.11) shipped.
-
-**Next (medium)**
-
-1. One-element create-or-replace import (not full `PUT /import`) when a client has a single DXL note.
+Aldhani wraps Kyber; it will not parse DXL locally for these. Ship the routes here first. **Fields** / **Columns** (0.26.8), **Summary** (0.26.9), **Diff** (0.26.10), **Schedules** (0.26.11), and **Upsert** (0.26.12) shipped. No further medium items queued.
 
 Out of scope for Kyber. Application documents, DQL, running agents as a general automation API, server console, admin directory changes, Aldhani MCP policy, and Yavin host deploy / post-deploy smoke.
 

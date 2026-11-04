@@ -325,7 +325,10 @@ final class DesignDxl {
     if (dxl == null || dxl.isBlank()) {
       throw new KeepExceptionWrongDataRequest("dxl body is required");
     }
-    String out = dxl.replaceAll("(?is)<noteinfo\\b[^>]*>.*?</noteinfo>", "");
+    // Paired or self-closing noteinfo (Designer/Domino emit both).
+    String out =
+        dxl.replaceAll("(?is)<noteinfo\\b[^>]*/>", "")
+            .replaceAll("(?is)<noteinfo\\b[^>]*>.*?</noteinfo>", "");
     return withoutReplicaId(out);
   }
 

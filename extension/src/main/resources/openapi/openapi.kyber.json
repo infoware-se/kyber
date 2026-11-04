@@ -3,7 +3,7 @@
   "info": {
     "title": "Kyber — Infoware REST API for design elements",
     "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) or application/json whose dxl property is that DXL. The design comment is the comment attribute in the DXL. GET /export is the design export and PUT /import is the design import of all supported elements as DXL. The design import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database whose catalog category is KyberEnabled. POST /database and POST /database/fromTemplate create a missing NSF after Create databases & templates and set KyberEnabled. DELETE /database deletes an NSF that has catalog category KyberEnabled and needs Manager on that NSF. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist and those paths are not returned. A missing design note raises KeepExceptionNotFound (documented as 404; KEEP often maps it to HTTP 400). The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists, has catalog category KyberEnabled, and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
-    "version": "0.26.11"
+    "version": "0.26.12"
   },
   "servers": [
     {
@@ -13,7 +13,7 @@
   "tags": [
     {
       "name": "design-element",
-      "description": "Per-type and singleton design-element CRUD against an NSF (?nsfPath=) whose catalog category is KyberEnabled, plus helpers (/lookup, /search, /copy, /rename, /patch, /content, /fields, /columns, /summary, /diff, /schedules, /compile, /templates, /defaults/preview, /database/inherit). Create/update bodies are raw DXL (text/xml) or the JSON object a get returns. Named collections support list/create on the collection path and get/update/delete on /{name}. Residual notes use /designnotes. Application Properties and the database icon are always present (GET/PUT only). A missing element raises KeepExceptionNotFound (documented as 404; KEEP often maps it to HTTP 400)."
+      "description": "Per-type and singleton design-element CRUD against an NSF (?nsfPath=) whose catalog category is KyberEnabled, plus helpers (/lookup, /search, /copy, /rename, /patch, /content, /fields, /columns, /summary, /diff, /schedules, /upsert, /compile, /templates, /defaults/preview, /database/inherit). Create/update bodies are raw DXL (text/xml) or the JSON object a get returns. Named collections support list/create on the collection path and get/update/delete on /{name}. Residual notes use /designnotes. Application Properties and the database icon are always present (GET/PUT only). A missing element raises KeepExceptionNotFound (documented as 404; KEEP often maps it to HTTP 400)."
     },
     {
       "name": "design-handler",
@@ -494,6 +494,62 @@
                         }
                       }
                     }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/400BadRequest" },
+          "403": { "$ref": "#/components/responses/403Forbidden" },
+          "500": { "$ref": "#/components/responses/500InternalServerError" }
+        }
+      }
+    },
+    "/upsert": {
+      "summary": "Create or replace one design note from DXL",
+      "parameters": [
+        { "name": "nsfPath", "in": "query", "required": true, "schema": { "type": "string" } },
+        { "name": "type", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Design type (also accepted in JSON body)" },
+        { "name": "name", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Optional; defaults to the name in DXL" }
+      ],
+      "put": {
+        "tags": ["design-element"],
+        "operationId": "upsertDesign",
+        "summary": "One-element create-or-replace (no bulk import, no compileAll)",
+        "description": "Writes a single design note into an existing Kyber-enabled NSF. Creates when missing, replaces when present (preserves note UNID). Body is raw DXL (text/xml) or JSON {type?, name?, dxl}. Does not create databases or run NSF-wide compileAll — use PUT /import or POST /compile for those.",
+        "x-keep-version": 1,
+        "security": [{ "jwt": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "text/xml": { "schema": { "type": "string" } },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string" },
+                  "name": { "type": "string" },
+                  "dxl": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upsert result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "created": { "type": "boolean" },
+                    "type": { "type": "string" },
+                    "name": { "type": "string" },
+                    "dxl": { "type": "string" },
+                    "signWarning": { "type": "string" },
+                    "xpagesProject": { "type": "object" }
                   }
                 }
               }

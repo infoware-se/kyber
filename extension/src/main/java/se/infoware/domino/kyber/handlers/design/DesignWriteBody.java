@@ -25,6 +25,7 @@ final class DesignWriteBody {
           params.put("dxl", dxl == null ? "" : dxl);
           putIfBlank(params, "kind", body.getString("kind"));
           putIfBlank(params, "name", body.getString("name"));
+          putIfBlank(params, "type", body.getString("type"));
           return;
         }
       } catch (Exception ignored) {
