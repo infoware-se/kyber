@@ -80,7 +80,8 @@ Write-Host "Release JAR: $jarOut" -ForegroundColor Green
 
 if (-not $SkipSmoke) {
   Write-Host "=== Extended API smoke (Kyber only) ===" -ForegroundColor Cyan
-  & (Join-Path $PSScriptRoot "smoke-kyber-api.ps1") -Extended
+  # Lab DRAPI often uses a private CA / self-signed cert — same as manual smoke.
+  & (Join-Path $PSScriptRoot "smoke-kyber-api.ps1") -Extended -SkipCertificateCheck
   if ($LASTEXITCODE -ne 0) { throw "smoke-kyber-api.ps1 -Extended failed" }
 } else {
   Write-Host "Skipped Extended smoke (-SkipSmoke)" -ForegroundColor Yellow
