@@ -4,7 +4,7 @@ Not an HCL product. Runs as a KEEP/DRAPI extension.
 
 | | |
 |--|--|
-| **Version** | 0.26.3 |
+| **Version** | 0.26.4 |
 | **API** | `/api/kyber-v1` |
 | **Catalog id** | `kyber` (Admin UI / OpenAPI version key) |
 | **Spec** | `openapi/openapi.kyber.json` |
@@ -192,7 +192,7 @@ Sections follow Package Explorer. "In" = typed DXL CRUD; "Bulk" = `/export` and 
 | Resources | Themes | `/themes` |
 | Resources | About Document | `/about` (singleton) |
 | Resources | Using Document | `/using` (singleton) |
-| XPages | XPages | `/xpages` (named — list/create + `/{name}` get/update/delete; not a singleton). First create of an XPage, `javasource`, or Java agent/script library ensures the project skeleton; empty `POST /database` does not. |
+| XPages | XPages | `/xpages` (named — list/create + `/{name}` get/update/delete; not a singleton). First create of an XPage, `javasource`, or Java agent/script library runs `XPagesProject.ensure` (skeleton + heal/dedupe); empty `POST /database` does not. |
 | Framesets | Framesets | `/framesets`. Post-import size repair via `DxlImportFixes` / `FramesetDxlFix` — see [`docs/dxl-roundtrip-fixes.md`](../docs/dxl-roundtrip-fixes.md). |
 | Custom Controls | Custom Controls | `/customcontrols` (`.xsp` notes without XPage `K` flag; not Composite Components) |
 | (XPages project) | `.classpath`, `.project`, `plugin.xml`, `build.properties`, `.settings/`, `WEB-INF/` except `xsp.properties` | `/xpagesresources` |
@@ -492,12 +492,17 @@ Optional `WEB-INF/xsp.properties` (not always present on classic NSF).
 
 ### XPages
 
-Named type (many per NSF) — same CRUD shape as forms/pages, not a singleton. Creating an XPage, Java agent, imported-Java agent, Java script library, or Java source also creates the project files that are missing: `plugin.xml`, `META-INF/MANIFEST.MF`, `.project`, `Local/plugin/Activator.java`, `.classpath` (JRE + plug-in containers only — not Designer's temp `Local/` source folder), `build.properties`, `faces-config`, compiled Activator when importable, and `xsp.properties`.
+Named type (many per NSF) — same CRUD shape as forms/pages, not a singleton. Creating an XPage, Java agent, imported-Java agent, Java script library, or Java source runs **`XPagesProject.ensure`**:
+
+1. **Create-if-absent** for missing skeleton notes: `plugin.xml`, `META-INF/MANIFEST.MF`, `.project`, `Local/plugin/Activator.java`, `.classpath`, `build.properties`, `faces-config`, compiled Activator when importable, `xsp.properties`.
+2. **Heal / dedupe** when Designer pollution is present: duplicate `.classpath` / `plugin.xml`, a `Local/` source entry in `.classpath`, or `class="plugin.Activator"` on `plugin.xml`.
+
+The stored `.classpath` is JRE + plug-in containers only (not Designer's temp `Local/` folder). Stored `plugin.xml` omits the Activator class attribute so Designer does not require a Local source path that it does not persist. The create response includes **`xpagesProject`**: `{ ensured, projectName, created[], skipped[], failed[], repaired[] }`. Soft failures land in `failed`; repairs (for example `.classpath`) land in `repaired`. Empty `POST /database` does not run ensure.
 
 | Method | Path |
 |--------|------|
 | GET | `/api/kyber-v1/xpages?nsfPath=` |
-| POST | `/api/kyber-v1/xpages?nsfPath=` (`text/xml`; prefer Designer-exported DXL; optional `?name=`; empty body + `?name=` → starter; creates missing project files) |
+| POST | `/api/kyber-v1/xpages?nsfPath=` (`text/xml`; prefer Designer-exported DXL; optional `?name=`; empty body + `?name=` → starter; runs ensure; may return `xpagesProject`) |
 | GET | `/api/kyber-v1/xpages/{name}?nsfPath=` |
 | PUT | `/api/kyber-v1/xpages/{name}?nsfPath=` (`text/xml`; **404** if missing) |
 | DELETE | `/api/kyber-v1/xpages/{name}?nsfPath=` |
@@ -528,9 +533,13 @@ $env:DRAPI_HOME = "C:\Domino\restapi"
 
 **Output:** `target/infoware-kyber.jar`, copied to `%DRAPI_HOME%\libs\infoware-kyber.jar`. JDK 21 and Maven 3.9 or newer. The script reads `keep-core`, `keep-extension`, and `keep-jnx-ext` from `%DRAPI_HOME%`.
 
+## Logging
+
+Kyber uses `java.util.logging` under `se.infoware.domino.kyber` (`KyberLog`). INFO covers create/update/delete/import/ensure/compile; WARNING covers soft failures and repairs (including XPages heal). Enable FINE on that logger for per-element import detail. Filter the Domino/KEEP console on that name.
+
 ## Tests
 
-Unit tests (JUnit 5, no Domino) live under `extension/src/test/java`. Covered: DXL helpers, kind adapters, classpath starters, alphabetical NSF pick helper, blank baseline resources, OpenAPI shape (incl. always-present GET/PUT-only).
+Unit tests (JUnit 5, no Domino) live under `extension/src/test/java`. Covered: DXL helpers, kind adapters, classpath starters, XPages ensure policy, alphabetical NSF pick helper, blank baseline resources, OpenAPI shape (incl. always-present GET/PUT-only and `xpagesProject` on Java/XPage creates).
 
 ```powershell
 cd extension
@@ -540,7 +549,7 @@ cd extension
 ..\tools\smoke-kyber-api.ps1 -Extended   # + Local/ heal (nightly / pre-release)
 ```
 
-Live smoke against DRAPI. `tools/smoke-kyber-api.ps1` creates `kybertest.nsf` and runs list/create/get/put/delete for every typed CRUD collection (including agent, script-library and Java-source kinds), plus singleton create/update and get/put for application properties, the database icon and the ACL. Each created element is written again with `Hello World` and read back. LotusScript, formula and simple-action agents are then run, and each run writes `Hello World` onto a document. The LotusScript agent calls `SmokeLibLs`. Deleted elements are created again so the NSF stays populated. Domino URL commands then open the database, form, page, about document, using document, view, folder, navigator, frameset, icon, image, file, stylesheet, agents, web service and XPage. `?CreateDocument` saves a document that the view, `?OpenDocument` and `?EditDocument` show as `Hello World`, and `?DeleteDocument` removes it. The run exports `kybertest.nsf` and imports that tree into `kybersmoke-import.nsf`. The imported design keeps the target database's replica id:
+Live smoke against DRAPI. `tools/smoke-kyber-api.ps1` creates `kybertest.nsf` and runs list/create/get/put/delete for every typed CRUD collection (including agent, script-library and Java-source kinds), plus singleton create/update and get/put for application properties, the database icon and the ACL. Each created element is written again with `Hello World` and read back. LotusScript, formula and simple-action agents are then run, and each run writes `Hello World` onto a document. The LotusScript agent calls `SmokeLibLs`. Deleted elements are created again so the NSF stays populated. Domino URL commands then open the database, form, page, about document, using document, view, folder, navigator, frameset, icon, image, file, stylesheet, agents, web service and XPage. `?CreateDocument` saves a document that the view, `?OpenDocument` and `?EditDocument` show as `Hello World`, and `?DeleteDocument` removes it. The run exports `kybertest.nsf` and imports that tree into `kybersmoke-import.nsf`. The imported design keeps the target database's replica id. Default smoke asserts XPages project health (no `Local/` in `.classpath`, no Activator class on `plugin.xml`); `-Extended` also pollutes `.classpath` and checks that the next Java create reports `xpagesProject.repaired` and heals it:
 
 ```powershell
 .\tools\smoke-kyber-api.ps1

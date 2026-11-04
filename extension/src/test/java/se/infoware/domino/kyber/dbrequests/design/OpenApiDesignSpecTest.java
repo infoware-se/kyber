@@ -292,6 +292,21 @@ class OpenApiDesignSpecTest {
     assertFalse(schemaProps(paths, "/forms", "post").containsKey("log"));
     assertFalse(schemaProps(paths, "/forms", "post").containsKey("compiled"));
     assertFalse(schemaProps(paths, "/agents", "post").containsKey("compiled"));
+    assertNotNull(schemaProps(paths, "/agents", "post").getJsonObject("xpagesProject"));
+    assertNotNull(schemaProps(paths, "/scriptlibraries", "post").getJsonObject("xpagesProject"));
+    assertNotNull(schemaProps(paths, "/xpages", "post").getJsonObject("xpagesProject"));
+    assertNotNull(schemaProps(paths, "/javasources", "post").getJsonObject("xpagesProject"));
+    JsonObject xpagesEnsure =
+        loadSpec().getJsonObject("components").getJsonObject("schemas").getJsonObject("XPagesProjectEnsure");
+    assertNotNull(xpagesEnsure);
+    assertNotNull(xpagesEnsure.getJsonObject("properties").getJsonObject("repaired"));
+    assertNotNull(
+        loadSpec()
+            .getJsonObject("components")
+            .getJsonObject("schemas")
+            .getJsonObject("DesignWriteEnvelope")
+            .getJsonObject("properties")
+            .getJsonObject("xpagesProject"));
     JsonObject libraryPut = paths.getJsonObject("/scriptlibraries/{name}").getJsonObject("put");
     assertNotNull(
         libraryPut

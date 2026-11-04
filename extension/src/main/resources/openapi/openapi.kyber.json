@@ -3,7 +3,7 @@
   "info": {
     "title": "Kyber — Infoware REST API for design elements",
     "description": "Kyber — Infoware REST API for design elements. CRUD for Domino design elements via Domino REST API (/api/kyber-v1). Create/update accepts raw DXL (text/xml) or application/json whose dxl property is that DXL. The design comment is the comment attribute in the DXL. GET /export is the design export and PUT /import is the design import of all supported elements as DXL. The design import creates the NSF when the file is missing, after the server privilege Create databases & templates; per-type CRUD requires an existing database whose catalog category is KyberEnabled. POST /database and POST /database/fromTemplate create a missing NSF after Create databases & templates and set KyberEnabled. DELETE /database deletes an NSF that has catalog category KyberEnabled and needs Manager on that NSF. GET /databases lists databases this user can open whose catalog category is KyberEnabled. fileType defaults to database (1247). more is set when other databases of that type exist and those paths are not returned. A missing design note raises KeepExceptionNotFound (documented as 404; KEEP often maps it to HTTP 400). The first write to any NSF creates kyber.nsf without design templates when that file is missing, with the same usage text in About and Using, so templates can be added in Domino Designer. Starter DXL resolution: if kyber.nsf (or kyber.defaultNsf) exists, has catalog category KyberEnabled, and has the type (and kind when kinded), use the first match by case-insensitive alphabetical name; the database icon is not a template; otherwise embedded JAR /defaults/{type}.dxl.",
-    "version": "0.26.3"
+    "version": "0.26.4"
   },
   "servers": [
     {
@@ -7940,7 +7940,7 @@
         ],
         "operationId": "createAgent",
         "summary": "Create an agent (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set (also ?kind= for the variant). Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), optional ?template= selects by case-insensitive name; otherwise the first match by case-insensitive alphabetical name. A missing template name is 400. Without template and with no NSF match, uses embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. For agents, pass optional ?kind=lotusscript|formula|simpleaction|java|importedjava when creating from starter DXL.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set (also ?kind= for the variant). Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), optional ?template= selects by case-insensitive name; otherwise the first match by case-insensitive alphabetical name. A missing template name is 400. Without template and with no NSF match, uses embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. For agents, pass optional ?kind=lotusscript|formula|simpleaction|java|importedjava when creating from starter DXL. A Java or imported-Java create also runs XPagesProject.ensure and may return xpagesProject (created, skipped, failed, repaired).",
         "x-keep-version": 1,
         "security": [
           {
@@ -8025,6 +8025,9 @@
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
+                    },
+                    "xpagesProject": {
+                      "$ref": "#/components/schemas/XPagesProjectEnsure"
                     }
                   }
                 }
@@ -8465,7 +8468,7 @@
         ],
         "operationId": "createScriptLibrary",
         "summary": "Create a script library (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set (also ?kind= for the variant). Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), optional ?template= selects by case-insensitive name; otherwise the first match by case-insensitive alphabetical name. A missing template name is 400. Without template and with no NSF match, uses embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. For script libraries, pass optional ?kind=lotusscript|javascript|ssjs|java when creating from starter DXL.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set (also ?kind= for the variant). Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), optional ?template= selects by case-insensitive name; otherwise the first match by case-insensitive alphabetical name. A missing template name is 400. Without template and with no NSF match, uses embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. For script libraries, pass optional ?kind=lotusscript|javascript|ssjs|java when creating from starter DXL. A Java library create also runs XPagesProject.ensure and may return xpagesProject (created, skipped, failed, repaired).",
         "x-keep-version": 1,
         "security": [
           {
@@ -8549,6 +8552,9 @@
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
+                    },
+                    "xpagesProject": {
+                      "$ref": "#/components/schemas/XPagesProjectEnsure"
                     }
                   }
                 }
@@ -10244,7 +10250,7 @@
         ],
         "operationId": "createXPage",
         "summary": "Create an XPage (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), optional ?template= selects by case-insensitive name; otherwise the first match by case-insensitive alphabetical name. A missing template name is 400. Without template and with no NSF match, uses embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. Creating an XPage also creates the XPages project files that are missing.",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set. Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), optional ?template= selects by case-insensitive name; otherwise the first match by case-insensitive alphabetical name. A missing template name is 400. Without template and with no NSF match, uses embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. Creating an XPage also runs XPagesProject.ensure (missing skeleton notes, then heal/dedupe of .classpath and plugin.xml) and returns xpagesProject (created, skipped, failed, repaired).",
         "x-keep-version": 1,
         "security": [
           {
@@ -10322,6 +10328,9 @@
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
+                    },
+                    "xpagesProject": {
+                      "$ref": "#/components/schemas/XPagesProjectEnsure"
                     }
                   }
                 }
@@ -14696,7 +14705,7 @@
         ],
         "operationId": "createJavaSource",
         "summary": "Create a Java source (409 if name exists)",
-        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set (also ?kind= for the variant). Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), optional ?template= selects by case-insensitive name; otherwise the first match by case-insensitive alphabetical name. A missing template name is 400. Without template and with no NSF match, uses embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. For Java sources, pass optional ?kind=class|interface|enum. The name is the Java path ending in .java (e.g. se/infoware/kyber/NewJava.java).",
+        "description": "Create-only. Body: raw DXL (text/xml) with a typed root element. Optional ?name= sets or renames the element on create. A different name rewrites the DXL and drops note identity so the source note is not replaced. Empty body creates from starter DXL when ?name= is set (also ?kind= for the variant). Starter resolution: If kyber.nsf (or kyber.defaultNsf) exists and has the type (and kind when kinded), optional ?template= selects by case-insensitive name; otherwise the first match by case-insensitive alphabetical name. A missing template name is 400. Without template and with no NSF match, uses embedded JAR /defaults/{type}.dxl. Requires ?nsfPath=. Responds 409 if the name already exists. For Java sources, pass optional ?kind=class|interface|enum. The name is the Java path ending in .java (e.g. se/infoware/kyber/NewJava.java). Also runs XPagesProject.ensure and returns xpagesProject (created, skipped, failed, repaired).",
         "x-keep-version": 1,
         "security": [
           {
@@ -14774,6 +14783,9 @@
                     "dxl": {
                       "type": "string",
                       "description": "DXL stored on the note."
+                    },
+                    "xpagesProject": {
+                      "$ref": "#/components/schemas/XPagesProjectEnsure"
                     }
                   }
                 }
@@ -16663,7 +16675,7 @@
     "schemas": {
           "DesignWriteEnvelope": {
       "type": "object",
-      "description": "dxl is the design to store. The design comment is the comment attribute in that DXL. name and kind are used when the path or query did not already set them.",
+      "description": "Request: dxl is the design to store; the design comment is the comment attribute in that DXL. name and kind are used when the path or query did not already set them. Create responses for an XPage, Java agent, imported-Java agent, Java script library, or Java source may also include xpagesProject from XPagesProject.ensure.",
       "properties": {
         "dxl": {
           "type": "string",
@@ -16683,6 +16695,59 @@
         },
         "kind": {
           "type": "string"
+        },
+        "xpagesProject": {
+          "$ref": "#/components/schemas/XPagesProjectEnsure"
+        }
+      }
+    },
+    "XPagesProjectEnsure": {
+      "type": "object",
+      "description": "Present on create responses when Kyber runs XPagesProject.ensure (XPage, Java agent, imported-Java agent, Java script library, or Java source). Create-if-absent for missing skeleton notes, then heal/dedupe polluted .classpath and plugin.xml.",
+      "properties": {
+        "ensured": {
+          "type": "boolean",
+          "description": "True when ensure ran."
+        },
+        "projectName": {
+          "type": "string",
+          "description": "Eclipse/.project name derived from the NSF file name (padded when short)."
+        },
+        "created": {
+          "type": "array",
+          "description": "Skeleton note titles imported because they were missing.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "skipped": {
+          "type": "array",
+          "description": "Skeleton note titles that already existed.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "failed": {
+          "type": "array",
+          "description": "Skeleton import or heal failures (title + message). Ensure continues after a soft failure.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "repaired": {
+          "type": "array",
+          "description": "Notes healed or deduped (for example .classpath, plugin.xml, or title (deduped)). Empty when nothing needed repair.",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
