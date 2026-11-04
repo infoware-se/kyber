@@ -1042,11 +1042,11 @@
     },
     "/validate": {
       "summary": "Check a design import without writing",
-      "description": "Dry run of PUT /import. The body is the same document. Nothing is written and the response has no importer log. valid is false when an element would be rejected before Domino stores it. Each error has index, type, message, and a stable code (for example invalid_dxl, missing_dxl, protected_acl). name is set when present. A note Domino itself cannot store still fails on the import. Requires Designer. An ACL in the document requires Manager. Requires ?nsfPath= on a database that already exists.",
+      "description": "Dry run of PUT /import. The body is the same document. The target NSF is not written. Kyber runs DesignImportCheck, then imports passing elements into a throwaway scratch NSF (JNX has no validate-only flag) and deletes that file. Response is valid, errors, warnings, and a truncated importerLog when the importer ran. Each error has index, type, message, and a stable code (for example invalid_dxl, importer_error, dry_run_unavailable). Scratch creation needs Create databases & templates. Requires Designer. An ACL in the document requires Manager. Requires ?nsfPath= on a database that already exists.",
       "parameters": [
         {
           "name": "nsfPath",
-          "description": "Target NSF. The file must already exist. This call does not create a database.",
+          "description": "Target NSF. The file must already exist. This call does not create or modify that database.",
           "schema": {
             "type": "string"
           },
@@ -1060,7 +1060,7 @@
         ],
         "operationId": "validateDesign",
         "summary": "Check a design import without writing",
-        "description": "Dry run of PUT /import. The body is the same document. Nothing is written and the response has no importer log. valid is false when an element would be rejected before Domino stores it. Errors include index, type, message, and code. Requires Designer. An ACL in the document requires Manager. Requires ?nsfPath=.",
+        "description": "Dry run of PUT /import. Pre-checks plus Domino importer against a scratch NSF. Target unchanged. Returns valid, errors, warnings, and importerLog. Requires Designer. An ACL in the document requires Manager. Requires ?nsfPath=.",
         "x-keep-version": 1,
         "security": [
           {
@@ -1108,7 +1108,7 @@
         },
         "responses": {
           "200": {
-            "description": "The check finished. valid is false when one or more elements were rejected. The database is unchanged.",
+            "description": "The check finished. valid is false when one or more elements were rejected. The target database is unchanged.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1132,11 +1132,31 @@
                           "message": { "type": "string" },
                           "code": {
                             "type": "string",
-                            "description": "Stable machine code: invalid_dxl, missing_dxl, protected_acl, unknown_type, missing_name, webcontent_path, acl_delete, invalid_element, or rejected.",
+                            "description": "Stable machine code: invalid_dxl, missing_dxl, protected_acl, unknown_type, missing_name, webcontent_path, acl_delete, invalid_element, not_found, importer_error, dry_run_unavailable, or rejected.",
                             "example": "invalid_dxl"
                           }
                         }
                       }
+                    },
+                    "warnings": {
+                      "type": "array",
+                      "description": "Importer warnings from the scratch-NSF dry run.",
+                      "items": {
+                        "type": "object",
+                        "required": ["index", "type", "message"],
+                        "properties": {
+                          "index": {
+                            "type": "integer"
+                          },
+                          "type": { "type": "string" },
+                          "name": { "type": "string" },
+                          "message": { "type": "string" }
+                        }
+                      }
+                    },
+                    "importerLog": {
+                      "type": "string",
+                      "description": "Truncated Domino DXL importer log from the scratch-NSF pass. Omitted when the importer did not run."
                     }
                   }
                 }

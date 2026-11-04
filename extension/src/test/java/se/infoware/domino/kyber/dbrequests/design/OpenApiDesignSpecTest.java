@@ -215,13 +215,17 @@ class OpenApiDesignSpecTest {
             .getJsonObject("/validate")
             .getJsonObject("post")
             .getString("operationId"));
+    JsonObject validateProps =
+        schemaProps(root.getJsonObject("paths"), "/validate", "post");
     JsonObject validateError =
-        schemaProps(root.getJsonObject("paths"), "/validate", "post")
+        validateProps
             .getJsonObject("errors")
             .getJsonObject("items")
             .getJsonObject("properties");
     assertNotNull(validateError.getJsonObject("index"));
     assertNotNull(validateError.getJsonObject("code"));
+    assertNotNull(validateProps.getJsonObject("warnings"));
+    assertNotNull(validateProps.getJsonObject("importerLog"));
     JsonObject aclGet =
         schemaProps(root.getJsonObject("paths"), "/acl", "get");
     assertNotNull(aclGet.getJsonObject("entries"));

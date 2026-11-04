@@ -57,6 +57,17 @@ final class DesignValidate {
     if (lower.contains("cannot delete the acl")) {
       return "acl_delete";
     }
+    if (lower.contains("not found")) {
+      return "not_found";
+    }
+    if (lower.contains("dry-run")
+        || lower.contains("scratch nsf")
+        || lower.contains("create databases")) {
+      return "dry_run_unavailable";
+    }
+    if (lower.contains("dxl import") || lower.contains("importer")) {
+      return "importer_error";
+    }
     return "rejected";
   }
 }

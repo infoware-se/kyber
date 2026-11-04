@@ -21,7 +21,7 @@ The 1.1.8 change to `GET setup-v1/dxl`, which skips a design element it cannot e
 | List | `name`, `unid`, and `noteId`. `GET /designsummary` groups every type and includes aliases | `name`, `noteId`, `unid`, `fileName`, `aliases`, and `kind`. `unid` stays when the name changes |
 | Export | One `<database>` DXL. `full=true` includes properties and the ACL. `types=` filters. `include=properties` adds `propertiesDxl` | `{ nsfPath, elements: [{ type, name?, dxl }], skipped }`. Each note is its own DXL |
 | Import | `POST /import` starts a job. Poll `GET /import/{jobId}`. Options are `designOption`, `documentsOption`, and `replaceDbProperties`. The finished job returns the importer log | `PUT /import` writes in the request. The source `replicaid` is removed, so the target keeps its own. The response has no log |
-| Validate | `POST /validate` runs the importer as a dry run and returns `valid`, `errors`, and `warnings` | `POST /validate` checks the same document as `PUT /import` and does not write. The response is `valid` and `errors`, with no importer log. A note Domino itself cannot store still fails on the import |
+| Validate | `POST /validate` runs the importer as a dry run and returns `valid`, `errors`, and `warnings` | `POST /validate` pre-checks the same document as `PUT /import`, then runs the Domino importer against a throwaway scratch NSF (JNX has no validate-only flag) and deletes it. The target is unchanged. The response is `valid`, `errors`, `warnings`, and a truncated `importerLog`. Scratch creation needs Create databases & templates |
 | Signing | A written element, help document, and icon note are signed with the caller's ID from the ID vault, or with the server ID | A write is signed, except a compiled XPage whose DXL contains `$ClassData0`, and a Java library that has source and no `%%object%%.jar` |
 | Icon | `/dbicon` is the icon note, NoteID `0xFFFF0010`. It also holds the launch settings | `/dbicon` is the `$DBIcon` image resource. A put also updates the workspace icon note and keeps that note's launch settings |
 | Database | No category gate, and no create or delete of an NSF | `KyberEnabled` is required. `POST /database` creates an NSF. `DELETE /database` removes one when the caller is Manager |
@@ -71,7 +71,7 @@ A get of one element returns JSON: `type`, `name`, `unid`, `noteId`, and `dxl`. 
 
 `POST /validate` checks that the XML is well formed and then runs the importer without writing. The DXL has to be wrapped in `<database>`. Reader is enough. A failed check returns `valid: false` and the errors, including when the root element is not `<database>`.
 
-Kyber's export is the document described under [Round trip](../README.md#round-trip). [`tools/export-to-repo.ps1`](../tools/export-to-repo.ps1) writes one DXL file per note, in Package Explorer folders. The import reports each element. It has no `documentsOption` and no importer log in the response. `POST /validate` checks that document without running the importer.
+Kyber's export is the document described under [Round trip](../README.md#round-trip). [`tools/export-to-repo.ps1`](../tools/export-to-repo.ps1) writes one DXL file per note, in Package Explorer folders. The import reports each element and may include a truncated `importerLog`. `POST /validate` runs the importer against a scratch NSF and returns `warnings` plus `importerLog`.
 
 ## Access
 
@@ -108,6 +108,18 @@ A role on an ACL entry has to exist already, or the put is **400**. `-Default-` 
 
 Kyber replaces the ACL as one DXL document on `PUT /acl`, and that call needs Manager. The same two entries must remain. A payload that omits either of them is **400**, and the ACL is left unchanged. Kyber's `/dbicon` remains the `$DBIcon` image resource, and a put of it also updates the workspace icon note.
 
+## Parked Kyber features (GitHub)
+
+Remaining gaps vs experimental `/api/dxl` are tracked as enhancements — not in the current validate work:
+
+| Gap | Issue |
+|--|--|
+| JSON outline entries, frameset layout, DB launch | [#7](https://github.com/infoware-se/kyber/issues/7) |
+| Async import jobs + `designOption` / `documentsOption` | [#8](https://github.com/infoware-se/kyber/issues/8) |
+| Icon note (`0xFFFF0010`) + `propsRestored` | [#9](https://github.com/infoware-se/kyber/issues/9) |
+
+ACL **entry** CRUD stays on **`/api/admin-v1/acl/*`** — Kyber keeps full-DXL `GET`/`PUT /acl` only.
+
 ## What each API keeps to itself
 
 HCL's DXL API has an import job with the importer's options, and the importer log in the response. Its dry run runs the importer. It also has the JSON for a frameset, an outline, launch settings, and a single ACL entry.
@@ -128,7 +140,7 @@ Kyber does not call `/api/dxl`. Infoware’s local wishlist for **Domino JNX** a
 | LotusScript compile errors with agent/library name | No | Kyber compiles on write; not a documented `/api/dxl` feature |
 | Types beyond the classic sixteen (XPages, Java, WebContent, …) | No | Still why modern design needs Kyber + deeper JNX |
 | Icon note separate from `$DBIcon`; keep launch settings | Yes | `/dbicon` is the icon note; `propsRestored`. Kyber’s `/dbicon` is `$DBIcon` and syncs the workspace icon |
-| Importer log / dry-run validate (as platform diagnostics) | Yes | Put/import `log`; validate runs the importer. Kyber keeps log out of its public response; JNX/extension callers still want diagnostics |
+| Importer log / dry-run validate (as platform diagnostics) | Yes | Put/import `log`; validate runs the importer. Kyber returns truncated `importerLog` on `PUT /import` and on `POST /validate` (scratch-NSF dry run) |
 
 ### DRAPI / KEEP–oriented needs
 

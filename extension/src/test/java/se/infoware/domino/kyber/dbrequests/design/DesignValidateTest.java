@@ -16,6 +16,11 @@ class DesignValidateTest {
     assertEquals("unknown_type", DesignValidate.codeOf("Unknown design element type: widget"));
     assertEquals("missing_name", DesignValidate.codeOf("name is required to delete type form"));
     assertEquals("webcontent_path", DesignValidate.codeOf("WebContent under WEB-INF is refused"));
+    assertEquals("not_found", DesignValidate.codeOf("form not found: Contact"));
+    assertEquals(
+        "dry_run_unavailable",
+        DesignValidate.codeOf("Importer dry-run needs Create databases & templates"));
+    assertEquals("importer_error", DesignValidate.codeOf("DXL import logged an error"));
     assertEquals("rejected", DesignValidate.codeOf("something else"));
   }
 

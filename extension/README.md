@@ -65,7 +65,7 @@ A database without that category responds **403** with the message **Not Kyber e
 |--------|------|---------|
 | GET | `/export?nsfPath=` | Design export of a database that already exists. `skipped` rows always have `type` and `message`; `name` when known |
 | PUT | `/import?nsfPath=&dbTitle=` | Design import. When the file is missing, checks Create databases & templates and creates the NSF. Response may include `compile` and a truncated `importerLog` |
-| POST | `/validate?nsfPath=` | Check that import document without writing. `valid` is false when an element would be rejected. Each error has `index`, `type`, `message`, and stable `code`. No importer log. The NSF must already exist |
+| POST | `/validate?nsfPath=` | Dry-run of `PUT /import`. Pre-checks plus Domino importer against a scratch NSF (target unchanged). Response: `valid`, `errors`, `warnings`, truncated `importerLog`. Scratch needs Create databases & templates. The NSF must already exist |
 | POST | `/database?nsfPath=&dbTitle=` | Create database. Checks Create databases & templates and sets the category KyberEnabled. 409 if the file exists |
 | POST | `/database/fromTemplate?nsfPath=&templateNsfPath=&dbTitle=` | Create NSF from an NTF/NSF template. Same Create databases & templates check; sets KyberEnabled. 409 if the file exists |
 | PUT | `/database?nsfPath=&dbTitle=` | Set database title on an existing Kyber-enabled NSF without rewriting application-properties DXL |

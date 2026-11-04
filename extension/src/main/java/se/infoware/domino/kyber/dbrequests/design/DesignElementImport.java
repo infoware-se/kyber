@@ -103,6 +103,75 @@ final class DesignElementImport {
     return importOne(importer, db, type, dxl, session, mode, null);
   }
 
+  /**
+   * Importer-only pass used by {@code POST /validate}. Applies the same DXL prep and {@link
+   * DxlDesignPatch} path as {@link #importOne}, without privilege checks, signing, or compile. The
+   * database must be a throwaway NSF — never the validate target.
+   */
+  static void dryRunImport(
+      DxlImporter importer, Database db, String type, String dxl, String preferredName)
+      throws Exception {
+    String raw = type == null ? "" : type.trim().toLowerCase(Locale.ROOT);
+    if ("launchsettings".equals(raw)) {
+      if (dxl == null || dxl.isBlank()) {
+        throw new KeepExceptionWrongDataRequest("dxl is required for type launchsettings");
+      }
+      DxlDesignPatch.importLaunchSettings(importer, dxl, db);
+      return;
+    }
+    String t = DesignBulkTypes.normalize(type);
+    if ("dbicon".equals(t)) {
+      t = "image";
+    }
+    if (!DesignBulkTypes.isKnown(t)) {
+      throw new KeepExceptionWrongDataRequest("Unknown design element type: " + type);
+    }
+    if (dxl == null || dxl.isBlank()) {
+      throw new KeepExceptionWrongDataRequest("dxl is required for type " + t);
+    }
+    DxlDesignPatch.Mode mode = DxlDesignPatch.Mode.UPSERT;
+    switch (t) {
+      case "acl" -> {
+        DesignDxl.requireRootOnly(dxl, "acl");
+        DxlDesignPatch.importAcl(importer, dxl, db);
+      }
+      case "applicationproperties" -> {
+        String root = DesignDxl.requireRootOnlyReturningLocalName(dxl, "note", "database");
+        if ("database".equalsIgnoreCase(root)) {
+          DxlDesignPatch.importWithDbProperties(importer, dxl, db, mode);
+        } else {
+          DxlDesignPatch.importDesign(importer, dxl, db, mode);
+        }
+      }
+      case "sharedactions" -> {
+        dxl = DesignDxl.ensureSharedActionsDxl(dxl, preferredName);
+        DesignDxl.requireSharedActionsName(dxl);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
+      }
+      case "subform", "form", "page" -> {
+        dxl = TableDxlFix.prepareIncomingDxl(dxl);
+        dxl = FormulaDxlFix.prepareIncomingDxl(dxl);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
+      }
+      case "frameset" -> {
+        dxl = FramesetDxlFix.prepareIncomingDxl(dxl);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
+      }
+      case "view", "folder" -> {
+        dxl = ViewDxlFix.prepareIncomingDxl(dxl);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
+      }
+      case "webcontent" -> {
+        String name =
+            DesignDxl.requireDesignName(
+                dxl, "note", "fileresource", "navigator", "webservice", "agent", "appletresource");
+        WebContent.requireOutsideWebInf(name);
+        DxlDesignPatch.importDesign(importer, dxl, db, mode);
+      }
+      default -> DxlDesignPatch.importDesign(importer, dxl, db, mode);
+    }
+  }
+
   static JsonObject importOne(
       DxlImporter importer,
       Database db,
