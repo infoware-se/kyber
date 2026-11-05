@@ -347,9 +347,11 @@ Also shipped earlier. Bulk DXL round-trip + typed CRUD (applet/dataconnection, a
 
 **Next (high value for agents / Aldhani)**
 
-Aldhani wraps Kyber; it will not parse DXL locally for these. Ship the routes here first. **Fields** / **Columns** (0.26.8), **Summary** (0.26.9), **Diff** (0.26.10), **Schedules** (0.26.11), and **Upsert** (0.26.12) shipped. No further medium items queued.
+Aldhani wraps Kyber; it will not parse DXL locally for these. Ship the routes here first. **Fields** / **Columns** (0.26.8), **Summary** (0.26.9), **Diff** (0.26.10), **Schedules** (0.26.11), and **Upsert** (0.26.12) shipped.
 
-Out of scope for Kyber. Application documents, DQL, running agents as a general automation API, server console, admin directory changes, Aldhani MCP policy, and Yavin host deploy / post-deploy smoke.
+1. Structured **ACL entry and role CRUD** on a Kyber-enabled NSF (list / get / put / delete per entry and role) via Domino JNX — the same job HCL ships on production `admin-v1/acl`, but under `/api/kyber-v1` with the `KyberEnabled` gate. Keep full `PUT /acl` for bulk DXL replace. Do not call HCL `admin-v1` from Kyber; do not use experimental `/api/dxl`. Keep refusing to drop `-Default-` / `LocalDomainServers` on replace paths. Aldhani may wrap or keep refusing MCP ACL writes until policy is clear.
+
+Out of scope for Kyber. Application documents, DQL, running agents as a general automation API, server console, directory user/group admin (outside the NSF ACL), Aldhani MCP policy, and Yavin host deploy / post-deploy smoke.
 
 
 ## Security
